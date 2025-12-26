@@ -14,7 +14,13 @@
     <Project Path="_Services_/CatalogService/DigiStore.CatalogService.Infrastructure/DigiStore.CatalogService.Infrastructure.csproj" Id="c324d7b9-f56e-45e6-9ea1-8a0ecd4e701b" />
     <Project Path="_Services_/CatalogService/DigiStore.CatalogService.Web/DigiStore.CatalogService.Web.csproj" Id="50bb0acc-3f72-40be-89c5-8edfbc6684e1" />
   </Folder>
-  <Folder Name="/MicroServices/OrderService/" />
+  <Folder Name="/MicroServices/OrderService/">
+    <Project Path="_Services_/OrderService/DigiStore.OrderService.Application/DigiStore.OrderService.Application.csproj" Id="0e19d2c3-f68f-4dcd-b9c5-a6cc7628983c" />
+    <Project Path="_Services_/OrderService/DigiStore.OrderService.Contracts/DigiStore.OrderService.Contracts.csproj" Id="b75df5e9-8c1e-4dd8-843f-a46a8ef3295a" />
+    <Project Path="_Services_/OrderService/DigiStore.OrderService.Domain/DigiStore.OrderService.Domain.csproj" Id="c33b1521-a52e-4fd0-9ede-bafaa84eb96b" />
+    <Project Path="_Services_/OrderService/DigiStore.OrderService.Infrastructure/DigiStore.OrderService.Infrastructure.csproj" Id="91acc618-cfcb-4337-8643-848baf553305" />
+    <Project Path="_Services_/OrderService/DigiStore.OrderService.Web/DigiStore.OrderService.Web.csproj" Id="5b7feb18-db9f-4999-b2c7-cb16f380c0cb" />
+  </Folder>
   <Folder Name="/MicroServices/PaymentService/" />
   <Folder Name="/MicroServices/UserService/" />
   <Folder Name="/WebClients/" />
