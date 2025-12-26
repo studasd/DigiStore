@@ -1,0 +1,11 @@
+@DigiStore.CatalogService.Web_HostAddress = http://localhost:5288
+
+GET {{DigiStore.CatalogService.Web_HostAddress}}/todos/
+Accept: application/json
+
+###
+
+GET {{DigiStore.CatalogService.Web_HostAddress}}/todos/1
+Accept: application/json
+
+###
