@@ -21,7 +21,13 @@
     <Project Path="_Services_/OrderService/DigiStore.OrderService.Infrastructure/DigiStore.OrderService.Infrastructure.csproj" Id="91acc618-cfcb-4337-8643-848baf553305" />
     <Project Path="_Services_/OrderService/DigiStore.OrderService.Web/DigiStore.OrderService.Web.csproj" Id="5b7feb18-db9f-4999-b2c7-cb16f380c0cb" />
   </Folder>
-  <Folder Name="/MicroServices/PaymentService/" />
+  <Folder Name="/MicroServices/PaymentService/">
+    <Project Path="_Services_/PaymentService/DigiStore.PaymentService.Application/DigiStore.PaymentService.Application.csproj" Id="5688cf11-5c05-41e5-86e0-96e359d6a0cb" />
+    <Project Path="_Services_/PaymentService/DigiStore.PaymentService.Contracts/DigiStore.PaymentService.Contracts.csproj" Id="8cab43d4-aa9a-4177-b04a-a34a1b28d0b5" />
+    <Project Path="_Services_/PaymentService/DigiStore.PaymentService.Domain/DigiStore.PaymentService.Domain.csproj" Id="9ede8557-dc33-4f45-a3c5-1d09b8ecbc53" />
+    <Project Path="_Services_/PaymentService/DigiStore.PaymentService.Infrastructure/DigiStore.PaymentService.Infrastructure.csproj" Id="b0e9a924-fb58-4b39-82e4-87ddf8720497" />
+    <Project Path="_Services_/PaymentService/DigiStore.PaymentService.Web/DigiStore.PaymentService.Web.csproj" Id="059e1c7a-cc45-4eb3-9c6c-22a3852d360f" />
+  </Folder>
   <Folder Name="/MicroServices/UserService/" />
   <Folder Name="/WebClients/" />
   <Folder Name="/WebClients/TgBot/" />
