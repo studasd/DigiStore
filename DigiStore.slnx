@@ -36,7 +36,13 @@
     <Project Path="_Services_/UserService/DigiStore.UserService.Web/DigiStore.UserService.Web.csproj" Id="8398232d-41ef-497d-8294-221ed4f247ef" />
   </Folder>
   <Folder Name="/WebClients/" />
-  <Folder Name="/WebClients/TgBot/" />
+  <Folder Name="/WebClients/TgBot/">
+    <Project Path="_WebClients_/TgBot/DigiStore.TgBot.Application/DigiStore.TgBot.Application.csproj" Id="38bb407e-5795-46af-bb1a-2abb70169983" />
+    <Project Path="_WebClients_/TgBot/DigiStore.TgBot.Contracts/DigiStore.TgBot.Contracts.csproj" Id="976e0afa-b3cf-41b4-83e9-e32378edbef2" />
+    <Project Path="_WebClients_/TgBot/DigiStore.TgBot.Domain/DigiStore.TgBot.Domain.csproj" Id="fddf286a-63f7-4136-ba10-00897649e218" />
+    <Project Path="_WebClients_/TgBot/DigiStore.TgBot.Infrastructure/DigiStore.TgBot.Infrastructure.csproj" Id="6370bfba-7e9a-4e08-b50a-5962f489e730" />
+    <Project Path="_WebClients_/TgBot/DigiStore.TgBot.Web/DigiStore.TgBot.Web.csproj" Id="e63927d7-be99-4d00-a8e4-af12dc7e322a" />
+  </Folder>
   <Folder Name="/WebClients/VkBot/" />
   <Project Path="DigiStore.Web/DigiStore.Web.csproj" />
 </Solution>
