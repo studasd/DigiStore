@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/MicroServices/" />
+  <Folder Name="/MicroServices/CartService/">
+    <Project Path="_Services_/CartService/DigiStore.CartService.Application/DigiStore.CartService.Application.csproj" Id="6fb31b29-4d71-4352-91b4-cdd42c48d6d0" />
+    <Project Path="_Services_/CartService/DigiStore.CartService.Contracts/DigiStore.CartService.Contracts.csproj" Id="fcf62d38-a334-4299-a533-fe88c3c0e52e" />
+    <Project Path="_Services_/CartService/DigiStore.CartService.Domain/DigiStore.CartService.Domain.csproj" Id="1423e615-16c5-472c-a9dd-7733d455ea02" />
+    <Project Path="_Services_/CartService/DigiStore.CartService.Infrastructure/DigiStore.CartService.Infrastructure.csproj" Id="bf53a545-334c-41b7-9666-a3264439594e" />
+    <Project Path="_Services_/CartService/DigiStore.CartService.Web/DigiStore.CartService.Web.csproj" Id="109f8ae8-e190-495f-95fa-802a99c1cb4e" />
+  </Folder>
+  <Folder Name="/MicroServices/CatalogService/" />
+  <Folder Name="/MicroServices/OrderService/" />
+  <Folder Name="/MicroServices/PaymentService/" />
+  <Folder Name="/MicroServices/UserService/" />
+  <Folder Name="/WebClients/" />
+  <Folder Name="/WebClients/TgBot/" />
+  <Folder Name="/WebClients/VkBot/" />
+  <Project Path="DigiStore.Web/DigiStore.Web.csproj" />
+</Solution>
