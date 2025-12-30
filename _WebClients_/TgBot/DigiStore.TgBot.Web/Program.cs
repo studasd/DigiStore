@@ -1,5 +1,7 @@
 using DigiStore.TgBot.Application.Handlers;
 using DigiStore.TgBot.Web;
+using Microsoft.AspNetCore.Http.Json;
+using System.Text.Json.Serialization.Metadata;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
@@ -16,13 +18,22 @@ builder.Services.AddLogging(config =>
 	config.AddDebug();
 });
 
+// Гарантирует, что в runtime используется DefaultJsonTypeInfoResolver (reflection-based)
+// и не произойдёт NotSupportedException при GetTypeInfo для типов, не зарегистрированных в OpenAPI контексте.
+builder.Services.Configure<JsonOptions>(opts =>
+{
+	opts.SerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
+});
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
 // Инициализация команд бота
-var botClient = app.Services.GetRequiredService<ITelegramBotClient>();
+using var scope = app.Services.CreateScope();
+var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
+
 var commands = new BotCommand[]
 {
 	new() { Command = "start", Description = "Start the bot" },
@@ -86,9 +97,11 @@ app.Run();
 /// </summary>
 async Task StartPollingAsync(IServiceProvider services, CancellationToken ct)
 {
-	var botClient = services.GetRequiredService<ITelegramBotClient>();
-	var updateHandler = services.GetRequiredService<UpdateHandler>();
-	var logger = services.GetRequiredService<ILogger<Program>>();
+	using var scope = app.Services.CreateScope();
+
+	var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
+	var updateHandler = scope.ServiceProvider.GetRequiredService<UpdateHandler>();
+	var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 	
 	var receiverOptions = new ReceiverOptions
 	{

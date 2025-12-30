@@ -1,24 +1,22 @@
 using DigiStore.TgBot.Application.Constants;
+using DigiStore.TgBot.Application.Handlers;
 using DigiStore.TgBot.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DigiStore.TgBot.Application.Handlers.Callbacks;
 
 /// <summary>
 /// Обработчик колбэка смены языка из команды /language
 /// </summary>
-public class LanguageChangeCallbackHandler : ICallbackQueryHandler
+public class LanguageChangeCallbackHandler : BaseHandler, ICallbackQueryHandler
 {
 	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.LanguageChangePrefix;
 	public const bool IsPrefix = true;
 	
-	private readonly ITelegramBotClient _botClient;
 	private readonly ITelegramProfileService _profileService;
 	private readonly ITelegramSessionService _sessionService;
-	private readonly ILocalizationService _localizationService;
 	private readonly ILogger<LanguageChangeCallbackHandler> _logger;
 
 	string ICallbackQueryHandler.CallbackData => CallbackData;
@@ -30,11 +28,10 @@ public class LanguageChangeCallbackHandler : ICallbackQueryHandler
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<LanguageChangeCallbackHandler> logger)
+		: base(botClient, localizationService)
 	{
-		_botClient = botClient;
 		_profileService = profileService;
 		_sessionService = sessionService;
-		_localizationService = localizationService;
 		_logger = logger;
 	}
 
@@ -58,20 +55,7 @@ public class LanguageChangeCallbackHandler : ICallbackQueryHandler
 			// Handle "select" case - shows all languages
 			if (languageCode == "select")
 			{
-				var languages = _localizationService.GetLanguages();
-				var buttons = new List<List<InlineKeyboardButton>>();
-
-				foreach (var lang in languages)
-				{
-					buttons.Add(new List<InlineKeyboardButton>
-					{
-						InlineKeyboardButton.WithCallbackData(
-							lang.Value,
-							$"{CallbackData}{lang.Key}")
-					});
-				}
-
-				var keyboard = new InlineKeyboardMarkup(buttons);
+				var keyboard = GetLanguageSelectionKeyboard(CallbackData);
 				var text = _localizationService.GetMessage("select_language", currentLanguage);
 
 				await _botClient.EditMessageText(
@@ -101,11 +85,7 @@ public class LanguageChangeCallbackHandler : ICallbackQueryHandler
 
 			if (!updateResult.IsSuccess)
 			{
-				await _botClient.AnswerCallbackQuery(
-					callbackQuery.Id,
-					_localizationService.GetMessage("error_occurred", currentLanguage),
-					showAlert: true,
-					cancellationToken: cancellationToken);
+				await AnswerCallbackQueryWithError(callbackQuery.Id, currentLanguage, cancellationToken);
 				return;
 			}
 
@@ -133,42 +113,7 @@ public class LanguageChangeCallbackHandler : ICallbackQueryHandler
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in LanguageChangeCallbackHandler");
-			try
-			{
-				await _botClient.AnswerCallbackQuery(
-					callbackQuery.Id,
-					_localizationService.GetMessage("error_occurred", "en"),
-					showAlert: true,
-					cancellationToken: cancellationToken);
-			}
-			catch { }
+			await AnswerCallbackQueryWithError(callbackQuery.Id, "en", cancellationToken);
 		}
-	}
-
-	private InlineKeyboardMarkup GetMainMenuKeyboard(string languageCode)
-	{
-		var loc = _localizationService;
-
-		return new InlineKeyboardMarkup(new[]
-		{
-			new[]
-			{
-				InlineKeyboardButton.WithCallbackData(
-					loc.GetMessage("profile", languageCode),
-					DigiStore.TgBot.Application.Constants.CallbackData.ProfileView)
-			},
-			new[]
-			{
-				InlineKeyboardButton.WithCallbackData(
-					loc.GetMessage("balance", languageCode),
-					DigiStore.TgBot.Application.Constants.CallbackData.BalanceView)
-			},
-			new[]
-			{
-				InlineKeyboardButton.WithCallbackData(
-					loc.GetMessage("catalog", languageCode),
-					DigiStore.TgBot.Application.Constants.CallbackData.CatalogView)
-			},
-		});
 	}
 }

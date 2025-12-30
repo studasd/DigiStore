@@ -1,25 +1,23 @@
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Domain;
+using DigiStore.TgBot.Application.Handlers;
 using DigiStore.TgBot.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DigiStore.TgBot.Application.Handlers.Commands;
 
 /// <summary>
 /// Обработчик команды /profile
 /// </summary>
-public class ProfileCommandHandler : ICommandHandler
+public class ProfileCommandHandler : BaseHandler, ICommandHandler
 {
 	public const string Command = BotCommands.Profile;
 	
-	private readonly ITelegramBotClient _botClient;
 	private readonly ITelegramProfileService _profileService;
 	private readonly ITelegramSessionService _sessionService;
-	private readonly ILocalizationService _localizationService;
 	private readonly ILogger<ProfileCommandHandler> _logger;
 
 	string ICommandHandler.Command => Command;
@@ -30,11 +28,10 @@ public class ProfileCommandHandler : ICommandHandler
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<ProfileCommandHandler> logger)
+		: base(botClient, localizationService)
 	{
-		_botClient = botClient;
 		_profileService = profileService;
 		_sessionService = sessionService;
-		_localizationService = localizationService;
 		_logger = logger;
 	}
 
@@ -109,33 +106,5 @@ public class ProfileCommandHandler : ICommandHandler
 			_logger.LogError(ex, "Error in ProfileCommandHandler");
 			await SendErrorMessage(message.Chat.Id, "An error occurred", cancellationToken);
 		}
-	}
-
-	private InlineKeyboardMarkup GetProfileKeyboard(string languageCode)
-	{
-		var loc = _localizationService;
-		return new InlineKeyboardMarkup(new[]
-		{
-			new[]
-			{
-				InlineKeyboardButton.WithCallbackData(
-					loc.GetMessage("change_language", languageCode),
-					CallbackData.LanguageChangePrefix + "select")
-			},
-			new[]
-			{
-				InlineKeyboardButton.WithCallbackData(
-					loc.GetMessage("main_menu", languageCode),
-					CallbackData.MenuMain)
-			},
-		});
-	}
-
-	private async Task SendErrorMessage(
-		long chatId,
-		string error,
-		CancellationToken ct)
-	{
-		await _botClient.SendMessage(chatId, $"❌ {error}", cancellationToken: ct);
 	}
 }

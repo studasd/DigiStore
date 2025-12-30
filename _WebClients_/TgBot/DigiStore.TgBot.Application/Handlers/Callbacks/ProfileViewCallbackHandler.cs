@@ -1,4 +1,5 @@
 using DigiStore.TgBot.Application.Constants;
+using DigiStore.TgBot.Application.Handlers;
 using DigiStore.TgBot.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -10,15 +11,13 @@ namespace DigiStore.TgBot.Application.Handlers.Callbacks;
 /// <summary>
 /// Обработчик колбэка просмотра профиля
 /// </summary>
-public class ProfileViewCallbackHandler : ICallbackQueryHandler
+public class ProfileViewCallbackHandler : BaseHandler, ICallbackQueryHandler
 {
 	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.ProfileView;
 	public const bool IsPrefix = false;
 	
-	private readonly ITelegramBotClient _botClient;
 	private readonly ITelegramProfileService _profileService;
 	private readonly ITelegramSessionService _sessionService;
-	private readonly ILocalizationService _localizationService;
 	private readonly ILogger<ProfileViewCallbackHandler> _logger;
 
 	string ICallbackQueryHandler.CallbackData => CallbackData;
@@ -30,11 +29,10 @@ public class ProfileViewCallbackHandler : ICallbackQueryHandler
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<ProfileViewCallbackHandler> logger)
+		: base(botClient, localizationService)
 	{
-		_botClient = botClient;
 		_profileService = profileService;
 		_sessionService = sessionService;
-		_localizationService = localizationService;
 		_logger = logger;
 	}
 
@@ -62,11 +60,7 @@ public class ProfileViewCallbackHandler : ICallbackQueryHandler
 
 			if (!profileResult.IsSuccess)
 			{
-				await _botClient.AnswerCallbackQuery(
-					callbackQuery.Id,
-					_localizationService.GetMessage("error_occurred", languageCode),
-					showAlert: true,
-					cancellationToken: cancellationToken);
+				await AnswerCallbackQueryWithError(callbackQuery.Id, languageCode, cancellationToken);
 				return;
 			}
 
@@ -87,36 +81,7 @@ public class ProfileViewCallbackHandler : ICallbackQueryHandler
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in ProfileViewCallbackHandler");
-			try
-			{
-				await _botClient.AnswerCallbackQuery(
-					callbackQuery.Id,
-					_localizationService.GetMessage("error_occurred", "en"),
-					showAlert: true,
-					cancellationToken: cancellationToken);
-			}
-			catch { }
+			await AnswerCallbackQueryWithError(callbackQuery.Id, "en", cancellationToken);
 		}
-	}
-
-	private Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup GetProfileKeyboard(string languageCode)
-	{
-		var loc = _localizationService;
-
-		return new Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup(new[]
-		{
-			new[]
-			{
-				Telegram.Bot.Types.ReplyMarkups.InlineKeyboardButton.WithCallbackData(
-					loc.GetMessage("change_language", languageCode),
-					DigiStore.TgBot.Application.Constants.CallbackData.LanguageChangePrefix + "select")
-			},
-			new[]
-			{
-				Telegram.Bot.Types.ReplyMarkups.InlineKeyboardButton.WithCallbackData(
-					loc.GetMessage("main_menu", languageCode),
-					DigiStore.TgBot.Application.Constants.CallbackData.MenuMain)
-			},
-		});
 	}
 }

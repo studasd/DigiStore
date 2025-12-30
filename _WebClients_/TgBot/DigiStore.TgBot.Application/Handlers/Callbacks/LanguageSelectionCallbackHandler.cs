@@ -1,5 +1,6 @@
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Domain;
+using DigiStore.TgBot.Application.Handlers;
 using DigiStore.TgBot.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -11,15 +12,13 @@ namespace DigiStore.TgBot.Application.Handlers.Callbacks;
 /// <summary>
 /// Обработчик колбэка выбора языка из команды /start
 /// </summary>
-public class LanguageSelectionCallbackHandler : ICallbackQueryHandler
+public class LanguageSelectionCallbackHandler : BaseHandler, ICallbackQueryHandler
 {
 	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.LanguagePrefix;
 	public const bool IsPrefix = true;
 	
-	private readonly ITelegramBotClient _botClient;
 	private readonly ITelegramProfileService _profileService;
 	private readonly ITelegramSessionService _sessionService;
-	private readonly ILocalizationService _localizationService;
 	private readonly ILogger<LanguageSelectionCallbackHandler> _logger;
 
 	string ICallbackQueryHandler.CallbackData => CallbackData;
@@ -31,11 +30,10 @@ public class LanguageSelectionCallbackHandler : ICallbackQueryHandler
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<LanguageSelectionCallbackHandler> logger)
+		: base(botClient, localizationService)
 	{
-		_botClient = botClient;
 		_profileService = profileService;
 		_sessionService = sessionService;
-		_localizationService = localizationService;
 		_logger = logger;
 	}
 
@@ -69,11 +67,7 @@ public class LanguageSelectionCallbackHandler : ICallbackQueryHandler
 
 			if (!updateResult.IsSuccess)
 			{
-				await _botClient.AnswerCallbackQuery(
-					callbackQuery.Id,
-					_localizationService.GetMessage("error_occurred", languageCode),
-					showAlert: true,
-					cancellationToken: cancellationToken);
+				await AnswerCallbackQueryWithError(callbackQuery.Id, languageCode, cancellationToken);
 				return;
 			}
 
@@ -90,11 +84,7 @@ public class LanguageSelectionCallbackHandler : ICallbackQueryHandler
 
 			if (!profileResult.IsSuccess)
 			{
-				await _botClient.AnswerCallbackQuery(
-					callbackQuery.Id,
-					_localizationService.GetMessage("error_occurred", languageCode),
-					showAlert: true,
-					cancellationToken: cancellationToken);
+				await AnswerCallbackQueryWithError(callbackQuery.Id, languageCode, cancellationToken);
 				return;
 			}
 
@@ -135,40 +125,14 @@ public class LanguageSelectionCallbackHandler : ICallbackQueryHandler
 
 			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
 
-			_logger.LogInformation("Profile shown after language selection for user: {UserId}", session.UserId);
+			_logger.LogInformation(
+				"Profile shown after language selection for user: {UserId}",
+				session.UserId);
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in LanguageSelectionCallbackHandler");
-			try
-			{
-				await _botClient.AnswerCallbackQuery(
-					callbackQuery.Id,
-					_localizationService.GetMessage("error_occurred", "en"),
-					showAlert: true,
-					cancellationToken: cancellationToken);
-			}
-			catch { }
+			await AnswerCallbackQueryWithError(callbackQuery.Id, "en", cancellationToken);
 		}
-	}
-
-	private Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup GetProfileKeyboard(string languageCode)
-	{
-		var loc = _localizationService;
-		return new Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup(new[]
-		{
-			new[]
-			{
-				Telegram.Bot.Types.ReplyMarkups.InlineKeyboardButton.WithCallbackData(
-					loc.GetMessage("change_language", languageCode),
-					DigiStore.TgBot.Application.Constants.CallbackData.LanguageChangePrefix + "select")
-			},
-			new[]
-			{
-				Telegram.Bot.Types.ReplyMarkups.InlineKeyboardButton.WithCallbackData(
-					loc.GetMessage("main_menu", languageCode),
-					DigiStore.TgBot.Application.Constants.CallbackData.MenuMain)
-			},
-		});
 	}
 }
