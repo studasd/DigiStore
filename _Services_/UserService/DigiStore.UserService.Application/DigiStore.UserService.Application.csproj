@@ -6,4 +6,18 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="DigiStore.Core" Version="0.0.4" />
+    <PackageReference Include="DigiStore.Framework" Version="0.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DigiStore.UserService.Contracts\DigiStore.UserService.Contracts.csproj" />
+    <ProjectReference Include="..\DigiStore.UserService.Domain\DigiStore.UserService.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>

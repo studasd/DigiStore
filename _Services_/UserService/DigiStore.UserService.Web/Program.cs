@@ -1,48 +1,45 @@
+using DigiStore.UserService.Infrastructure.Postgres;
+using DigiStore.UserService.Web;
+using DigiStore.UserService.Web.Configurations;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
+using Serilog;
+using System.Globalization;
 using System.Text.Json.Serialization;
 
-var builder = WebApplication.CreateSlimBuilder(args);
+Log.Logger = new LoggerConfiguration()
+	.MinimumLevel.Information()
+	.WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
+	.CreateBootstrapLogger();
 
-builder.Services.ConfigureHttpJsonOptions(options =>
+try
 {
-	options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
-});
+	Log.Information("Starting web application");
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+	var builder = WebApplication.CreateSlimBuilder(args);
 
-var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-	app.MapOpenApi();
-}
+	// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+	builder.Services.AddOpenApi();
 
-Todo[] sampleTodos =
-[
-	new(1, "Walk the dog"),
-	new(2, "Do the dishes", DateOnly.FromDateTime(DateTime.Now)),
-	new(3, "Do the laundry", DateOnly.FromDateTime(DateTime.Now.AddDays(1))),
-	new(4, "Clean the bathroom"),
-	new(5, "Clean the car", DateOnly.FromDateTime(DateTime.Now.AddDays(2)))
-];
 
-var todosApi = app.MapGroup("/todos");
-todosApi.MapGet("/", () => sampleTodos)
-		.WithName("GetTodos");
+	builder.Services.AddConfiguration(builder.Configuration);
 
-todosApi.MapGet("/{id}", Results<Ok<Todo>, NotFound> (int id) =>
-	sampleTodos.FirstOrDefault(a => a.Id == id) is { } todo
-		? TypedResults.Ok(todo)
-		: TypedResults.NotFound())
-	.WithName("GetTodoById");
+	builder.Services.AddCors();
 
-app.Run();
 
-public record Todo(int Id, string? Title, DateOnly? DueBy = null, bool IsComplete = false);
 
-[JsonSerializable(typeof(Todo[]))]
-internal partial class AppJsonSerializerContext : JsonSerializerContext
-{
+	var app = builder.Build();
+
+	app.Configure();
 
 }
+catch (Exception ex)
+{
+	Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+	Log.CloseAndFlush();
+}
+
