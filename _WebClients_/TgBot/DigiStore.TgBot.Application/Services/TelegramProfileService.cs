@@ -1,8 +1,8 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.SharedKernel;
+using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.DTOs;
 using DigiStore.TgBot.Application.Interfaces;
-using DigiStore.TgBot.Domain;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -38,6 +38,7 @@ public class TelegramProfileService : ITelegramProfileService
 				return userResult.Error;
 			}
 			var user = userResult.Value!;
+			
 			// Get wallet/balance
 			var walletResult = await _walletService.GetBalanceAsync(userId, ct);
 			decimal balance = 0;
@@ -47,6 +48,7 @@ public class TelegramProfileService : ITelegramProfileService
 				balance = walletResult.Value!.Balance;
 				currency = walletResult.Value.Currency;
 			}
+			
 			var profile = new ProfileDisplayDto
 			{
 				TelegramId = telegramId,

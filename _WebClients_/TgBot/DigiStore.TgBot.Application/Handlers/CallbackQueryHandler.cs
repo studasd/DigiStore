@@ -1,15 +1,13 @@
-﻿using DigiStore.TgBot.Application.Interfaces;
+﻿using DigiStore.TgBot.Application.Constants;
+using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Domain;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace DigiStore.TgBot.Infrastructure.Handlers;
+namespace DigiStore.TgBot.Application.Handlers;
 
 /// <summary>
 /// Handles inline button callbacks - language selection, menu navigation
@@ -103,6 +101,7 @@ public class CallbackQueryHandler
 			catch { }
 		}
 	}
+
 
 	/// <summary>
 	/// Handle language selection from /start command
@@ -268,6 +267,7 @@ public class CallbackQueryHandler
 		// Update session
 		session.LanguageCode = languageCode;
 		session.SetState(BotState.MainMenu);
+
 		await _sessionService.UpdateSessionAsync(session, ct);
 
 		var confirmText = _localizationService.GetMessage("language_changed", languageCode);

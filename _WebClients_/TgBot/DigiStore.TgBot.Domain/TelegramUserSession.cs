@@ -12,7 +12,7 @@ public class TelegramUserSession
 {
 	public long TelegramId { get; set; }
 	public Guid? UserId { get; set; }
-	public string CurrentState { get; set; } = BotState.Start;
+	public string CurrentState { get; set; } //= BotState.Start;
 	public string? LanguageCode { get; set; } = "en";
 	public Dictionary<string, object> Data { get; set; } = new();
 	public DateTime LastActivity { get; set; } = DateTime.UtcNow;

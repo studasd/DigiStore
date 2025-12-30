@@ -1,7 +1,7 @@
-﻿using DigiStore.TgBot.Application.Interfaces;
+﻿using DigiStore.TgBot.Application.Handlers;
+using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Services;
 using DigiStore.TgBot.Infrastructure;
-using DigiStore.TgBot.Infrastructure.Handlers;
 using Telegram.Bot;
 
 namespace DigiStore.TgBot.Web;

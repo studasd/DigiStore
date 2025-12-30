@@ -1,4 +1,4 @@
-﻿namespace DigiStore.TgBot.Domain;
+﻿namespace DigiStore.TgBot.Application.Constants;
 
 /// <summary>
 /// Bot callback data prefixes (for inline buttons)

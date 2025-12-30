@@ -1,5 +1,5 @@
-﻿using DigiStore.TgBot.Application.Interfaces;
-using DigiStore.TgBot.Domain;
+﻿using DigiStore.TgBot.Application.Constants;
+using DigiStore.TgBot.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace DigiStore.TgBot.Infrastructure.Handlers;
+namespace DigiStore.TgBot.Application.Handlers;
 
 
 /// <summary>
@@ -46,12 +46,12 @@ public class StartHandler
 
 			// Get or create user
 			var userResult = await _userService.GetOrCreateUserAsync(
-				telegramId,
-				message.From.Username,
-				message.From.FirstName,
-				message.From.LastName,
-				message.From.LanguageCode ?? "en",
-				ct);
+								telegramId,
+								message.From.Username,
+								message.From.FirstName,
+								message.From.LastName,
+								message.From.LanguageCode ?? "en",
+								ct);
 
 			if (!userResult.IsSuccess)
 			{

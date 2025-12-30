@@ -1,12 +1,5 @@
-using DigiStore.TgBot.Domain;
-using DigiStore.TgBot.Infrastructure.Handlers;
-using DigiStore.TgBot.Web;
 using Microsoft.AspNetCore.Http.HttpResults;
 using System.Text.Json.Serialization;
-using Telegram.Bot;
-using Telegram.Bot.Polling;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 

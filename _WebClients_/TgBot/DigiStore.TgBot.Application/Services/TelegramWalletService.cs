@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.SharedKernel;
+using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.DTOs;
 using DigiStore.TgBot.Application.Interfaces;
 using Microsoft.Extensions.Configuration;

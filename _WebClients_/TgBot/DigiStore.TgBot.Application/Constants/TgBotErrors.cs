@@ -1,6 +1,6 @@
 ﻿using DigiStore.SharedKernel;
 
-namespace DigiStore.TgBot.Application;
+namespace DigiStore.TgBot.Application.Constants;
 
 
 public static class TgBotErrors

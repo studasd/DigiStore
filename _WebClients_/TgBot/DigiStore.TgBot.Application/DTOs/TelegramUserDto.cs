@@ -16,19 +16,3 @@ public class TelegramUserDto
 	public bool IsActive { get; set; }
 	public List<string> Roles { get; set; } = new();
 }
-
-public class TelegramBalanceDto
-{
-	public decimal Balance { get; set; }
-	public string Currency { get; set; } = "RUB";
-	public decimal TotalDeposited { get; set; }
-	public decimal TotalWithdrawn { get; set; }
-}
-
-public class TelegramTransactionDto
-{
-	public decimal Amount { get; set; }
-	public string Type { get; set; } = string.Empty;
-	public string Description { get; set; } = string.Empty;
-	public DateTime CreatedAt { get; set; }
-}
