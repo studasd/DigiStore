@@ -1,5 +1,4 @@
 using DigiStore.TgBot.Application.Constants;
-using DigiStore.TgBot.Application.Handlers.Attributes;
 using DigiStore.TgBot.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -11,28 +10,40 @@ namespace DigiStore.TgBot.Application.Handlers.Commands;
 /// <summary>
 /// Обработчик команды /start
 /// </summary>
-[Command(BotCommands.Start)]
 public class StartCommandHandler : ICommandHandler
 {
+	public const string Command = BotCommands.Start;
+	
+	private readonly ITelegramBotClient _botClient;
 	private readonly ITelegramUserService _userService;
 	private readonly ITelegramSessionService _sessionService;
 	private readonly ILocalizationService _localizationService;
 	private readonly ILogger<StartCommandHandler> _logger;
 
+	string ICommandHandler.Command => Command;
+
 	public StartCommandHandler(
+		ITelegramBotClient botClient,
 		ITelegramUserService userService,
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<StartCommandHandler> logger)
 	{
+		_botClient = botClient;
 		_userService = userService;
 		_sessionService = sessionService;
 		_localizationService = localizationService;
 		_logger = logger;
 	}
 
-	public async Task HandleAsync(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken = default)
+	public async Task HandleAsync(Message message, CancellationToken cancellationToken = default)
 	{
+		// Handle /start command
+		// 1. Check if user exists
+		// 2. Create if not
+		// 3. Ask for language
+		// 4. Show profile after language selection
+		
 		try
 		{
 			var telegramId = message.From!.Id;
@@ -55,7 +66,7 @@ public class StartCommandHandler : ICommandHandler
 
 			if (!userResult.IsSuccess)
 			{
-				await SendErrorMessage(botClient, message.Chat.Id, "Failed to initialize user account", cancellationToken);
+				await SendErrorMessage(message.Chat.Id, "Failed to initialize user account", cancellationToken);
 				return;
 			}
 
@@ -67,7 +78,7 @@ public class StartCommandHandler : ICommandHandler
 			session.LanguageCode = user.LanguageCode;
 
 			// Send greeting and language selection
-			await SendLanguageSelection(botClient, message.Chat.Id, session.LanguageCode, isStartCommand: true, cancellationToken);
+			await SendLanguageSelection(message.Chat.Id, session.LanguageCode, isStartCommand: true, cancellationToken);
 
 			// Update session - waiting for language selection
 			session.SetState(BotState.AwaitingLanguageSelection);
@@ -79,12 +90,11 @@ public class StartCommandHandler : ICommandHandler
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in StartCommandHandler");
-			await SendErrorMessage(botClient, message.Chat.Id, "An error occurred", cancellationToken);
+			await SendErrorMessage(message.Chat.Id, "An error occurred", cancellationToken);
 		}
 	}
 
 	private async Task SendLanguageSelection(
-		ITelegramBotClient botClient,
 		long chatId,
 		string currentLanguage,
 		bool isStartCommand,
@@ -118,16 +128,14 @@ public class StartCommandHandler : ICommandHandler
 			text = _localizationService.GetMessage("select_language", currentLanguage);
 		}
 
-		await botClient.SendMessage(chatId, text, replyMarkup: keyboard, cancellationToken: ct);
+		await _botClient.SendMessage(chatId, text, replyMarkup: keyboard, cancellationToken: ct);
 	}
 
 	private async Task SendErrorMessage(
-		ITelegramBotClient botClient,
 		long chatId,
 		string error,
 		CancellationToken ct)
 	{
-		await botClient.SendMessage(chatId, $"❌ {error}", cancellationToken: ct);
+		await _botClient.SendMessage(chatId, $"❌ {error}", cancellationToken: ct);
 	}
 }
-

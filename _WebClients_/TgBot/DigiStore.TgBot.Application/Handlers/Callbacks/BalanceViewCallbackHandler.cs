@@ -1,5 +1,4 @@
 using DigiStore.TgBot.Application.Constants;
-using DigiStore.TgBot.Application.Handlers.Attributes;
 using DigiStore.TgBot.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -12,28 +11,38 @@ namespace DigiStore.TgBot.Application.Handlers.Callbacks;
 /// <summary>
 /// Обработчик колбэка просмотра баланса
 /// </summary>
-[CallbackQuery(CallbackData.BalanceView)]
 public class BalanceViewCallbackHandler : ICallbackQueryHandler
 {
+	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.BalanceView;
+	public const bool IsPrefix = false;
+	
+	private readonly ITelegramBotClient _botClient;
 	private readonly ITelegramWalletService _walletService;
 	private readonly ITelegramSessionService _sessionService;
 	private readonly ILocalizationService _localizationService;
 	private readonly ILogger<BalanceViewCallbackHandler> _logger;
 
+	string ICallbackQueryHandler.CallbackData => CallbackData;
+	bool ICallbackQueryHandler.IsPrefix => IsPrefix;
+
 	public BalanceViewCallbackHandler(
+		ITelegramBotClient botClient,
 		ITelegramWalletService walletService,
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<BalanceViewCallbackHandler> logger)
 	{
+		_botClient = botClient;
 		_walletService = walletService;
 		_sessionService = sessionService;
 		_localizationService = localizationService;
 		_logger = logger;
 	}
 
-	public async Task HandleAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
+	public async Task HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
 	{
+		// Handle balance view callback
+
 		if (callbackQuery.Message == null)
 			return;
 
@@ -52,7 +61,7 @@ public class BalanceViewCallbackHandler : ICallbackQueryHandler
 
 			if (!walletResult.IsSuccess)
 			{
-				await botClient.AnswerCallbackQuery(
+				await _botClient.AnswerCallbackQuery(
 					callbackQuery.Id,
 					loc.GetMessage("error_occurred", languageCode),
 					showAlert: true,
@@ -75,11 +84,11 @@ public class BalanceViewCallbackHandler : ICallbackQueryHandler
 				{
 					InlineKeyboardButton.WithCallbackData(
 						loc.GetMessage("back", languageCode),
-						CallbackData.MenuMain)
+						DigiStore.TgBot.Application.Constants.CallbackData.MenuMain)
 				},
 			});
 
-			await botClient.EditMessageText(
+			await _botClient.EditMessageText(
 				callbackQuery.Message.Chat.Id,
 				callbackQuery.Message.MessageId,
 				text,
@@ -87,14 +96,14 @@ public class BalanceViewCallbackHandler : ICallbackQueryHandler
 				replyMarkup: keyboard,
 				cancellationToken: cancellationToken);
 
-			await botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
+			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in BalanceViewCallbackHandler");
 			try
 			{
-				await botClient.AnswerCallbackQuery(
+				await _botClient.AnswerCallbackQuery(
 					callbackQuery.Id,
 					_localizationService.GetMessage("error_occurred", "en"),
 					showAlert: true,
@@ -104,4 +113,3 @@ public class BalanceViewCallbackHandler : ICallbackQueryHandler
 		}
 	}
 }
-

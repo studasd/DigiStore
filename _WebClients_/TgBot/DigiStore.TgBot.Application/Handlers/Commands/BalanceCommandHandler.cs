@@ -1,5 +1,4 @@
 using DigiStore.TgBot.Application.Constants;
-using DigiStore.TgBot.Application.Handlers.Attributes;
 using DigiStore.TgBot.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -12,28 +11,36 @@ namespace DigiStore.TgBot.Application.Handlers.Commands;
 /// <summary>
 /// Обработчик команды /balance
 /// </summary>
-[Command(BotCommands.Balance)]
 public class BalanceCommandHandler : ICommandHandler
 {
+	public const string Command = BotCommands.Balance;
+	
+	private readonly ITelegramBotClient _botClient;
 	private readonly ITelegramProfileService _profileService;
 	private readonly ITelegramSessionService _sessionService;
 	private readonly ILocalizationService _localizationService;
 	private readonly ILogger<BalanceCommandHandler> _logger;
 
+	string ICommandHandler.Command => Command;
+
 	public BalanceCommandHandler(
+		ITelegramBotClient botClient,
 		ITelegramProfileService profileService,
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<BalanceCommandHandler> logger)
 	{
+		_botClient = botClient;
 		_profileService = profileService;
 		_sessionService = sessionService;
 		_localizationService = localizationService;
 		_logger = logger;
 	}
 
-	public async Task HandleAsync(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken = default)
+	public async Task HandleAsync(Message message, CancellationToken cancellationToken = default)
 	{
+		// Handle /balance command - show wallet info
+
 		try
 		{
 			var telegramId = message.From!.Id;
@@ -43,7 +50,7 @@ public class BalanceCommandHandler : ICommandHandler
 			var session = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
 			if (session?.UserId == null)
 			{
-				await SendErrorMessage(botClient, chatId, "Session expired", cancellationToken);
+				await SendErrorMessage(chatId, "Session expired", cancellationToken);
 				return;
 			}
 
@@ -53,7 +60,7 @@ public class BalanceCommandHandler : ICommandHandler
 			var profileResult = await _profileService.GetFullProfileAsync(session.UserId.Value, telegramId, cancellationToken);
 			if (!profileResult.IsSuccess)
 			{
-				await SendErrorMessage(botClient, chatId, loc.GetMessage("error_occurred", languageCode), cancellationToken);
+				await SendErrorMessage(chatId, loc.GetMessage("error_occurred", languageCode), cancellationToken);
 				return;
 			}
 
@@ -76,7 +83,7 @@ public class BalanceCommandHandler : ICommandHandler
 				},
 			});
 
-			await botClient.SendMessage(
+			await _botClient.SendMessage(
 				chatId,
 				text,
 				parseMode: ParseMode.Html,
@@ -86,17 +93,15 @@ public class BalanceCommandHandler : ICommandHandler
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in BalanceCommandHandler");
-			await SendErrorMessage(botClient, message.Chat.Id, "An error occurred", cancellationToken);
+			await SendErrorMessage(message.Chat.Id, "An error occurred", cancellationToken);
 		}
 	}
 
 	private async Task SendErrorMessage(
-		ITelegramBotClient botClient,
 		long chatId,
 		string error,
 		CancellationToken ct)
 	{
-		await botClient.SendMessage(chatId, $"❌ {error}", cancellationToken: ct);
+		await _botClient.SendMessage(chatId, $"❌ {error}", cancellationToken: ct);
 	}
 }
-

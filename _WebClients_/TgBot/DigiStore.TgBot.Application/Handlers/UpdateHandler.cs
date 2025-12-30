@@ -1,10 +1,7 @@
-using DigiStore.TgBot.Application.Constants;
-using DigiStore.TgBot.Application.Handlers.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Reflection;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace DigiStore.TgBot.Application.Handlers;
@@ -28,7 +25,7 @@ public class UpdateHandler
 	}
 
 	/// <summary>
-	/// Инициализирует словари хэндлеров на основе атрибутов
+	/// Инициализирует словари хэндлеров на основе констант в хэндлерах
 	/// </summary>
 	private void InitializeHandlers()
 	{
@@ -40,29 +37,53 @@ public class UpdateHandler
 		foreach (var handlerType in handlerTypes)
 		{
 			// Регистрация обработчиков команд
-			var commandAttr = handlerType.GetCustomAttribute<CommandAttribute>();
-			if (commandAttr != null && typeof(ICommandHandler).IsAssignableFrom(handlerType))
+			if (typeof(ICommandHandler).IsAssignableFrom(handlerType))
 			{
-				_commandHandlers[commandAttr.Command] = handlerType;
-				_logger.LogInformation("Registered command handler: {Command} -> {HandlerType}", 
-					commandAttr.Command, handlerType.Name);
+				// Получаем константу Command из типа
+				var commandField = handlerType.GetField("Command", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+				if (commandField != null && commandField.IsLiteral && !commandField.IsInitOnly)
+				{
+					var command = commandField.GetValue(null)?.ToString();
+					if (!string.IsNullOrEmpty(command))
+					{
+						_commandHandlers[command.ToLowerInvariant()] = handlerType;
+						_logger.LogInformation("Registered command handler: {Command} -> {HandlerType}",
+							command, handlerType.Name);
+					}
+				}
 			}
 
 			// Регистрация обработчиков колбэков
-			var callbackAttr = handlerType.GetCustomAttribute<CallbackQueryAttribute>();
-			if (callbackAttr != null && typeof(ICallbackQueryHandler).IsAssignableFrom(handlerType))
+			if (typeof(ICallbackQueryHandler).IsAssignableFrom(handlerType))
 			{
-				if (callbackAttr.IsPrefix)
+				// Получаем константы CallbackData и IsPrefix из типа
+				var callbackDataField = handlerType.GetField("CallbackData", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+				var isPrefixField = handlerType.GetField("IsPrefix", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+
+				if (callbackDataField != null && callbackDataField.IsLiteral && !callbackDataField.IsInitOnly)
 				{
-					_callbackPrefixHandlers[callbackAttr.CallbackData] = handlerType;
-					_logger.LogInformation("Registered callback prefix handler: {Prefix} -> {HandlerType}", 
-						callbackAttr.CallbackData, handlerType.Name);
-				}
-				else
-				{
-					_callbackHandlers[callbackAttr.CallbackData] = handlerType;
-					_logger.LogInformation("Registered callback handler: {CallbackData} -> {HandlerType}", 
-						callbackAttr.CallbackData, handlerType.Name);
+					var callbackData = callbackDataField.GetValue(null)?.ToString();
+					if (!string.IsNullOrEmpty(callbackData))
+					{
+						var isPrefix = false;
+						if (isPrefixField != null && isPrefixField.IsLiteral && !isPrefixField.IsInitOnly)
+						{
+							isPrefix = (bool)(isPrefixField.GetValue(null) ?? false);
+						}
+
+						if (isPrefix)
+						{
+							_callbackPrefixHandlers[callbackData] = handlerType;
+							_logger.LogInformation("Registered callback prefix handler: {Prefix} -> {HandlerType}",
+								callbackData, handlerType.Name);
+						}
+						else
+						{
+							_callbackHandlers[callbackData] = handlerType;
+							_logger.LogInformation("Registered callback handler: {CallbackData} -> {HandlerType}",
+								callbackData, handlerType.Name);
+						}
+					}
 				}
 			}
 		}
@@ -71,7 +92,7 @@ public class UpdateHandler
 	/// <summary>
 	/// Обрабатывает Update
 	/// </summary>
-	public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken = default)
+	public async Task HandleUpdateAsync(Update update, CancellationToken cancellationToken = default)
 	{
 		// Создаем scope для каждого update, чтобы хэндлеры были scoped
 		using var scope = _serviceScopeFactory.CreateScope();
@@ -83,14 +104,14 @@ public class UpdateHandler
 			if (update.Message?.Text != null && update.Message.Text.StartsWith("/"))
 			{
 				var command = update.Message.Text.Split(' ')[0].ToLowerInvariant();
-				await HandleCommandAsync(botClient, update.Message, command, serviceProvider, cancellationToken);
+				await HandleCommandAsync(update.Message, command, serviceProvider, cancellationToken);
 				return;
 			}
 
 			// Обработка колбэков
 			if (update.CallbackQuery != null)
 			{
-				await HandleCallbackQueryAsync(botClient, update.CallbackQuery, serviceProvider, cancellationToken);
+				await HandleCallbackQueryAsync(update.CallbackQuery, serviceProvider, cancellationToken);
 				return;
 			}
 
@@ -106,7 +127,6 @@ public class UpdateHandler
 	/// Обрабатывает команду
 	/// </summary>
 	private async Task HandleCommandAsync(
-		ITelegramBotClient botClient,
 		Message message,
 		string command,
 		IServiceProvider serviceProvider,
@@ -123,16 +143,16 @@ public class UpdateHandler
 			var handler = serviceProvider.GetService(handlerType) as ICommandHandler;
 			if (handler == null)
 			{
-				_logger.LogError("Failed to create handler instance for command: {Command}, Type: {Type}", 
+				_logger.LogError("Failed to create handler instance for command: {Command}, Type: {Type}",
 					command, handlerType.Name);
 				return;
 			}
 
-			await handler.HandleAsync(botClient, message, cancellationToken);
+			await handler.HandleAsync(message, cancellationToken);
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Error executing command handler: {Command}, Type: {Type}", 
+			_logger.LogError(ex, "Error executing command handler: {Command}, Type: {Type}",
 				command, handlerType.Name);
 		}
 	}
@@ -141,7 +161,6 @@ public class UpdateHandler
 	/// Обрабатывает колбэк
 	/// </summary>
 	private async Task HandleCallbackQueryAsync(
-		ITelegramBotClient botClient,
 		CallbackQuery callbackQuery,
 		IServiceProvider serviceProvider,
 		CancellationToken cancellationToken)
@@ -154,7 +173,7 @@ public class UpdateHandler
 		// Сначала проверяем точное совпадение
 		if (_callbackHandlers.TryGetValue(callbackData, out var exactHandlerType))
 		{
-			await ExecuteCallbackHandlerAsync(botClient, callbackQuery, exactHandlerType, serviceProvider, cancellationToken);
+			await ExecuteCallbackHandlerAsync(callbackQuery, exactHandlerType, serviceProvider, cancellationToken);
 			return;
 		}
 
@@ -163,7 +182,7 @@ public class UpdateHandler
 		{
 			if (callbackData.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
 			{
-				await ExecuteCallbackHandlerAsync(botClient, callbackQuery, handlerType, serviceProvider, cancellationToken);
+				await ExecuteCallbackHandlerAsync(callbackQuery, handlerType, serviceProvider, cancellationToken);
 				return;
 			}
 		}
@@ -175,7 +194,6 @@ public class UpdateHandler
 	/// Выполняет обработчик колбэка
 	/// </summary>
 	private async Task ExecuteCallbackHandlerAsync(
-		ITelegramBotClient botClient,
 		CallbackQuery callbackQuery,
 		Type handlerType,
 		IServiceProvider serviceProvider,
@@ -190,7 +208,7 @@ public class UpdateHandler
 				return;
 			}
 
-			await handler.HandleAsync(botClient, callbackQuery, cancellationToken);
+			await handler.HandleAsync(callbackQuery, cancellationToken);
 		}
 		catch (Exception ex)
 		{
@@ -198,4 +216,3 @@ public class UpdateHandler
 		}
 	}
 }
-

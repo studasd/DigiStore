@@ -1,5 +1,4 @@
 using DigiStore.TgBot.Application.Constants;
-using DigiStore.TgBot.Application.Handlers.Attributes;
 using DigiStore.TgBot.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -11,25 +10,35 @@ namespace DigiStore.TgBot.Application.Handlers.Callbacks;
 /// <summary>
 /// Обработчик колбэка главного меню
 /// </summary>
-[CallbackQuery(CallbackData.MenuMain)]
 public class MainMenuCallbackHandler : ICallbackQueryHandler
 {
+	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.MenuMain;
+	public const bool IsPrefix = false;
+	
+	private readonly ITelegramBotClient _botClient;
 	private readonly ITelegramSessionService _sessionService;
 	private readonly ILocalizationService _localizationService;
 	private readonly ILogger<MainMenuCallbackHandler> _logger;
 
+	string ICallbackQueryHandler.CallbackData => CallbackData;
+	bool ICallbackQueryHandler.IsPrefix => IsPrefix;
+
 	public MainMenuCallbackHandler(
+		ITelegramBotClient botClient,
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<MainMenuCallbackHandler> logger)
 	{
+		_botClient = botClient;
 		_sessionService = sessionService;
 		_localizationService = localizationService;
 		_logger = logger;
 	}
 
-	public async Task HandleAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
+	public async Task HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
 	{
+		// Handle main menu
+
 		if (callbackQuery.Message == null)
 			return;
 
@@ -46,21 +55,21 @@ public class MainMenuCallbackHandler : ICallbackQueryHandler
 
 			var keyboard = GetMainMenuKeyboard(languageCode);
 
-			await botClient.EditMessageText(
+			await _botClient.EditMessageText(
 				callbackQuery.Message.Chat.Id,
 				callbackQuery.Message.MessageId,
 				text,
 				replyMarkup: keyboard,
 				cancellationToken: cancellationToken);
 
-			await botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
+			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in MainMenuCallbackHandler");
 			try
 			{
-				await botClient.AnswerCallbackQuery(
+				await _botClient.AnswerCallbackQuery(
 					callbackQuery.Id,
 					_localizationService.GetMessage("error_occurred", "en"),
 					showAlert: true,
@@ -80,21 +89,20 @@ public class MainMenuCallbackHandler : ICallbackQueryHandler
 			{
 				InlineKeyboardButton.WithCallbackData(
 					loc.GetMessage("profile", languageCode),
-					CallbackData.ProfileView)
+					DigiStore.TgBot.Application.Constants.CallbackData.ProfileView)
 			},
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
 					loc.GetMessage("balance", languageCode),
-					CallbackData.BalanceView)
+					DigiStore.TgBot.Application.Constants.CallbackData.BalanceView)
 			},
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
 					loc.GetMessage("catalog", languageCode),
-					CallbackData.CatalogView)
+					DigiStore.TgBot.Application.Constants.CallbackData.CatalogView)
 			},
 		});
 	}
 }
-

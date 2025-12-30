@@ -1,4 +1,3 @@
-using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace DigiStore.TgBot.Application.Handlers;
@@ -9,8 +8,12 @@ namespace DigiStore.TgBot.Application.Handlers;
 public interface ICommandHandler
 {
 	/// <summary>
+	/// Команда, которую обрабатывает этот хэндлер
+	/// </summary>
+	string Command { get; }
+
+	/// <summary>
 	/// Обрабатывает команду
 	/// </summary>
-	Task HandleAsync(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken = default);
+	Task HandleAsync(Message message, CancellationToken cancellationToken = default);
 }
-

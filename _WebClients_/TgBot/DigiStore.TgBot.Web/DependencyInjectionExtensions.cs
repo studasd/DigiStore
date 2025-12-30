@@ -1,5 +1,4 @@
 ﻿using DigiStore.TgBot.Application.Handlers;
-using DigiStore.TgBot.Application.Handlers.Attributes;
 using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Services;
 using DigiStore.TgBot.Infrastructure;
@@ -60,8 +59,7 @@ public static class DependencyInjectionExtensions
 		
 		var handlerTypes = applicationAssembly.GetTypes()
 			.Where(t => !t.IsAbstract && !t.IsInterface)
-			.Where(t => t.GetCustomAttribute<CommandAttribute>() != null || 
-						t.GetCustomAttribute<CallbackQueryAttribute>() != null);
+			.Where(t => typeof(ICommandHandler).IsAssignableFrom(t) || typeof(ICallbackQueryHandler).IsAssignableFrom(t));
 
 		foreach (var handlerType in handlerTypes)
 		{

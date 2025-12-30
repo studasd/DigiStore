@@ -1,39 +1,47 @@
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Domain;
-using DigiStore.TgBot.Application.Handlers.Attributes;
 using DigiStore.TgBot.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DigiStore.TgBot.Application.Handlers.Commands;
 
 /// <summary>
 /// Обработчик команды /profile
 /// </summary>
-[Command(BotCommands.Profile)]
 public class ProfileCommandHandler : ICommandHandler
 {
+	public const string Command = BotCommands.Profile;
+	
+	private readonly ITelegramBotClient _botClient;
 	private readonly ITelegramProfileService _profileService;
 	private readonly ITelegramSessionService _sessionService;
 	private readonly ILocalizationService _localizationService;
 	private readonly ILogger<ProfileCommandHandler> _logger;
 
+	string ICommandHandler.Command => Command;
+
 	public ProfileCommandHandler(
+		ITelegramBotClient botClient,
 		ITelegramProfileService profileService,
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<ProfileCommandHandler> logger)
 	{
+		_botClient = botClient;
 		_profileService = profileService;
 		_sessionService = sessionService;
 		_localizationService = localizationService;
 		_logger = logger;
 	}
 
-	public async Task HandleAsync(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken = default)
+	public async Task HandleAsync(Message message, CancellationToken cancellationToken = default)
 	{
+		// Handle /profile command - show user profile with balance
+
 		try
 		{
 			var telegramId = message.From!.Id;
@@ -45,7 +53,7 @@ public class ProfileCommandHandler : ICommandHandler
 			var session = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
 			if (session?.UserId == null)
 			{
-				await SendErrorMessage(botClient, chatId, _localizationService.GetMessage("session_expired", "en"), cancellationToken);
+				await SendErrorMessage(chatId, _localizationService.GetMessage("session_expired", "en"), cancellationToken);
 				return;
 			}
 
@@ -56,7 +64,7 @@ public class ProfileCommandHandler : ICommandHandler
 			var profileResult = await _profileService.GetFullProfileAsync(userId, telegramId, cancellationToken);
 			if (!profileResult.IsSuccess)
 			{
-				await SendErrorMessage(botClient, chatId, _localizationService.GetMessage("error_occurred", languageCode), cancellationToken);
+				await SendErrorMessage(chatId, _localizationService.GetMessage("error_occurred", languageCode), cancellationToken);
 				return;
 			}
 
@@ -87,7 +95,7 @@ public class ProfileCommandHandler : ICommandHandler
 			var profileText = _profileService.FormatProfileText(profile, languageCode);
 			var keyboard = GetProfileKeyboard(languageCode);
 
-			await botClient.SendMessage(
+			await _botClient.SendMessage(
 				chatId,
 				profileText,
 				parseMode: ParseMode.Html,
@@ -99,24 +107,24 @@ public class ProfileCommandHandler : ICommandHandler
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in ProfileCommandHandler");
-			await SendErrorMessage(botClient, message.Chat.Id, "An error occurred", cancellationToken);
+			await SendErrorMessage(message.Chat.Id, "An error occurred", cancellationToken);
 		}
 	}
 
-	private Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup GetProfileKeyboard(string languageCode)
+	private InlineKeyboardMarkup GetProfileKeyboard(string languageCode)
 	{
 		var loc = _localizationService;
-		return new Telegram.Bot.Types.ReplyMarkups.InlineKeyboardMarkup(new[]
+		return new InlineKeyboardMarkup(new[]
 		{
 			new[]
 			{
-				Telegram.Bot.Types.ReplyMarkups.InlineKeyboardButton.WithCallbackData(
+				InlineKeyboardButton.WithCallbackData(
 					loc.GetMessage("change_language", languageCode),
 					CallbackData.LanguageChangePrefix + "select")
 			},
 			new[]
 			{
-				Telegram.Bot.Types.ReplyMarkups.InlineKeyboardButton.WithCallbackData(
+				InlineKeyboardButton.WithCallbackData(
 					loc.GetMessage("main_menu", languageCode),
 					CallbackData.MenuMain)
 			},
@@ -124,12 +132,10 @@ public class ProfileCommandHandler : ICommandHandler
 	}
 
 	private async Task SendErrorMessage(
-		ITelegramBotClient botClient,
 		long chatId,
 		string error,
 		CancellationToken ct)
 	{
-		await botClient.SendMessage(chatId, $"❌ {error}", cancellationToken: ct);
+		await _botClient.SendMessage(chatId, $"❌ {error}", cancellationToken: ct);
 	}
 }
-

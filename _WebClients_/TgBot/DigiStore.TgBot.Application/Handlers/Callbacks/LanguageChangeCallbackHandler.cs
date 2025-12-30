@@ -1,5 +1,4 @@
 using DigiStore.TgBot.Application.Constants;
-using DigiStore.TgBot.Application.Handlers.Attributes;
 using DigiStore.TgBot.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -11,28 +10,38 @@ namespace DigiStore.TgBot.Application.Handlers.Callbacks;
 /// <summary>
 /// Обработчик колбэка смены языка из команды /language
 /// </summary>
-[CallbackQuery(CallbackData.LanguageChangePrefix, IsPrefix = true)]
 public class LanguageChangeCallbackHandler : ICallbackQueryHandler
 {
+	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.LanguageChangePrefix;
+	public const bool IsPrefix = true;
+	
+	private readonly ITelegramBotClient _botClient;
 	private readonly ITelegramProfileService _profileService;
 	private readonly ITelegramSessionService _sessionService;
 	private readonly ILocalizationService _localizationService;
 	private readonly ILogger<LanguageChangeCallbackHandler> _logger;
 
+	string ICallbackQueryHandler.CallbackData => CallbackData;
+	bool ICallbackQueryHandler.IsPrefix => IsPrefix;
+
 	public LanguageChangeCallbackHandler(
+		ITelegramBotClient botClient,
 		ITelegramProfileService profileService,
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<LanguageChangeCallbackHandler> logger)
 	{
+		_botClient = botClient;
 		_profileService = profileService;
 		_sessionService = sessionService;
 		_localizationService = localizationService;
 		_logger = logger;
 	}
 
-	public async Task HandleAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
+	public async Task HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
 	{
+		// Handle language change from /language command
+
 		if (callbackQuery.Data == null || callbackQuery.Message == null)
 			return;
 
@@ -43,7 +52,7 @@ public class LanguageChangeCallbackHandler : ICallbackQueryHandler
 				?? throw new InvalidOperationException("Session not found");
 
 			var data = callbackQuery.Data;
-			var languageCode = data.Replace(CallbackData.LanguageChangePrefix, "");
+			var languageCode = data.Replace(CallbackData, "");
 			var currentLanguage = session.LanguageCode ?? "en";
 
 			// Handle "select" case - shows all languages
@@ -58,21 +67,21 @@ public class LanguageChangeCallbackHandler : ICallbackQueryHandler
 					{
 						InlineKeyboardButton.WithCallbackData(
 							lang.Value,
-							$"{CallbackData.LanguageChangePrefix}{lang.Key}")
+							$"{CallbackData}{lang.Key}")
 					});
 				}
 
 				var keyboard = new InlineKeyboardMarkup(buttons);
 				var text = _localizationService.GetMessage("select_language", currentLanguage);
 
-				await botClient.EditMessageText(
+				await _botClient.EditMessageText(
 					callbackQuery.Message.Chat.Id,
 					callbackQuery.Message.MessageId,
 					text,
 					replyMarkup: keyboard,
 					cancellationToken: cancellationToken);
 
-				await botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
+				await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
 				return;
 			}
 
@@ -92,7 +101,7 @@ public class LanguageChangeCallbackHandler : ICallbackQueryHandler
 
 			if (!updateResult.IsSuccess)
 			{
-				await botClient.AnswerCallbackQuery(
+				await _botClient.AnswerCallbackQuery(
 					callbackQuery.Id,
 					_localizationService.GetMessage("error_occurred", currentLanguage),
 					showAlert: true,
@@ -106,16 +115,16 @@ public class LanguageChangeCallbackHandler : ICallbackQueryHandler
 			await _sessionService.UpdateSessionAsync(session, cancellationToken);
 
 			var confirmText = _localizationService.GetMessage("language_changed", languageCode);
-			var keyboard = GetMainMenuKeyboard(languageCode);
+			var keyboard2 = GetMainMenuKeyboard(languageCode);
 
-			await botClient.EditMessageText(
+			await _botClient.EditMessageText(
 				callbackQuery.Message.Chat.Id,
 				callbackQuery.Message.MessageId,
 				confirmText,
-				replyMarkup: keyboard,
+				replyMarkup: keyboard2,
 				cancellationToken: cancellationToken);
 
-			await botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
+			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
 
 			_logger.LogInformation(
 				"Language updated successfully for user: {UserId}",
@@ -126,7 +135,7 @@ public class LanguageChangeCallbackHandler : ICallbackQueryHandler
 			_logger.LogError(ex, "Error in LanguageChangeCallbackHandler");
 			try
 			{
-				await botClient.AnswerCallbackQuery(
+				await _botClient.AnswerCallbackQuery(
 					callbackQuery.Id,
 					_localizationService.GetMessage("error_occurred", "en"),
 					showAlert: true,
@@ -146,21 +155,20 @@ public class LanguageChangeCallbackHandler : ICallbackQueryHandler
 			{
 				InlineKeyboardButton.WithCallbackData(
 					loc.GetMessage("profile", languageCode),
-					CallbackData.ProfileView)
+					DigiStore.TgBot.Application.Constants.CallbackData.ProfileView)
 			},
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
 					loc.GetMessage("balance", languageCode),
-					CallbackData.BalanceView)
+					DigiStore.TgBot.Application.Constants.CallbackData.BalanceView)
 			},
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
 					loc.GetMessage("catalog", languageCode),
-					CallbackData.CatalogView)
+					DigiStore.TgBot.Application.Constants.CallbackData.CatalogView)
 			},
 		});
 	}
 }
-

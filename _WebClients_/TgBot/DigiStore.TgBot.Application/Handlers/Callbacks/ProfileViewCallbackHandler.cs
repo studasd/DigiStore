@@ -1,5 +1,4 @@
 using DigiStore.TgBot.Application.Constants;
-using DigiStore.TgBot.Application.Handlers.Attributes;
 using DigiStore.TgBot.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -11,28 +10,38 @@ namespace DigiStore.TgBot.Application.Handlers.Callbacks;
 /// <summary>
 /// Обработчик колбэка просмотра профиля
 /// </summary>
-[CallbackQuery(CallbackData.ProfileView)]
 public class ProfileViewCallbackHandler : ICallbackQueryHandler
 {
+	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.ProfileView;
+	public const bool IsPrefix = false;
+	
+	private readonly ITelegramBotClient _botClient;
 	private readonly ITelegramProfileService _profileService;
 	private readonly ITelegramSessionService _sessionService;
 	private readonly ILocalizationService _localizationService;
 	private readonly ILogger<ProfileViewCallbackHandler> _logger;
 
+	string ICallbackQueryHandler.CallbackData => CallbackData;
+	bool ICallbackQueryHandler.IsPrefix => IsPrefix;
+
 	public ProfileViewCallbackHandler(
+		ITelegramBotClient botClient,
 		ITelegramProfileService profileService,
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<ProfileViewCallbackHandler> logger)
 	{
+		_botClient = botClient;
 		_profileService = profileService;
 		_sessionService = sessionService;
 		_localizationService = localizationService;
 		_logger = logger;
 	}
 
-	public async Task HandleAsync(ITelegramBotClient botClient, CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
+	public async Task HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
 	{
+		// Handle profile view callback
+
 		if (callbackQuery.Message == null)
 			return;
 
@@ -53,7 +62,7 @@ public class ProfileViewCallbackHandler : ICallbackQueryHandler
 
 			if (!profileResult.IsSuccess)
 			{
-				await botClient.AnswerCallbackQuery(
+				await _botClient.AnswerCallbackQuery(
 					callbackQuery.Id,
 					_localizationService.GetMessage("error_occurred", languageCode),
 					showAlert: true,
@@ -65,7 +74,7 @@ public class ProfileViewCallbackHandler : ICallbackQueryHandler
 			var profileText = _profileService.FormatProfileText(profile, languageCode);
 			var keyboard = GetProfileKeyboard(languageCode);
 
-			await botClient.EditMessageText(
+			await _botClient.EditMessageText(
 				callbackQuery.Message.Chat.Id,
 				callbackQuery.Message.MessageId,
 				profileText,
@@ -73,14 +82,14 @@ public class ProfileViewCallbackHandler : ICallbackQueryHandler
 				replyMarkup: keyboard,
 				cancellationToken: cancellationToken);
 
-			await botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
+			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in ProfileViewCallbackHandler");
 			try
 			{
-				await botClient.AnswerCallbackQuery(
+				await _botClient.AnswerCallbackQuery(
 					callbackQuery.Id,
 					_localizationService.GetMessage("error_occurred", "en"),
 					showAlert: true,
@@ -100,15 +109,14 @@ public class ProfileViewCallbackHandler : ICallbackQueryHandler
 			{
 				Telegram.Bot.Types.ReplyMarkups.InlineKeyboardButton.WithCallbackData(
 					loc.GetMessage("change_language", languageCode),
-					CallbackData.LanguageChangePrefix + "select")
+					DigiStore.TgBot.Application.Constants.CallbackData.LanguageChangePrefix + "select")
 			},
 			new[]
 			{
 				Telegram.Bot.Types.ReplyMarkups.InlineKeyboardButton.WithCallbackData(
 					loc.GetMessage("main_menu", languageCode),
-					CallbackData.MenuMain)
+					DigiStore.TgBot.Application.Constants.CallbackData.MenuMain)
 			},
 		});
 	}
 }
-

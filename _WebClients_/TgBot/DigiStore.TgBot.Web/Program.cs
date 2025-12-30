@@ -59,7 +59,7 @@ if (!string.IsNullOrEmpty(webhookUrl))
 	{
 		try
 		{
-			await updateHandler.HandleUpdateAsync(botClient, update, ct);
+			await updateHandler.HandleUpdateAsync(update, ct);
 		}
 		catch (Exception ex)
 		{
@@ -101,18 +101,18 @@ async Task StartPollingAsync(IServiceProvider services, CancellationToken ct)
 	using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
 	
 	await botClient.ReceiveAsync(
-		handleUpdateAsync: async (botClient, update, cancellationToken) =>
+		updateHandler: async (botClient, update, cancellationToken) =>
 		{
 			try
 			{
-				await updateHandler.HandleUpdateAsync(botClient, update, cancellationToken);
+				await updateHandler.HandleUpdateAsync(update, cancellationToken);
 			}
 			catch (Exception ex)
 			{
 				logger.LogError(ex, "Error processing update");
 			}
 		},
-		handleErrorAsync: (botClient, exception, cancellationToken) =>
+		errorHandler: (botClient, exception, cancellationToken) =>
 		{
 			logger.LogError(exception, "Polling error");
 			return Task.CompletedTask;
