@@ -32,7 +32,7 @@
     <Project Path="_Services_/UserService/DigiStore.UserService.Application/DigiStore.UserService.Application.csproj" Id="a8d69686-789c-453b-b876-c2dd603ffcde" />
     <Project Path="_Services_/UserService/DigiStore.UserService.Contracts/DigiStore.UserService.Contracts.csproj" Id="73860934-724d-494c-ab32-aee5baa7198b" />
     <Project Path="_Services_/UserService/DigiStore.UserService.Domain/DigiStore.UserService.Domain.csproj" Id="2e570eef-6d3f-4abc-aefb-1d7b13668cdf" />
-    <Project Path="_Services_/UserService/DigiStore.UserService.Infrastructure/DigiStore.UserService.Infrastructure.csproj" Id="a11d1559-dbdf-4a40-88af-6f7dcd0726d0" />
+    <Project Path="_Services_/UserService/DigiStore.UserService.Infrastructure.Postgres/DigiStore.UserService.Infrastructure.Postgres.csproj" Id="62652428-f4ea-44af-8881-05885cd41f51" />
     <Project Path="_Services_/UserService/DigiStore.UserService.Web/DigiStore.UserService.Web.csproj" Id="8398232d-41ef-497d-8294-221ed4f247ef" />
   </Folder>
   <Folder Name="/WebClients/" />

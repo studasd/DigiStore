@@ -11,5 +11,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DigiStore.TgBot.Application\DigiStore.TgBot.Application.csproj" />
+    <ProjectReference Include="..\DigiStore.TgBot.Infrastructure\DigiStore.TgBot.Infrastructure.csproj" />
+  </ItemGroup>
   
 </Project>

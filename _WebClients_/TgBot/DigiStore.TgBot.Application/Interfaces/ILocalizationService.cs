@@ -1,0 +1,22 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace DigiStore.TgBot.Application.Interfaces;
+
+
+/// <summary>
+/// Localization service for multi-language support
+/// </summary>
+public interface ILocalizationService
+{
+	/// <summary>
+	/// Get localized message
+	/// </summary>
+	string GetMessage(string key, string languageCode = "en");
+
+	/// <summary>
+	/// Get all available languages
+	/// </summary>
+	Dictionary<string, string> GetLanguages();
+}
