@@ -11,24 +11,24 @@ namespace DigiStore.TgBot.Application.Handlers.Callbacks;
 /// <summary>
 /// Обработчик колбэка просмотра профиля
 /// </summary>
-public class ProfileViewCallbackHandler : BaseHandler, ICallbackQueryHandler
+public class ProfileView : BaseHandler, ICallbackQueryHandler
 {
 	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.ProfileView;
 	public const bool IsPrefix = false;
 	
 	private readonly ITelegramProfileService _profileService;
 	private readonly ITelegramSessionService _sessionService;
-	private readonly ILogger<ProfileViewCallbackHandler> _logger;
+	private readonly ILogger<ProfileView> _logger;
 
 	string ICallbackQueryHandler.CallbackData => CallbackData;
 	bool ICallbackQueryHandler.IsPrefix => IsPrefix;
 
-	public ProfileViewCallbackHandler(
+	public ProfileView(
 		ITelegramBotClient botClient,
 		ITelegramProfileService profileService,
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
-		ILogger<ProfileViewCallbackHandler> logger)
+		ILogger<ProfileView> logger)
 		: base(botClient, localizationService)
 	{
 		_profileService = profileService;

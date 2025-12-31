@@ -10,22 +10,22 @@ namespace DigiStore.TgBot.Application.Handlers.Callbacks;
 /// <summary>
 /// Обработчик колбэка главного меню
 /// </summary>
-public class MainMenuCallbackHandler : BaseHandler, ICallbackQueryHandler
+public class MainMenu : BaseHandler, ICallbackQueryHandler
 {
 	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.MenuMain;
 	public const bool IsPrefix = false;
 	
 	private readonly ITelegramSessionService _sessionService;
-	private readonly ILogger<MainMenuCallbackHandler> _logger;
+	private readonly ILogger<MainMenu> _logger;
 
 	string ICallbackQueryHandler.CallbackData => CallbackData;
 	bool ICallbackQueryHandler.IsPrefix => IsPrefix;
 
-	public MainMenuCallbackHandler(
+	public MainMenu(
 		ITelegramBotClient botClient,
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
-		ILogger<MainMenuCallbackHandler> logger)
+		ILogger<MainMenu> logger)
 		: base(botClient, localizationService)
 	{
 		_sessionService = sessionService;

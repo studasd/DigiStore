@@ -12,22 +12,22 @@ namespace DigiStore.TgBot.Application.Handlers.Commands;
 /// <summary>
 /// Обработчик команды /profile
 /// </summary>
-public class ProfileCommandHandler : BaseHandler, ICommandHandler
+public class Profile : BaseHandler, ICommandHandler
 {
 	public const string Command = BotCommands.Profile;
 	
 	private readonly ITelegramProfileService _profileService;
 	private readonly ITelegramSessionService _sessionService;
-	private readonly ILogger<ProfileCommandHandler> _logger;
+	private readonly ILogger<Profile> _logger;
 
 	string ICommandHandler.Command => Command;
 
-	public ProfileCommandHandler(
+	public Profile(
 		ITelegramBotClient botClient,
 		ITelegramProfileService profileService,
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
-		ILogger<ProfileCommandHandler> logger)
+		ILogger<Profile> logger)
 		: base(botClient, localizationService)
 	{
 		_profileService = profileService;

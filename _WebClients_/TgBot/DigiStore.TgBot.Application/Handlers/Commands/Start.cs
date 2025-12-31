@@ -10,22 +10,22 @@ namespace DigiStore.TgBot.Application.Handlers.Commands;
 /// <summary>
 /// Обработчик команды /start
 /// </summary>
-public class StartCommandHandler : BaseHandler, ICommandHandler
+public class Start : BaseHandler, ICommandHandler
 {
 	public const string Command = BotCommands.Start;
 	
 	private readonly ITelegramUserService _userService;
 	private readonly ITelegramSessionService _sessionService;
-	private readonly ILogger<StartCommandHandler> _logger;
+	private readonly ILogger<Start> _logger;
 
 	string ICommandHandler.Command => Command;
 
-	public StartCommandHandler(
+	public Start(
 		ITelegramBotClient botClient,
 		ITelegramUserService userService,
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
-		ILogger<StartCommandHandler> logger)
+		ILogger<Start> logger)
 		: base(botClient, localizationService)
 	{
 		_userService = userService;

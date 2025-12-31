@@ -10,24 +10,24 @@ namespace DigiStore.TgBot.Application.Handlers.Callbacks;
 /// <summary>
 /// Обработчик колбэка смены языка из команды /language
 /// </summary>
-public class LanguageChangeCallbackHandler : BaseHandler, ICallbackQueryHandler
+public class LanguageChange : BaseHandler, ICallbackQueryHandler
 {
 	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.LanguageChangePrefix;
 	public const bool IsPrefix = true;
 	
 	private readonly ITelegramProfileService _profileService;
 	private readonly ITelegramSessionService _sessionService;
-	private readonly ILogger<LanguageChangeCallbackHandler> _logger;
+	private readonly ILogger<LanguageChange> _logger;
 
 	string ICallbackQueryHandler.CallbackData => CallbackData;
 	bool ICallbackQueryHandler.IsPrefix => IsPrefix;
 
-	public LanguageChangeCallbackHandler(
+	public LanguageChange(
 		ITelegramBotClient botClient,
 		ITelegramProfileService profileService,
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
-		ILogger<LanguageChangeCallbackHandler> logger)
+		ILogger<LanguageChange> logger)
 		: base(botClient, localizationService)
 	{
 		_profileService = profileService;

@@ -12,24 +12,24 @@ namespace DigiStore.TgBot.Application.Handlers.Callbacks;
 /// <summary>
 /// Обработчик колбэка выбора языка из команды /start
 /// </summary>
-public class LanguageSelectionCallbackHandler : BaseHandler, ICallbackQueryHandler
+public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 {
 	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.LanguagePrefix;
 	public const bool IsPrefix = true;
 	
 	private readonly ITelegramProfileService _profileService;
 	private readonly ITelegramSessionService _sessionService;
-	private readonly ILogger<LanguageSelectionCallbackHandler> _logger;
+	private readonly ILogger<LanguageSelection> _logger;
 
 	string ICallbackQueryHandler.CallbackData => CallbackData;
 	bool ICallbackQueryHandler.IsPrefix => IsPrefix;
 
-	public LanguageSelectionCallbackHandler(
+	public LanguageSelection(
 		ITelegramBotClient botClient,
 		ITelegramProfileService profileService,
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
-		ILogger<LanguageSelectionCallbackHandler> logger)
+		ILogger<LanguageSelection> logger)
 		: base(botClient, localizationService)
 	{
 		_profileService = profileService;

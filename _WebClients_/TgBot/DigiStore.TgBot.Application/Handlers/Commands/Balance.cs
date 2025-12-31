@@ -11,22 +11,22 @@ namespace DigiStore.TgBot.Application.Handlers.Commands;
 /// <summary>
 /// Обработчик команды /balance
 /// </summary>
-public class BalanceCommandHandler : BaseHandler, ICommandHandler
+public class Balance : BaseHandler, ICommandHandler
 {
 	public const string Command = BotCommands.Balance;
 	
 	private readonly ITelegramProfileService _profileService;
 	private readonly ITelegramSessionService _sessionService;
-	private readonly ILogger<BalanceCommandHandler> _logger;
+	private readonly ILogger<Balance> _logger;
 
 	string ICommandHandler.Command => Command;
 
-	public BalanceCommandHandler(
+	public Balance(
 		ITelegramBotClient botClient,
 		ITelegramProfileService profileService,
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
-		ILogger<BalanceCommandHandler> logger)
+		ILogger<Balance> logger)
 		: base(botClient, localizationService)
 	{
 		_profileService = profileService;

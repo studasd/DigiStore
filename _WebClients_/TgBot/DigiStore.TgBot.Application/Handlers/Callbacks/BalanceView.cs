@@ -11,24 +11,24 @@ namespace DigiStore.TgBot.Application.Handlers.Callbacks;
 /// <summary>
 /// Обработчик колбэка просмотра баланса
 /// </summary>
-public class BalanceViewCallbackHandler : BaseHandler, ICallbackQueryHandler
+public class BalanceView : BaseHandler, ICallbackQueryHandler
 {
 	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.BalanceView;
 	public const bool IsPrefix = false;
 	
 	private readonly ITelegramWalletService _walletService;
 	private readonly ITelegramSessionService _sessionService;
-	private readonly ILogger<BalanceViewCallbackHandler> _logger;
+	private readonly ILogger<BalanceView> _logger;
 
 	string ICallbackQueryHandler.CallbackData => CallbackData;
 	bool ICallbackQueryHandler.IsPrefix => IsPrefix;
 
-	public BalanceViewCallbackHandler(
+	public BalanceView(
 		ITelegramBotClient botClient,
 		ITelegramWalletService walletService,
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
-		ILogger<BalanceViewCallbackHandler> logger)
+		ILogger<BalanceView> logger)
 		: base(botClient, localizationService)
 	{
 		_walletService = walletService;

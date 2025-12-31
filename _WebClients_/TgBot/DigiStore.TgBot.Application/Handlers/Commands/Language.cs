@@ -10,20 +10,20 @@ namespace DigiStore.TgBot.Application.Handlers.Commands;
 /// <summary>
 /// Обработчик команды /language
 /// </summary>
-public class LanguageCommandHandler : BaseHandler, ICommandHandler
+public class Language : BaseHandler, ICommandHandler
 {
 	public const string Command = BotCommands.Language;
 	
 	private readonly ITelegramSessionService _sessionService;
-	private readonly ILogger<LanguageCommandHandler> _logger;
+	private readonly ILogger<Language> _logger;
 
 	string ICommandHandler.Command => Command;
 
-	public LanguageCommandHandler(
+	public Language(
 		ITelegramBotClient botClient,
 		ITelegramSessionService sessionService,
 		ILocalizationService localizationService,
-		ILogger<LanguageCommandHandler> logger)
+		ILogger<Language> logger)
 		: base(botClient, localizationService)
 	{
 		_sessionService = sessionService;
