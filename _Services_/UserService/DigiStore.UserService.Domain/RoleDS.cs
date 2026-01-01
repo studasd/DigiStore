@@ -13,16 +13,7 @@ public class RoleDS : IdentityRole<Guid>
 	/// </summary>
 	public string Description { get; set; } = string.Empty;
 
-	/// <summary>
-	/// Whether role is system role (cannot be deleted)
-	/// </summary>
-	public bool IsSystem { get; set; } = false;
-
-	/// <summary>
-	/// Order for display purposes
-	/// </summary>
-	public int DisplayOrder { get; set; }
-
+	
 
 	/// <summary>
 	/// Navigation to users

@@ -14,6 +14,12 @@ namespace DigiStore.UserService.Domain;
 public class UserDS : IdentityUser<Guid>
 {
 	/// <summary>
+	/// Telegram unique user ID (can be null for web users)
+	/// </summary>
+	public long? TelegramId { get; set; }
+
+
+	/// <summary>
 	/// User's first name
 	/// </summary>
 	public string FirstName { get; set; } = string.Empty;
@@ -22,21 +28,6 @@ public class UserDS : IdentityUser<Guid>
 	/// User's last name
 	/// </summary>
 	public string LastName { get; set; } = string.Empty;
-
-	/// <summary>
-	/// Telegram unique user ID (can be null for web users)
-	/// </summary>
-	public long? TelegramId { get; set; }
-
-	/// <summary>
-	/// Telegram username (for contact purposes)
-	/// </summary>
-	public string? TelegramUsername { get; set; }
-
-	/// <summary>
-	/// Phone number linked to account (from Telegram or Web)
-	/// </summary>
-	public string? PhoneNumberLinked { get; set; }
 
 	/// <summary>
 	/// Language preference (en, ru, etc.)
@@ -61,17 +52,19 @@ public class UserDS : IdentityUser<Guid>
 	/// <summary>
 	/// Creation timestamp (when user first registered)
 	/// </summary>
-	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+	public DateTime CreatedAt { get; set; }
 
 	/// <summary>
 	/// Update timestamp
 	/// </summary>
-	public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+	public DateTime UpdatedAt { get; set; }
 
 	/// <summary>
 	/// Soft delete flag
 	/// </summary>
 	public bool IsDeleted { get; set; } = false;
+
+
 
 	/// <summary>
 	/// Navigation to roles (inherited from IdentityUser through IdentityUserRole)
@@ -88,8 +81,4 @@ public class UserDS : IdentityUser<Guid>
 	/// </summary>
 	public bool IsTelegramLinked() => TelegramId.HasValue;
 
-	/// <summary>
-	/// Check if user is linked to Web account
-	/// </summary>
-	public bool IsWebLinked() => !string.IsNullOrEmpty(PhoneNumberLinked);
 }

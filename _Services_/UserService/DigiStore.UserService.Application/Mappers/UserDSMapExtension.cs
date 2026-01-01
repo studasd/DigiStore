@@ -16,7 +16,6 @@ public static class UserDSMapExtension
 			Email: user.Email,
 			FullName: user.FirstName,
 			TelegramId: user.TelegramId,
-			TelegramUsername: user.TelegramUsername,
 			PhoneNumber: user.PhoneNumber,
 			LanguageCode: user.LanguageCode,
 			IsActive: user.IsActive,

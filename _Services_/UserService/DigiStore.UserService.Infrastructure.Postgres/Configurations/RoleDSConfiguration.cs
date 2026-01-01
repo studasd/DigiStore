@@ -20,18 +20,8 @@ public class RoleDSConfiguration : IEntityTypeConfiguration<RoleDS>
 		builder.Property(r => r.Description)
 			.HasMaxLength(500);
 
-		builder.Property(r => r.IsSystem)
-			.IsRequired()
-			.HasDefaultValue(false);
-
-		builder.Property(r => r.DisplayOrder)
-			.IsRequired()
-			.HasDefaultValue(0);
-
 		builder.HasIndex(r => r.Name)
 			.IsUnique();
-
-		builder.HasIndex(r => r.IsSystem);
 
 		// Seed system roles
 		builder.HasData(
@@ -41,8 +31,7 @@ public class RoleDSConfiguration : IEntityTypeConfiguration<RoleDS>
 				Name = "Admin",
 				NormalizedName = "ADMIN",
 				Description = "Administrator role with full access",
-				IsSystem = true,
-				DisplayOrder = 1
+				ConcurrencyStamp = "17191573-3c54-4a6d-bf10-972650799fc3"
 			},
 			new RoleDS
 			{
@@ -50,8 +39,7 @@ public class RoleDSConfiguration : IEntityTypeConfiguration<RoleDS>
 				Name = "Moderator",
 				NormalizedName = "MODERATOR",
 				Description = "Moderator role with limited access",
-				IsSystem = true,
-				DisplayOrder = 2
+				ConcurrencyStamp = "3bd59661-a6c1-4763-9f93-05174f01de79"
 			},
 			new RoleDS
 			{
@@ -59,8 +47,7 @@ public class RoleDSConfiguration : IEntityTypeConfiguration<RoleDS>
 				Name = "User",
 				NormalizedName = "USER",
 				Description = "Regular user role",
-				IsSystem = true,
-				DisplayOrder = 3
+				ConcurrencyStamp = "df5d6b5b-23a8-4350-8542-f8af50611772"
 			});
 	}
 }

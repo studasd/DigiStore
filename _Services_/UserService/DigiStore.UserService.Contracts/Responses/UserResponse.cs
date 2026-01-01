@@ -14,7 +14,6 @@ public record UserResponse
 	string? Email,
 	string? FullName,
 	long? TelegramId,
-	string? TelegramUsername,
 	string? PhoneNumber,
 	string LanguageCode,
 	bool IsActive,

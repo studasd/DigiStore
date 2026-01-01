@@ -34,14 +34,6 @@ public class UserDSConfiguration : IEntityTypeConfiguration<UserDS>
 		builder.Property(u => u.TelegramId)
 			.IsRequired(false);
 
-		builder.Property(u => u.TelegramUsername)
-			.HasMaxLength(32)
-			.IsRequired(false);
-
-		builder.Property(u => u.PhoneNumberLinked)
-			.HasMaxLength(20)
-			.IsRequired(false);
-
 		builder.Property(u => u.LanguageCode)
 			.HasMaxLength(10)
 			.IsRequired()
