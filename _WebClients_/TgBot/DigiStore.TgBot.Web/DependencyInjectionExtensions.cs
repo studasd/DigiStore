@@ -14,20 +14,22 @@ public static class DependencyInjectionExtensions
 	{
 		// Telegram Bot Client
 		var botToken = configuration["Telegram:BotToken"]
-		?? throw new InvalidOperationException("Telegram BotToken not configured");
+			?? throw new InvalidOperationException("Telegram BotToken not configured");
 		services.AddScoped<ITelegramBotClient>(_ => new TelegramBotClient(botToken));
 		
 		// User & Wallet Services (HTTP clients)
 		services.AddHttpClient<ITelegramUserService, TelegramUserService>()
-		.ConfigureHttpClient(client =>
-		{
-			client.Timeout = TimeSpan.FromSeconds(10);
-		});
+			.ConfigureHttpClient(client =>
+			{
+				//client.Timeout = TimeSpan.FromSeconds(10);
+				client.Timeout = TimeSpan.FromMinutes(10);
+			});
 		services.AddHttpClient<ITelegramWalletService, TelegramWalletService>()
-		.ConfigureHttpClient(client =>
-		{
-			client.Timeout = TimeSpan.FromSeconds(10);
-		});
+			.ConfigureHttpClient(client =>
+			{
+				//client.Timeout = TimeSpan.FromSeconds(10);
+				client.Timeout = TimeSpan.FromMinutes(10);
+			});
 		
 		// Session & Localization
 		services.AddScoped<ITelegramSessionService, TelegramSessionService>();

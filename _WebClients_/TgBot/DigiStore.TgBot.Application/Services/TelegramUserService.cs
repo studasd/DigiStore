@@ -38,7 +38,8 @@ public class TelegramUserService : ITelegramUserService
 		try
 		{
 			// First, try to get existing user
-			var getUrl = $"{_userServiceUrl}/api/account/by-telegram/{telegramId}";
+			//var getUrl = $"{_userServiceUrl}/api/account/by-telegram/{telegramId}";
+			var getUrl = $"{_userServiceUrl}/getUser/byTelegram/{telegramId}";
 			var response = await _httpClient.GetAsync(getUrl, ct);
 
 			if (response.IsSuccessStatusCode)
@@ -51,7 +52,7 @@ public class TelegramUserService : ITelegramUserService
 			// If user doesn't exist, create new one
 			if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
 			{
-				var createUrl = $"{_userServiceUrl}/api/account/register";
+				var createUrl = $"{_userServiceUrl}/register";
 				var createRequest = new
 				{
 					Email = $"telegram_{telegramId}@petfamily.local",
