@@ -17,7 +17,7 @@ public sealed class UpdateLanguage : IEndpoint
 {
 	public void MapEndpoint(IEndpointRouteBuilder app)
 	{
-		app.MapPost("language/{userId:guid}/{langCode:string}", async Task<EndpointResult<bool>> (
+		app.MapPost("language/{userId}/{langCode}", async Task<EndpointResult<bool>> (
 			[FromRoute] Guid userId,
 			[FromRoute] string langCode,
 			[FromServices] UpdateLanguageHandler handler,

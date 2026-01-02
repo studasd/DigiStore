@@ -20,7 +20,7 @@ public sealed class GetUserByTelegramId : IEndpoint
 {
 	public void MapEndpoint(IEndpointRouteBuilder app)
 	{
-		app.MapGet("getUser/{telegramId:long}", async Task<EndpointResult<UserResponse>> (
+		app.MapGet("getUser/byTelegram/{telegramId}", async Task<EndpointResult<UserResponse>> (
 			[FromRoute] long telegramId,
 			[FromServices] GetUserByTelegramIdHandler handler,
 			CancellationToken token) => await handler.Handle(telegramId, token));

@@ -20,7 +20,7 @@ public sealed class GetUserByEmail : IEndpoint
 {
 	public void MapEndpoint(IEndpointRouteBuilder app)
 	{
-		app.MapGet("getUser/{email:string}", async Task<EndpointResult<UserResponse>> (
+		app.MapGet("getUser/byEmail/{email}", async Task<EndpointResult<UserResponse>> (
 			[FromRoute] string email,
 			[FromServices] GetUserByEmailHandler handler,
 			CancellationToken token) => await handler.Handle(email, token));

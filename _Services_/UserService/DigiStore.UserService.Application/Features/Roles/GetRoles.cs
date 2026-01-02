@@ -20,7 +20,7 @@ public sealed class GetRoles : IEndpoint
 {
 	public void MapEndpoint(IEndpointRouteBuilder app)
 	{
-		app.MapGet("roles/{userId:guid}", async Task<EndpointResult<IReadOnlyList<string>>> (
+		app.MapGet("roles/{userId}", async Task<EndpointResult<IReadOnlyList<string>>> (
 			[FromRoute] Guid userId,
 			[FromServices] GetRolesHandler handler,
 			CancellationToken token) => await handler.Handle(userId, token));

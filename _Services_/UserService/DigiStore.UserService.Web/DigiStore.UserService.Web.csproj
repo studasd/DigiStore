@@ -8,6 +8,12 @@
     
     <!-- Только в Release версии -->
     <PublishAot Condition="'$(Configuration)' == 'Release'">true</PublishAot>
+
+    <!-- Включаем reflection для разработки -->
+    <JsonSerializerIsReflectionEnabledByDefault Condition="'$(Configuration)' == 'Debug'">true</JsonSerializerIsReflectionEnabledByDefault>
+    <!-- Для Release используем source generators -->
+    <PublishTrimmed Condition="'$(Configuration)' == 'Release'">true</PublishTrimmed>
+    
   </PropertyGroup>
 
   <ItemGroup>

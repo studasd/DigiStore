@@ -17,7 +17,7 @@ public sealed class RemoveRole : IEndpoint
 	[Authorize(Roles = "Admin")]
 	public void MapEndpoint(IEndpointRouteBuilder app)
 	{
-		app.MapDelete("role/{userId:guid}/{roleName:string}", async Task<EndpointResult<bool>> (
+		app.MapDelete("role/{userId}/{roleName}", async Task<EndpointResult<bool>> (
 			[FromRoute] Guid userId,
 			[FromRoute] string roleName,
 			[FromServices] RemoveRoleHandler handler,

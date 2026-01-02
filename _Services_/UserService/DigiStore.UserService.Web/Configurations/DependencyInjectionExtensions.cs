@@ -3,6 +3,7 @@ using DigiStore.Framework.Logging;
 using DigiStore.Framework.Swagger;
 using DigiStore.UserService.Application;
 using DigiStore.UserService.Infrastructure.Postgres;
+using Microsoft.AspNetCore.Routing.Constraints;
 
 namespace DigiStore.UserService.Web.Configurations;
 

@@ -20,7 +20,7 @@ public sealed class UpdateActivity : IEndpoint
 {
 	public void MapEndpoint(IEndpointRouteBuilder app)
 	{
-		app.MapPost("activity/{userId:guid}", async Task<EndpointResult<bool>> (
+		app.MapPost("activity/{userId}", async Task<EndpointResult<bool>> (
 			[FromRoute] Guid userId,
 			[FromServices] UpdateActivityHandler handler,
 			CancellationToken token) => await handler.Handle(userId, token));

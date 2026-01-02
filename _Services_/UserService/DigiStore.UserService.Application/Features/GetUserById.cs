@@ -22,7 +22,7 @@ public sealed class GetUserById : IEndpoint
 {
 	public void MapEndpoint(IEndpointRouteBuilder app)
 	{
-		app.MapGet("getUser/{userId:guid}", async Task<EndpointResult<UserResponse>> (
+		app.MapGet("getUser/byId/{userId}", async Task<EndpointResult<UserResponse>> (
 			[FromRoute] Guid userId,
 			[FromServices] GetUserByIdHandler handler,
 			CancellationToken token) => await handler.Handle(userId, token));

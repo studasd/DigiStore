@@ -1,11 +1,7 @@
-using DigiStore.UserService.Infrastructure.Postgres;
-using DigiStore.UserService.Web;
-using DigiStore.UserService.Web.Configurations;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
+﻿using DigiStore.UserService.Web.Configurations;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Serilog;
 using System.Globalization;
-using System.Text.Json.Serialization;
 
 Log.Logger = new LoggerConfiguration()
 	.MinimumLevel.Information()
@@ -16,8 +12,16 @@ try
 {
 	Log.Information("Starting web application");
 
-	var builder = WebApplication.CreateSlimBuilder(args);
+	var builder = WebApplication.CreateBuilder(args);
 
+	// ✅ РЕГИСТРАЦИЯ ВСЕХ НУЖНЫХ CONSTRAINTS
+	builder.Services.Configure<RouteOptions>(options =>
+	{
+		// Regex и другие
+		options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
+	});
+
+	builder.Services.AddEndpointsApiExplorer();
 
 	// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 	builder.Services.AddOpenApi();
@@ -28,11 +32,11 @@ try
 	builder.Services.AddCors();
 
 
-
 	var app = builder.Build();
 
 	app.Configure();
 
+	app.Run();
 }
 catch (Exception ex)
 {

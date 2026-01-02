@@ -17,7 +17,7 @@ public sealed class AssignRole : IEndpoint
 	[Authorize(Roles = "Admin")]
 	public void MapEndpoint(IEndpointRouteBuilder app)
 	{
-		app.MapPost("role/{userId:guid}/{roleName:string}", async Task<EndpointResult<bool>> (
+		app.MapPost("role/{userId}/{roleName}", async Task<EndpointResult<bool>> (
 			[FromRoute] Guid userId,
 			[FromRoute] string roleName,
 			[FromServices] AssignRoleHandler handler,

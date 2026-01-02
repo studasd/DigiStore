@@ -13,7 +13,7 @@ public sealed class ActivateUser : IEndpoint
 {
 	public void MapEndpoint(IEndpointRouteBuilder app)
 	{
-		app.MapPost("deactivate/{userId:guid}", async Task<EndpointResult<bool>> (
+		app.MapPost("activate/{userId}", async Task<EndpointResult<bool>> (
 			[FromRoute] Guid userId,
 			[FromServices] ActivateUserHandler handler,
 			CancellationToken token) => await handler.Handle(userId, token));
