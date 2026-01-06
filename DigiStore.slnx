@@ -35,6 +35,9 @@
     <Project Path="_Services_/UserService/DigiStore.UserService.Infrastructure.Postgres/DigiStore.UserService.Infrastructure.Postgres.csproj" Id="62652428-f4ea-44af-8881-05885cd41f51" />
     <Project Path="_Services_/UserService/DigiStore.UserService.Web/DigiStore.UserService.Web.csproj" Id="8398232d-41ef-497d-8294-221ed4f247ef" />
   </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+  </Folder>
   <Folder Name="/WebClients/" />
   <Folder Name="/WebClients/TgBot/">
     <Project Path="_WebClients_/TgBot/DigiStore.TgBot.Application/DigiStore.TgBot.Application.csproj" Id="38bb407e-5795-46af-bb1a-2abb70169983" />

@@ -3,6 +3,8 @@ using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.DTOs;
 using DigiStore.TgBot.Application.Interfaces;
+using DigiStore.UserService.Contracts.HttpClients;
+using DigiStore.UserService.Contracts.Requests;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -12,20 +14,24 @@ namespace DigiStore.TgBot.Application.Services;
 
 public class TelegramUserService : ITelegramUserService
 {
-	private readonly HttpClient _httpClient;
+	private readonly IUserHttpClient _httpClient;
+	//private readonly HttpClient _httpClient;
 	private readonly ILogger<TelegramUserService> _logger;
 	private readonly string _userServiceUrl;
 
 	public TelegramUserService(
-		HttpClient httpClient,
+		//HttpClient httpClient,
+		IUserHttpClient httpClient,
 		IConfiguration configuration,
 		ILogger<TelegramUserService> logger)
 	{
 		_httpClient = httpClient;
+		//_httpClient = httpClient;
 		_logger = logger;
 		_userServiceUrl = configuration["Services:UserService:Url"]
 			?? throw new InvalidOperationException("UserService URL not configured");
 	}
+
 
 	public async Task<Result<TelegramUserDto, Error>> GetOrCreateUserAsync(
 		long telegramId,
@@ -37,25 +43,20 @@ public class TelegramUserService : ITelegramUserService
 	{
 		try
 		{
-			// First, try to get existing user
-			//var getUrl = $"{_userServiceUrl}/api/account/by-telegram/{telegramId}";
-			var getUrl = $"{_userServiceUrl}/getUser/byTelegram/{telegramId}";
-			var response = await _httpClient.GetAsync(getUrl, ct);
+			//// First, try to get existing user
+			////var getUrl = $"{_userServiceUrl}/api/account/by-telegram/{telegramId}";
+			//var getUrl = $"{_userServiceUrl}/getUser/byTelegram/{telegramId}";
+			//var response = await _httpClient.GetAsync(getUrl, ct);
+			var responseResult = await _httpClient.GetUserByTelegramId(telegramId, ct);
 
-			if (response.IsSuccessStatusCode)
-			{
-				var content = await response.Content.ReadAsStringAsync(ct);
-				var user = JsonSerializer.Deserialize<TelegramUserDto>(content);
-				return user;
-			}
 
-			// If user doesn't exist, create new one
-			if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+			if (responseResult.IsFailure && responseResult.Error.Type == ErrorType.NOT_FOUND)
 			{
+				// If user doesn't exist, create new one
 				var createUrl = $"{_userServiceUrl}/register";
-				var createRequest = new
+				var createRequest = new CreateUserRequest
 				{
-					Email = $"telegram_{telegramId}@petfamily.local",
+					Email = $"telegram_{telegramId}@digistore.local",
 					FirstName = firstName ?? string.Empty,
 					LastName = lastName ?? string.Empty,
 					TelegramId = telegramId,
@@ -64,18 +65,34 @@ public class TelegramUserService : ITelegramUserService
 					Source = "Telegram"
 				};
 
-				var json = JsonSerializer.Serialize(createRequest);
-				var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+				var createResponse = await _httpClient.RegisterUser(createRequest, ct);
 
-				var createResponse = await _httpClient.PostAsync(createUrl, content, ct);
-
-				if (createResponse.IsSuccessStatusCode)
+				if (createResponse.IsSuccess)
 				{
-					var responseContent = await createResponse.Content.ReadAsStringAsync(ct);
-					var newUser = JsonSerializer.Deserialize<TelegramUserDto>(responseContent);
+					//var responseContent = await createResponse.Content.ReadAsStringAsync(ct);
+					//var newUser = JsonSerializer.Deserialize<TelegramUserDto>(responseContent);
+					var createUser = createResponse.Value;
+					var newUser = new TelegramUserDto
+					{
+						Email = createUser.Email,
+						FullName = createUser.FullName,
+						Id = createUser.Id,
+						TelegramId = createUser.TelegramId.Value,
+						TelegramUsername = username,
+						IsActive = createUser.IsActive,
+						LanguageCode = createUser.LanguageCode,
+						Roles = createUser.Roles.Select(r => r).ToList()
+					};
+
 					_logger.LogInformation("User created for Telegram ID: {TelegramId}", telegramId);
 					return newUser;
 				}
+			}
+			else if (responseResult.IsFailure)
+			{
+				//var content = await responseResult.Content.ReadAsStringAsync(ct);
+				//var user = JsonSerializer.Deserialize<TelegramUserDto>(content);
+				return responseResult.Error;
 			}
 
 			_logger.LogError("Failed to get or create user for Telegram ID: {TelegramId}", telegramId);
@@ -89,23 +106,23 @@ public class TelegramUserService : ITelegramUserService
 		}
 	}
 
+
 	public async Task<Result<TelegramUserDto, Error>> GetUserProfileAsync(Guid userId, CancellationToken ct = default)
 	{
 		try
 		{
-			var url = $"{_userServiceUrl}/api/account/{userId}";
-			var response = await _httpClient.GetAsync(url, ct);
+			var response = await _httpClient.GetUserById(userId, ct);
 
-			if (!response.IsSuccessStatusCode)
+			if (response.IsFailure)
 			{
 				_logger.LogWarning("Failed to get user profile for user ID: {UserId}", userId);
-				return TgBotErrors.UserNotFound;
+				return response.Error;
 			}
 
-			var content = await response.Content.ReadAsStringAsync(ct);
-			var user = JsonSerializer.Deserialize<TelegramUserDto>(content);
+			//////var content = await response.Content.ReadAsStringAsync(ct);
+			//////var user = JsonSerializer.Deserialize<TelegramUserDto>(content);
 
-			return user;
+			return new TelegramUserDto();
 		}
 		catch (Exception ex)
 		{
@@ -119,10 +136,9 @@ public class TelegramUserService : ITelegramUserService
 	{
 		try
 		{
-			var url = $"{_userServiceUrl}/api/account/{userId}/language?languageCode={languageCode}";
-			var response = await _httpClient.PatchAsync(url, null, ct);
+			var response = await _httpClient.UpdateLanguage(userId, languageCode, ct);
 
-			if (!response.IsSuccessStatusCode)
+			if (response.IsFailure)
 			{
 				_logger.LogWarning("Failed to update language for user ID: {UserId}", userId);
 				return TgBotErrors.OperationFailed;
@@ -143,10 +159,9 @@ public class TelegramUserService : ITelegramUserService
 	{
 		try
 		{
-			var url = $"{_userServiceUrl}/api/account/activity/{userId}";
-			var response = await _httpClient.PostAsync(url, null, ct);
+			var response = await _httpClient.UpdateActivity(userId, ct);
 
-			if (!response.IsSuccessStatusCode)
+			if (response.IsFailure)
 			{
 				_logger.LogWarning("Failed to update activity for user ID: {UserId}", userId);
 				return TgBotErrors.OperationFailed;

@@ -1,4 +1,4 @@
-﻿namespace DigiStore.UserService.Application;
+﻿namespace DigiStore.UserService.Contracts.Requests;
 
 
 /// <summary>
