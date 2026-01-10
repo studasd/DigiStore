@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="DigiStore.Framework" Version="0.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.1" />
     <PackageReference Include="Telegram.Bot" Version="22.7.6" />
   </ItemGroup>
 

@@ -3,6 +3,9 @@ using DigiStore.TgBot.Domain;
 
 namespace DigiStore.TgBot.Infrastructure.Data;
 
+// add-migration Init -c TgBotDbContext        // -s DigiStore
+// update-database -Context TgBotDbContext
+
 public class TgBotDbContext : DbContext
 {
     public TgBotDbContext(DbContextOptions<TgBotDbContext> options) : base(options)
@@ -18,7 +21,10 @@ public class TgBotDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<TgUser>(eb =>
+		// Все таблицы по умолчанию в схеме "business"
+		modelBuilder.HasDefaultSchema("TgBot");
+
+		modelBuilder.Entity<TgUser>(eb =>
         {
             eb.ToTable("users");
 

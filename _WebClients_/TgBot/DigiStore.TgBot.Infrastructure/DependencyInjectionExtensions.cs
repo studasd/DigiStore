@@ -1,9 +1,12 @@
 ﻿using DigiStore.TgBot.Application.Interfaces.Repositories;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.TgBot.Application.Services;
+using DigiStore.TgBot.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace DigiStore.TgBot.Infrastructure;
 
@@ -12,13 +15,23 @@ public static class DependencyInjectionExtensions
 	public static IServiceCollection AddTgBotInfrastructure(this IServiceCollection services, IConfiguration configuration)
 	{
 		// Database
-		var pgConnection = configuration.GetConnectionString("TgBotPostgres")
-			?? throw new InvalidOperationException("TgBot PostgreSQL connection string not found");
-
-		services.AddDbContext<Data.TgBotDbContext>(options =>
+		services.AddDbContextPool<TgBotDbContext>((sp, options) =>
 		{
-			options.UseNpgsql(pgConnection);
+			string? connectionString = configuration.GetConnectionString("TgBotPostgres");
+			IHostEnvironment hostEnvironment = sp.GetRequiredService<IHostEnvironment>();
+			ILoggerFactory loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+
+			options.UseNpgsql(connectionString);
+
+			if (hostEnvironment.IsDevelopment())
+			{
+				options.EnableSensitiveDataLogging();
+				options.EnableDetailedErrors();
+			}
+
+			options.UseLoggerFactory(loggerFactory);
 		});
+
 
 		// Session & Localization
 		services.AddScoped<ITelegramSessionService, TelegramSessionService>();
