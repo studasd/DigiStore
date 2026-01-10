@@ -43,33 +43,27 @@ public class TelegramUserService : ITelegramUserService
 	{
 		try
 		{
-			//// First, try to get existing user
-			////var getUrl = $"{_userServiceUrl}/api/account/by-telegram/{telegramId}";
-			//var getUrl = $"{_userServiceUrl}/getUser/byTelegram/{telegramId}";
-			//var response = await _httpClient.GetAsync(getUrl, ct);
 			var responseResult = await _httpClient.GetUserByTelegramId(telegramId, ct);
 
 
-			if(responseResult.IsSuccess)
+			if (responseResult.IsSuccess)
 			{
-				var user = responseResult.Value;
+				var user = responseResult.Value!;
 				var telegramUser = new TelegramUserDto
 				{
 					Id = user.Id,
-					TelegramId = user.TelegramId.Value,
-					Email = user.Email,
-					FullName = user.FullName,
-					TelegramUsername = username,
+					TelegramId = user.TelegramId ?? telegramId,
+					Email = user.Email ?? string.Empty,
+					FullName = user.FullName ?? string.Empty,
+					TelegramUsername = user.TelegramId.HasValue ? user.TelegramId.ToString() : username,
 					LanguageCode = user.LanguageCode,
 					IsActive = user.IsActive,
-					Roles = user.Roles.Select(r => r).ToList()
+					Roles = user.Roles?.ToList() ?? new List<string>()
 				};
 				return telegramUser;
 			}
 			else if (responseResult.IsFailure && responseResult.Error.Type == ErrorType.NOT_FOUND)
 			{
-				// If user doesn't exist, create new one
-				var createUrl = $"{_userServiceUrl}/register";
 				var createRequest = new CreateUserRequest
 				{
 					Email = $"telegram_{telegramId}@digistore.local",
@@ -85,34 +79,35 @@ public class TelegramUserService : ITelegramUserService
 
 				if (createResponse.IsSuccess)
 				{
-					//var responseContent = await createResponse.Content.ReadAsStringAsync(ct);
-					//var newUser = JsonSerializer.Deserialize<TelegramUserDto>(responseContent);
-					var createUser = createResponse.Value;
+					var createUser = createResponse.Value!;
 					var newUser = new TelegramUserDto
 					{
-						Email = createUser.Email,
-						FullName = createUser.FullName,
+						Email = createUser.Email ?? string.Empty,
+						FullName = createUser.FullName ?? string.Empty,
 						Id = createUser.Id,
-						TelegramId = createUser.TelegramId.Value,
+						TelegramId = createUser.TelegramId ?? telegramId,
 						TelegramUsername = username,
 						IsActive = createUser.IsActive,
 						LanguageCode = createUser.LanguageCode,
-						Roles = createUser.Roles.Select(r => r).ToList()
+						Roles = createUser.Roles?.ToList() ?? new List<string>()
 					};
 
 					_logger.LogInformation("User created for Telegram ID: {TelegramId}", telegramId);
 					return newUser;
 				}
+				else
+				{
+					_logger.LogWarning("Failed to create user in UserService for Telegram ID {TelegramId}: {Error}", telegramId, createResponse.Error?.GetMessage());
+					return createResponse.Error ?? TgBotErrors.OperationFailed;
+				}
 			}
 			else if (responseResult.IsFailure)
 			{
-				//var content = await responseResult.Content.ReadAsStringAsync(ct);
-				//var user = JsonSerializer.Deserialize<TelegramUserDto>(content);
-				return responseResult.Error;
+				_logger.LogWarning("GetUserByTelegramId failed for {TelegramId}: {Error}", telegramId, responseResult.Error?.GetMessage());
+				return responseResult.Error ?? TgBotErrors.UserNotFound;
 			}
 
 			_logger.LogError("Failed to get or create user for Telegram ID: {TelegramId}", telegramId);
-
 			return TgBotErrors.UserNotFound;
 		}
 		catch (Exception ex)
@@ -131,14 +126,24 @@ public class TelegramUserService : ITelegramUserService
 
 			if (response.IsFailure)
 			{
-				_logger.LogWarning("Failed to get user profile for user ID: {UserId}", userId);
-				return response.Error;
+				_logger.LogWarning("Failed to get user profile for user ID: {UserId}: {Error}", userId, response.Error?.GetMessage());
+				return response.Error ?? TgBotErrors.UserNotFound;
 			}
 
-			//////var content = await response.Content.ReadAsStringAsync(ct);
-			//////var user = JsonSerializer.Deserialize<TelegramUserDto>(content);
+			var user = response.Value!;
+			var dto = new TelegramUserDto
+			{
+				Id = user.Id,
+				TelegramId = user.TelegramId ?? 0,
+				Email = user.Email ?? string.Empty,
+				FullName = user.FullName ?? string.Empty,
+				TelegramUsername = user.TelegramId.HasValue ? user.TelegramId.ToString() : null,
+				LanguageCode = user.LanguageCode,
+				IsActive = user.IsActive,
+				Roles = user.Roles?.ToList() ?? new List<string>()
+			};
 
-			return new TelegramUserDto();
+			return dto;
 		}
 		catch (Exception ex)
 		{
