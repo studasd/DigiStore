@@ -1,7 +1,6 @@
 using DigiStore.TgBot.Application.Constants;
+using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.TgBot.Domain;
-using DigiStore.TgBot.Application.Handlers;
-using DigiStore.TgBot.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -54,7 +53,7 @@ public class Profile : BaseHandler, ICommandHandler
 				return;
 			}
 
-			var userId = session.UserId.Value;
+			var userId = session.UserId;
 			var languageCode = session.LanguageCode ?? "en";
 
 			// Get full profile

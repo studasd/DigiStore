@@ -1,10 +1,10 @@
 ﻿using DigiStore.TgBot.Application.Handlers;
-using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot;
 using DigiStore.UserService.Contracts.HttpClients;
+using DigiStore.TgBot.Application.Interfaces.Services;
 
 
 namespace DigiStore.TgBot.Application;

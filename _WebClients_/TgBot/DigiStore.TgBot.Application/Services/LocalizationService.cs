@@ -1,6 +1,6 @@
-﻿using DigiStore.TgBot.Application.Interfaces;
+﻿using DigiStore.TgBot.Application.Interfaces.Services;
 
-namespace DigiStore.TgBot.Infrastructure;
+namespace DigiStore.TgBot.Application.Services;
 
 public class LocalizationService : ILocalizationService
 {

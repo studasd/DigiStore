@@ -1,6 +1,6 @@
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers;
-using DigiStore.TgBot.Application.Interfaces;
+using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -54,7 +54,7 @@ public class ProfileView : BaseHandler, ICallbackQueryHandler
 			var languageCode = session.LanguageCode ?? "en";
 
 			var profileResult = await _profileService.GetFullProfileAsync(
-				session.UserId.Value,
+				session.UserId,
 				session.TelegramId,
 				cancellationToken);
 

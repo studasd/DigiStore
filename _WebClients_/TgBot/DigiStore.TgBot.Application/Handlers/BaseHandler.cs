@@ -1,5 +1,5 @@
 using DigiStore.TgBot.Application.Constants;
-using DigiStore.TgBot.Application.Interfaces;
+using DigiStore.TgBot.Application.Interfaces.Services;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;

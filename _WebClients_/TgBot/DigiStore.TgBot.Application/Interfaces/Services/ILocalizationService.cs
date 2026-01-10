@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DigiStore.TgBot.Application.Interfaces;
+namespace DigiStore.TgBot.Application.Interfaces.Services;
 
 
 /// <summary>

@@ -1,6 +1,6 @@
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers;
-using DigiStore.TgBot.Application.Interfaces;
+using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -53,7 +53,7 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 
 			var languageCode = session.LanguageCode ?? "en";
 
-			var walletResult = await _walletService.GetBalanceAsync(session.UserId.Value, cancellationToken);
+			var walletResult = await _walletService.GetBalanceAsync(session.UserId, cancellationToken);
 
 			if (!walletResult.IsSuccess)
 			{

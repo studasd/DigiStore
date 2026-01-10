@@ -2,7 +2,7 @@
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.DTOs;
 
-namespace DigiStore.TgBot.Application.Interfaces;
+namespace DigiStore.TgBot.Application.Interfaces.Services;
 
 
 /// <summary>

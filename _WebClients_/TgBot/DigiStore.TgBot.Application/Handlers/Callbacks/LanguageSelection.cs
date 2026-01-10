@@ -1,7 +1,6 @@
 using DigiStore.TgBot.Application.Constants;
+using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.TgBot.Domain;
-using DigiStore.TgBot.Application.Handlers;
-using DigiStore.TgBot.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -52,16 +51,13 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 
 			var languageCode = callbackQuery.Data.Replace(CallbackData, "");
 
-			if (!session.UserId.HasValue)
-				return;
-
 			_logger.LogInformation(
 				"Language selected from /start: {LanguageCode}, UserId: {UserId}",
 				languageCode, session.UserId);
 
 			// Update user language in UserService
 			var updateResult = await _profileService.UpdateUserLanguageAsync(
-				session.UserId.Value,
+				session.UserId,
 				languageCode,
 				cancellationToken);
 
@@ -78,7 +74,7 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 
 			// Get full profile
 			var profileResult = await _profileService.GetFullProfileAsync(
-				session.UserId.Value,
+				session.UserId,
 				session.TelegramId,
 				cancellationToken);
 

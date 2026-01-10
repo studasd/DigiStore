@@ -1,6 +1,6 @@
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers;
-using DigiStore.TgBot.Application.Interfaces;
+using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -53,7 +53,7 @@ public class Balance : BaseHandler, ICommandHandler
 
 			var languageCode = session.LanguageCode ?? "en";
 
-			var profileResult = await _profileService.GetFullProfileAsync(session.UserId.Value, telegramId, cancellationToken);
+			var profileResult = await _profileService.GetFullProfileAsync(session.UserId, telegramId, cancellationToken);
 			if (!profileResult.IsSuccess)
 			{
 				await SendErrorMessage(chatId, _localizationService.GetMessage("error_occurred", languageCode), cancellationToken);

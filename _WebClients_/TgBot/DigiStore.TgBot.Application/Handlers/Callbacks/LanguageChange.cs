@@ -1,6 +1,6 @@
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers;
-using DigiStore.TgBot.Application.Interfaces;
+using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -70,8 +70,6 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 			}
 
 			// Change language
-			if (!session.UserId.HasValue)
-				return;
 
 			_logger.LogInformation(
 				"Language changed: {OldLanguage} -> {NewLanguage}, UserId: {UserId}",
@@ -79,7 +77,7 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 
 			// Update user language
 			var updateResult = await _profileService.UpdateUserLanguageAsync(
-				session.UserId.Value,
+				session.UserId,
 				languageCode,
 				cancellationToken);
 

@@ -3,7 +3,7 @@ using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.DTOs;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace DigiStore.TgBot.Application.Interfaces;
+namespace DigiStore.TgBot.Application.Interfaces.Services;
 
 /// <summary>
 /// Service для управления профилем пользователя в телеграме

@@ -1,25 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace DigiStore.TgBot.Domain;
 
-
-/// <summary>
-/// Telegram user session state
-/// </summary>
-public class TelegramUserSession
+public class TgUserSession
 {
-	public long TelegramId { get; set; }
-	public Guid? UserId { get; set; }
-	public string CurrentState { get; set; } //= BotState.Start;
-	public string? LanguageCode { get; set; } = "en";
-	public Dictionary<string, object> Data { get; set; } = new();
-	public DateTime LastActivity { get; set; } = DateTime.UtcNow;
-	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public Guid Id { get; set; } = Guid.NewGuid();
 
-	// Кэш профиля пользователя (для быстрого доступа)
+	public Guid UserId { get; set; }
+
+	public long TelegramId { get; set; }
+
+    public string CurrentState { get; set; } = string.Empty;
+
+    public string LanguageCode { get; set; } = "en";
+
+    public Dictionary<string, object> Data { get; set; } = new Dictionary<string, object>();
+
 	public CachedUserProfile? CachedProfile { get; set; }
+
+    public DateTime LastActivity { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+
 
 	public void UpdateActivity()
 	{
@@ -52,5 +52,4 @@ public class TelegramUserSession
 	{
 		Data.Clear();
 	}
-
 }
