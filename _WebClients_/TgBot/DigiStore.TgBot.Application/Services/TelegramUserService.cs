@@ -50,7 +50,23 @@ public class TelegramUserService : ITelegramUserService
 			var responseResult = await _httpClient.GetUserByTelegramId(telegramId, ct);
 
 
-			if (responseResult.IsFailure && responseResult.Error.Type == ErrorType.NOT_FOUND)
+			if(responseResult.IsSuccess)
+			{
+				var user = responseResult.Value;
+				var telegramUser = new TelegramUserDto
+				{
+					Id = user.Id,
+					TelegramId = user.TelegramId.Value,
+					Email = user.Email,
+					FullName = user.FullName,
+					TelegramUsername = username,
+					LanguageCode = user.LanguageCode,
+					IsActive = user.IsActive,
+					Roles = user.Roles.Select(r => r).ToList()
+				};
+				return telegramUser;
+			}
+			else if (responseResult.IsFailure && responseResult.Error.Type == ErrorType.NOT_FOUND)
 			{
 				// If user doesn't exist, create new one
 				var createUrl = $"{_userServiceUrl}/register";

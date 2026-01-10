@@ -4,6 +4,10 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using Telegram.Bot.Types;
 
+using DigiStore.TgBot.Application.Interfaces.Services;
+using DigiStore.TgBot.Application.Interfaces.Repositories;
+using DigiStore.TgBot.Domain;
+
 namespace DigiStore.TgBot.Application.Handlers;
 
 /// <summary>
@@ -100,6 +104,98 @@ public class UpdateHandler
 
 		try
 		{
+			// Before dispatching handlers ensure we have session and linked user
+			long? telegramId = null;
+			string? username = null;
+			string? firstName = null;
+			string? lastName = null;
+
+			if (update.Message?.From != null)
+			{
+				telegramId = update.Message.From.Id;
+				username = update.Message.From.Username;
+				firstName = update.Message.From.FirstName;
+				lastName = update.Message.From.LastName;
+			}
+			else if (update.CallbackQuery?.From != null)
+			{
+				telegramId = update.CallbackQuery.From.Id;
+				username = update.CallbackQuery.From.Username;
+				firstName = update.CallbackQuery.From.FirstName;
+				lastName = update.CallbackQuery.From.LastName;
+			}
+
+			if (telegramId.HasValue)
+			{
+				try
+				{
+					var sessionService = serviceProvider.GetService<ITelegramSessionService>();
+					var userService = serviceProvider.GetService<ITelegramUserService>();
+					var userRepository = serviceProvider.GetService<ITelegramUserRepository>();
+
+					if (sessionService != null && userService != null)
+					{
+						var session = await sessionService.GetOrCreateSessionAsync(telegramId.Value, cancellationToken);
+
+						if (session.UserId == null)
+						{
+							var lang = session.LanguageCode ?? "en";
+							var userResult = await userService.GetOrCreateUserAsync(telegramId.Value, username, firstName, lastName, lang, cancellationToken);
+							if (userResult.IsSuccess)
+							{
+								var dto = userResult.Value!;
+
+								// Persist local TgUser mapping if repository available
+								if (userRepository != null)
+								{
+									var tgUser = new TgUser
+									{
+										Id = Guid.NewGuid(),
+										TelegramId = dto.TelegramId,
+										UserId = dto.Id,
+										FirstName = firstName ?? string.Empty,
+										LastName = lastName ?? string.Empty,
+										Username = username,
+										IsActive = dto.IsActive,
+										CreatedAt = DateTime.UtcNow,
+										UpdatedAt = DateTime.UtcNow
+									};
+
+									await userRepository.AddOrUpdateAsync(tgUser, cancellationToken);
+								}
+
+								// Set session.UserId and optionally cache profile
+								session.UserId = dto.Id;
+								session.CachedProfile = new CachedUserProfile
+								{
+									UserId = dto.Id,
+									TelegramId = dto.TelegramId,
+									FirstName = dto.FullName?.Split(' ').FirstOrDefault() ?? string.Empty,
+									LastName = dto.FullName?.Split(' ').LastOrDefault() ?? string.Empty,
+									TelegramUsername = dto.TelegramUsername,
+									LanguageCode = dto.LanguageCode,
+									IsActive = dto.IsActive,
+									Roles = dto.Roles,
+								};
+
+								await sessionService.UpdateSessionAsync(session, cancellationToken);
+
+								// Notify UserService about activity
+								_ = userService.UpdateActivityAsync(dto.Id, cancellationToken);
+							}
+							else
+							{
+								_logger.LogWarning("Failed to get or create user from UserService for TelegramId {TelegramId}: {Error}", telegramId.Value, userResult.Error?.GetMessage());
+							}
+						}
+					}
+				}
+				catch (Exception ex)
+				{
+					_logger.LogError(ex, "Error ensuring user/session for TelegramId {TelegramId}", telegramId.Value);
+				}
+			}
+
 			// Обработка команд
 			if (update.Message?.Text != null && update.Message.Text.StartsWith("/"))
 			{
