@@ -55,6 +55,8 @@ public sealed class GetUserByTelegramIdHandler
 				return UserServiceErrors.UserNotFound;
 			}
 
+			_logger.LogInformation("User by Telegram ID: {TelegramId}", telegramId);
+
 			var roles = await _userManager.GetRolesAsync(user);
 
 			return user.ToUserResponse(roles);

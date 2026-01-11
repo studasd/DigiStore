@@ -7,12 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DigiStore.Core" Version="0.0.4" />
-    <PackageReference Include="DigiStore.Framework" Version="0.0.4" />
+    <PackageReference Include="DigiStore.Core" Version="0.0.6" />
+    <PackageReference Include="DigiStore.Framework" Version="0.0.6" />
   </ItemGroup>
 
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
