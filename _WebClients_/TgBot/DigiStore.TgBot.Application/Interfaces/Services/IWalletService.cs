@@ -8,17 +8,17 @@ namespace DigiStore.TgBot.Application.Interfaces.Services;
 /// <summary>
 /// Service to interact with WalletService via HTTP
 /// </summary>
-public interface ITelegramWalletService
+public interface IWalletService
 {
 	/// <summary>
 	/// Get user balance
 	/// </summary>
-	Task<Result<TelegramBalanceDto, Error>> GetBalanceAsync(Guid userId, CancellationToken ct = default);
+	Task<Result<BalanceDto, Error>> GetBalanceAsync(Guid userId, CancellationToken ct = default);
 
 	/// <summary>
 	/// Get transactions
 	/// </summary>
-	Task<Result<IEnumerable<TelegramTransactionDto>, Error>> GetTransactionsAsync(Guid userId, int take = 10, CancellationToken ct = default);
+	Task<Result<IEnumerable<TransactionDto>, Error>> GetTransactionsAsync(Guid userId, int take = 10, CancellationToken ct = default);
 
 	/// <summary>
 	/// Initiate withdrawal

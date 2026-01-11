@@ -12,24 +12,21 @@ using System.Text.Json;
 namespace DigiStore.TgBot.Application.Services;
 
 
-public class TelegramUserService : ITelegramUserService
+public class UserService : IUserService
 {
 	private readonly IUserHttpClient _httpClient;
 	//private readonly HttpClient _httpClient;
-	private readonly ILogger<TelegramUserService> _logger;
-	private readonly string _userServiceUrl;
+	private readonly ILogger<UserService> _logger;
 
-	public TelegramUserService(
+	public UserService(
 		//HttpClient httpClient,
 		IUserHttpClient httpClient,
 		IConfiguration configuration,
-		ILogger<TelegramUserService> logger)
+		ILogger<UserService> logger)
 	{
 		_httpClient = httpClient;
 		//_httpClient = httpClient;
 		_logger = logger;
-		_userServiceUrl = configuration["Services:UserService:Url"]
-			?? throw new InvalidOperationException("UserService URL not configured");
 	}
 
 
@@ -55,8 +52,8 @@ public class TelegramUserService : ITelegramUserService
 					TelegramId = user.TelegramId ?? telegramId,
 					Email = user.Email ?? string.Empty,
 					FullName = user.FullName ?? string.Empty,
-					TelegramUsername = user.TelegramId.HasValue ? user.TelegramId.ToString() : username,
-					LanguageCode = user.LanguageCode,
+					Username = user.TelegramId.HasValue ? user.TelegramId.ToString() : username,
+					LangCode = user.LanguageCode,
 					IsActive = user.IsActive,
 					Roles = user.Roles?.ToList() ?? new List<string>()
 				};
@@ -86,9 +83,9 @@ public class TelegramUserService : ITelegramUserService
 						FullName = createUser.FullName ?? string.Empty,
 						Id = createUser.Id,
 						TelegramId = createUser.TelegramId ?? telegramId,
-						TelegramUsername = username,
+						Username = username,
 						IsActive = createUser.IsActive,
-						LanguageCode = createUser.LanguageCode,
+						LangCode = createUser.LanguageCode,
 						Roles = createUser.Roles?.ToList() ?? new List<string>(),
 						IsNew = true
 					};
@@ -138,8 +135,8 @@ public class TelegramUserService : ITelegramUserService
 				TelegramId = user.TelegramId ?? 0,
 				Email = user.Email ?? string.Empty,
 				FullName = user.FullName ?? string.Empty,
-				TelegramUsername = user.TelegramId.HasValue ? user.TelegramId.ToString() : null,
-				LanguageCode = user.LanguageCode,
+				Username = user.TelegramId.HasValue ? user.TelegramId.ToString() : null,
+				LangCode = user.LanguageCode,
 				IsActive = user.IsActive,
 				Roles = user.Roles?.ToList() ?? new List<string>()
 			};

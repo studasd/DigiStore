@@ -1,6 +1,7 @@
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.TgBot.Domain;
+using DigiStore.TgBot.Domain.ValueObjects;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -16,8 +17,8 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.LanguagePrefix;
 	public const bool IsPrefix = true;
 	
-	private readonly ITelegramProfileService _profileService;
-	private readonly ITelegramSessionService _sessionService;
+	private readonly IProfileService _profileService;
+	private readonly ISessionService _sessionService;
 	private readonly ILogger<LanguageSelection> _logger;
 
 	string ICallbackQueryHandler.CallbackData => CallbackData;
@@ -25,8 +26,8 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 
 	public LanguageSelection(
 		ITelegramBotClient botClient,
-		ITelegramProfileService profileService,
-		ITelegramSessionService sessionService,
+		IProfileService profileService,
+		ISessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<LanguageSelection> logger)
 		: base(botClient, localizationService)
@@ -68,7 +69,7 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 			}
 
 			// Update session
-			session.LanguageCode = languageCode;
+			session.LangCode = languageCode;
 			session.SetState(BotState.LanguageSelected);
 			await _sessionService.UpdateSessionAsync(session, cancellationToken);
 
@@ -87,15 +88,15 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 			var profile = profileResult.Value!;
 
 			// Cache profile in session
-			session.CachedProfile = new CachedUserProfile
+			session.CachedProfile = new CachedUserProfileVO
 			{
 				UserId = profile.UserId,
 				TelegramId = profile.TelegramId,
 				Email = profile.Email,
 				FirstName = profile.FullName.Split(' ').FirstOrDefault() ?? string.Empty,
 				LastName = profile.FullName.Split(' ').LastOrDefault() ?? string.Empty,
-				TelegramUsername = profile.TelegramUsername,
-				LanguageCode = profile.LanguageCode,
+				Username = profile.Username,
+				LangCode = profile.LangCode,
 				IsActive = profile.IsActive,
 				Roles = profile.Roles,
 				Balance = profile.Balance,

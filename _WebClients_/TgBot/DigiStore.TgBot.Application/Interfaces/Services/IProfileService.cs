@@ -8,7 +8,7 @@ namespace DigiStore.TgBot.Application.Interfaces.Services;
 /// <summary>
 /// Service для управления профилем пользователя в телеграме
 /// </summary>
-public interface ITelegramProfileService
+public interface IProfileService
 {
 	/// <summary>
 	/// Get full profile with balance (для /profile и /start)

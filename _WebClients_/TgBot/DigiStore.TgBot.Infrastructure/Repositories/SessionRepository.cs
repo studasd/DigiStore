@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DigiStore.TgBot.Infrastructure.Repositories;
 
-public class SessionRepository : ITelegramSessionRepository
+public class SessionRepository : ISessionRepository
 {
     private readonly TgBotDbContext _db;
 
@@ -29,8 +29,7 @@ public class SessionRepository : ITelegramSessionRepository
         else
         {
             existing.CurrentState = session.CurrentState;
-            existing.LanguageCode = session.LanguageCode;
-            existing.Data = session.Data;
+            existing.LangCode = session.LangCode;
             existing.CachedProfile = session.CachedProfile;
             existing.LastActivity = DateTime.UtcNow;
         }

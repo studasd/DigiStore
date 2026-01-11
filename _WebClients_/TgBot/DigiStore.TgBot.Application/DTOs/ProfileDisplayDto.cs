@@ -28,7 +28,7 @@ public class ProfileDisplayDto
 	/// <summary>
 	/// Telegram username (@username)
 	/// </summary>
-	public string? TelegramUsername { get; set; }
+	public string? Username { get; set; }
 	/// <summary>
 	/// Текущий баланс
 	/// </summary>
@@ -40,7 +40,7 @@ public class ProfileDisplayDto
 	/// <summary>
 	/// Язык пользователя
 	/// </summary>
-	public string LanguageCode { get; set; } = "en";
+	public string LangCode { get; set; } = "en";
 	/// <summary>
 	/// Активен ли аккаунт
 	/// </summary>

@@ -11,7 +11,5 @@ public class CommandHistory
 
     public string Command { get; set; } = string.Empty;
 
-    public string Payload { get; set; } = "{}"; // jsonb
-
     public DateTime Timestamp { get; set; }
 }

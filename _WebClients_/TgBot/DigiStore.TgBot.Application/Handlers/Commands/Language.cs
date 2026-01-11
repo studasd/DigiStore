@@ -14,14 +14,14 @@ public class Language : BaseHandler, ICommandHandler
 {
 	public const string Command = BotCommands.Language;
 	
-	private readonly ITelegramSessionService _sessionService;
+	private readonly ISessionService _sessionService;
 	private readonly ILogger<Language> _logger;
 
 	string ICommandHandler.Command => Command;
 
 	public Language(
 		ITelegramBotClient botClient,
-		ITelegramSessionService sessionService,
+		ISessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<Language> logger)
 		: base(botClient, localizationService)
@@ -49,7 +49,7 @@ public class Language : BaseHandler, ICommandHandler
 				return;
 			}
 
-			var currentLanguage = session.LanguageCode ?? "en";
+			var currentLanguage = session.LangCode ?? "en";
 
 			// Send language selection
 			await SendLanguageSelection(chatId, currentLanguage, isStartCommand: false, cancellationToken);

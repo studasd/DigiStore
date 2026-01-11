@@ -8,17 +8,17 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DigiStore.TgBot.Application.Services;
 
-public class TelegramProfileService : ITelegramProfileService
+public class ProfileService : IProfileService
 {
-	private readonly ITelegramUserService _userService;
-	private readonly ITelegramWalletService _walletService;
+	private readonly IUserService _userService;
+	private readonly IWalletService _walletService;
 	private readonly ILocalizationService _localizationService;
-	private readonly ILogger<TelegramProfileService> _logger;
-	public TelegramProfileService(
-		ITelegramUserService userService,
-		ITelegramWalletService walletService,
+	private readonly ILogger<ProfileService> _logger;
+	public ProfileService(
+		IUserService userService,
+		IWalletService walletService,
 		ILocalizationService localizationService,
-		ILogger<TelegramProfileService> logger)
+		ILogger<ProfileService> logger)
 	{
 		_userService = userService;
 		_walletService = walletService;
@@ -55,10 +55,10 @@ public class TelegramProfileService : ITelegramProfileService
 				UserId = userId,
 				FullName = user.FullName,
 				Email = user.Email,
-				TelegramUsername = user.TelegramUsername,
+				Username = user.Username,
 				Balance = balance,
 				Currency = currency,
-				LanguageCode = user.LanguageCode,
+				LangCode = user.LangCode,
 				IsActive = user.IsActive,
 				Roles = user.Roles,
 				CreatedAt = DateTime.UtcNow,
@@ -88,14 +88,14 @@ public class TelegramProfileService : ITelegramProfileService
 🆔 Telegram ID: {profile.TelegramId}
 📧 {loc.GetMessage("email", lang)}: {profile.Email}
 ";
-		if (!string.IsNullOrEmpty(profile.TelegramUsername))
+		if (!string.IsNullOrEmpty(profile.Username))
 		{
-			text += $"📱 {loc.GetMessage("telegram_username", lang)}: @{profile.TelegramUsername}\n";
+			text += $"📱 {loc.GetMessage("telegram_username", lang)}: @{profile.Username}\n";
 		}
 
 		text += $@"
 💰 {loc.GetMessage("balance", lang)}: {profile.Balance:F2} {profile.Currency}
-🌐 {loc.GetMessage("language", lang)}: {GetLanguageName(profile.LanguageCode)}
+🌐 {loc.GetMessage("language", lang)}: {GetLanguageName(profile.LangCode)}
 ✅ {loc.GetMessage("status", lang)}: {(profile.IsActive ? "Active" : "Inactive")}
 ";
 		if (profile.Roles.Count > 0)

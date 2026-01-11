@@ -16,8 +16,8 @@ public class ProfileView : BaseHandler, ICallbackQueryHandler
 	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.ProfileView;
 	public const bool IsPrefix = false;
 	
-	private readonly ITelegramProfileService _profileService;
-	private readonly ITelegramSessionService _sessionService;
+	private readonly IProfileService _profileService;
+	private readonly ISessionService _sessionService;
 	private readonly ILogger<ProfileView> _logger;
 
 	string ICallbackQueryHandler.CallbackData => CallbackData;
@@ -25,8 +25,8 @@ public class ProfileView : BaseHandler, ICallbackQueryHandler
 
 	public ProfileView(
 		ITelegramBotClient botClient,
-		ITelegramProfileService profileService,
-		ITelegramSessionService sessionService,
+		IProfileService profileService,
+		ISessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<ProfileView> logger)
 		: base(botClient, localizationService)
@@ -51,7 +51,7 @@ public class ProfileView : BaseHandler, ICallbackQueryHandler
 			if (session?.UserId == null)
 				return;
 
-			var languageCode = session.LanguageCode ?? "en";
+			var languageCode = session.LangCode ?? "en";
 
 			var profileResult = await _profileService.GetFullProfileAsync(
 				session.UserId,

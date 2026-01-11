@@ -15,16 +15,16 @@ public class Balance : BaseHandler, ICommandHandler
 {
 	public const string Command = BotCommands.Balance;
 	
-	private readonly ITelegramProfileService _profileService;
-	private readonly ITelegramSessionService _sessionService;
+	private readonly IProfileService _profileService;
+	private readonly ISessionService _sessionService;
 	private readonly ILogger<Balance> _logger;
 
 	string ICommandHandler.Command => Command;
 
 	public Balance(
 		ITelegramBotClient botClient,
-		ITelegramProfileService profileService,
-		ITelegramSessionService sessionService,
+		IProfileService profileService,
+		ISessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<Balance> logger)
 		: base(botClient, localizationService)
@@ -51,7 +51,7 @@ public class Balance : BaseHandler, ICommandHandler
 				return;
 			}
 
-			var languageCode = session.LanguageCode ?? "en";
+			var languageCode = session.LangCode ?? "en";
 
 			var profileResult = await _profileService.GetFullProfileAsync(session.UserId, telegramId, cancellationToken);
 			if (!profileResult.IsSuccess)
@@ -66,7 +66,7 @@ public class Balance : BaseHandler, ICommandHandler
 💰 {_localizationService.GetMessage("balance_info", languageCode)}
 {_localizationService.GetMessage("current_balance", languageCode)}: <b>{profile.Balance:F2} {profile.Currency}</b>
 🔗 {_localizationService.GetMessage("linked_accounts", languageCode)}:
-👤 Telegram: @{profile.TelegramUsername ?? "Not set"}
+👤 Telegram: @{profile.Username ?? "Not set"}
 ";
 
 			var keyboard = GetBackToMainMenuKeyboard(languageCode);

@@ -8,7 +8,7 @@ namespace DigiStore.TgBot.Application.Interfaces.Services;
 /// <summary>
 /// Service to interact with UserService via HTTP
 /// </summary>
-public interface ITelegramUserService
+public interface IUserService
 {
 	/// <summary>
 	/// Get or create user by Telegram ID

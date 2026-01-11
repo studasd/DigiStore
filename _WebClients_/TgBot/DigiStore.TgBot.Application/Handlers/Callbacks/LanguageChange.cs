@@ -15,8 +15,8 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.LanguageChangePrefix;
 	public const bool IsPrefix = true;
 	
-	private readonly ITelegramProfileService _profileService;
-	private readonly ITelegramSessionService _sessionService;
+	private readonly IProfileService _profileService;
+	private readonly ISessionService _sessionService;
 	private readonly ILogger<LanguageChange> _logger;
 
 	string ICallbackQueryHandler.CallbackData => CallbackData;
@@ -24,8 +24,8 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 
 	public LanguageChange(
 		ITelegramBotClient botClient,
-		ITelegramProfileService profileService,
-		ITelegramSessionService sessionService,
+		IProfileService profileService,
+		ISessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<LanguageChange> logger)
 		: base(botClient, localizationService)
@@ -50,7 +50,7 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 
 			var data = callbackQuery.Data;
 			var languageCode = data.Replace(CallbackData, "");
-			var currentLanguage = session.LanguageCode ?? "en";
+			var currentLanguage = session.LangCode ?? "en";
 
 			// Handle "select" case - shows all languages
 			if (languageCode == "select")
@@ -88,7 +88,7 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 			}
 
 			// Update session
-			session.LanguageCode = languageCode;
+			session.LangCode = languageCode;
 			session.SetState(BotState.MainMenu);
 			await _sessionService.UpdateSessionAsync(session, cancellationToken);
 

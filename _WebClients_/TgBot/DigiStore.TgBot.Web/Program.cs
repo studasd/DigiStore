@@ -6,17 +6,12 @@ using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Microsoft.Extensions.Options;
+using DigiStore.TgBot.Application.Options;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Добавляем сервисы Telegram бота
-builder.Services.AddControllers();
-builder.Services.AddTgBotServices(builder.Configuration);
-builder.Services.AddLogging(config =>
-{
-	config.AddConsole();
-	config.AddDebug();
-});
 
 // Гарантирует, что в runtime используется DefaultJsonTypeInfoResolver (reflection-based)
 // и не произойдёт NotSupportedException при GetTypeInfo для типов, не зарегистрированных в OpenAPI контексте.
@@ -25,6 +20,10 @@ builder.Services.Configure<JsonOptions>(opts =>
 	opts.SerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
 });
 
+// Добавляем сервисы Telegram бота
+builder.Services.AddControllers();
+builder.Services.AddTgBotServices(builder.Configuration);
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -32,7 +31,9 @@ var app = builder.Build();
 
 // Инициализация команд бота
 using var scope = app.Services.CreateScope();
-var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
+var serviceProvider = scope.ServiceProvider;
+var botClient = serviceProvider.GetRequiredService<ITelegramBotClient>();
+var telegramOptions = serviceProvider.GetRequiredService<IOptions<TelegramOptions>>().Value;
 
 var commands = new BotCommand[]
 {
@@ -56,14 +57,14 @@ catch (Exception ex)
 }
 
 // Настройка webhook или polling
-var webhookUrl = builder.Configuration["Telegram:WebhookUrl"];
-if (!string.IsNullOrEmpty(webhookUrl))
+// var webhookUrl = builder.Configuration["Telegram:WebhookUrl"];
+if (!string.IsNullOrEmpty(telegramOptions.WebhookUrl) && telegramOptions.IsWebhook)
 {
 	// Webhook mode
 	await botClient.SetWebhook(
-		$"{webhookUrl}/telegram/webhook",
+		$"{telegramOptions.WebhookUrl}/telegram/webhook",
 		allowedUpdates: Array.Empty<UpdateType>());
-	app.Logger.LogInformation("Webhook configured: {WebhookUrl}", webhookUrl);
+	app.Logger.LogInformation("Webhook configured: {WebhookUrl}", telegramOptions.WebhookUrl);
 	
 	// Обработка webhook updates
 	app.MapPost("/telegram/webhook", async (Update update, UpdateHandler updateHandler, CancellationToken ct) =>

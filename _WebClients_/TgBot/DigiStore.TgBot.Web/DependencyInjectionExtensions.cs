@@ -2,6 +2,8 @@
 using DigiStore.TgBot.Application;
 using DigiStore.TgBot.Infrastructure;
 using System.Reflection;
+using DigiStore.TgBot.Application.Options;
+using Microsoft.Extensions.Options;
 
 namespace DigiStore.TgBot.Web;
 
@@ -10,12 +12,13 @@ public static class DependencyInjectionExtensions
 {
 	public static IServiceCollection AddTgBotServices(this IServiceCollection services, IConfiguration configuration)
 	{
-		var seqUrl = configuration.GetValue<string>("SeqUrl");
-
 		services
-			.AddSerilogLogging("TgBot", Assembly.GetExecutingAssembly(), seqUrl)
 			.AddTgBotApplication(configuration)
-			.AddTgBotInfrastructure(configuration);
+			.AddTgBotInfrastructure(configuration)
+			.AddSerilogLogging(
+				"TgBot", 
+				Assembly.GetExecutingAssembly(), 
+				sp => sp.GetRequiredService<IOptions<ServiceOptions>>().Value?.SeqUrl);
 
 		return services;
 	}

@@ -7,6 +7,7 @@ using Telegram.Bot.Types;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.TgBot.Application.Interfaces.Repositories;
 using DigiStore.TgBot.Domain;
+using DigiStore.TgBot.Domain.ValueObjects;
 
 namespace DigiStore.TgBot.Application.Handlers;
 
@@ -129,9 +130,9 @@ public class UpdateHandler
 			{
 				try
 				{
-					var sessionService = serviceProvider.GetService<ITelegramSessionService>();
-					var userService = serviceProvider.GetService<ITelegramUserService>();
-					var userRepository = serviceProvider.GetService<ITelegramUserRepository>();
+					var sessionService = serviceProvider.GetService<ISessionService>();
+					var userService = serviceProvider.GetService<IUserService>();
+					var userRepository = serviceProvider.GetService<IUserRepository>();
 
 					if (sessionService != null && userService != null)
 					{
@@ -139,7 +140,7 @@ public class UpdateHandler
 
 						if (session.UserId == null)
 						{
-							var lang = session.LanguageCode ?? "en";
+							var lang = session.LangCode ?? "en";
 							var userResult = await userService.GetOrCreateUserAsync(telegramId.Value, username, firstName, lastName, lang, cancellationToken);
 							if (userResult.IsSuccess)
 							{
@@ -166,14 +167,14 @@ public class UpdateHandler
 
 								// Set session.UserId and optionally cache profile
 								session.UserId = dto.Id;
-								session.CachedProfile = new CachedUserProfile
+								session.CachedProfile = new CachedUserProfileVO
 								{
 									UserId = dto.Id,
 									TelegramId = dto.TelegramId,
 									FirstName = dto.FullName?.Split(' ').FirstOrDefault() ?? string.Empty,
 									LastName = dto.FullName?.Split(' ').LastOrDefault() ?? string.Empty,
-									TelegramUsername = dto.TelegramUsername,
-									LanguageCode = dto.LanguageCode,
+									Username = dto.Username,
+									LangCode = dto.LangCode,
 									IsActive = dto.IsActive,
 									Roles = dto.Roles,
 								};

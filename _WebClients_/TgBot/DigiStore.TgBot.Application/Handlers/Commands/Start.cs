@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using System.Threading.Tasks;
+using DigiStore.TgBot.Domain.ValueObjects;
 
 namespace DigiStore.TgBot.Application.Handlers.Commands;
 
@@ -15,18 +16,18 @@ public class Start : BaseHandler, ICommandHandler
 {
 	public const string Command = BotCommands.Start;
 	
-	private readonly ITelegramUserService _userService;
-	private readonly ITelegramSessionService _sessionService;
-	private readonly ITelegramProfileService _profileService;
+	private readonly IUserService _userService;
+	private readonly ISessionService _sessionService;
+	private readonly IProfileService _profileService;
 	private readonly ILogger<Start> _logger;
 
 	string ICommandHandler.Command => Command;
 
 	public Start(
 		ITelegramBotClient botClient,
-		ITelegramUserService userService,
-		ITelegramSessionService sessionService,
-		ITelegramProfileService profileService,
+		IUserService userService,
+		ISessionService sessionService,
+		IProfileService profileService,
 		ILocalizationService localizationService,
 		ILogger<Start> logger)
 		: base(botClient, localizationService)
@@ -76,13 +77,13 @@ public class Start : BaseHandler, ICommandHandler
 			// Get or create session
 			var session = await _sessionService.GetOrCreateSessionAsync(telegramId, cancellationToken);
 			session.UserId = user.Id;
-			session.LanguageCode = user.LanguageCode;
+			session.LangCode = user.LangCode;
 
 			// If user was just created -> ask for language
 			if (user.IsNew)
 			{
 				// Send greeting and language selection
-				await SendLanguageSelection(message.Chat.Id, session.LanguageCode, isStartCommand: true, cancellationToken);
+				await SendLanguageSelection(message.Chat.Id, session.LangCode, isStartCommand: true, cancellationToken);
 
 				// Update session - waiting for language selection
 				session.SetState(BotState.LanguageSelectionAwaiting);
@@ -94,22 +95,22 @@ public class Start : BaseHandler, ICommandHandler
 				var profileResult = await _profileService.GetFullProfileAsync(user.Id, telegramId, cancellationToken);
 				if (!profileResult.IsSuccess)
 				{
-					await SendErrorMessage(message.Chat.Id, _localizationService.GetMessage("error_occurred", session.LanguageCode ?? "en"), cancellationToken);
+					await SendErrorMessage(message.Chat.Id, _localizationService.GetMessage("error_occurred", session.LangCode ?? "en"), cancellationToken);
 					return;
 				}
 
 				var profile = profileResult.Value!;
 
 				// Cache profile in session
-				session.CachedProfile = new DigiStore.TgBot.Domain.CachedUserProfile
+				session.CachedProfile = new CachedUserProfileVO
 				{
 					UserId = profile.UserId,
 					TelegramId = profile.TelegramId,
 					Email = profile.Email,
 					FirstName = profile.FullName.Split(' ').FirstOrDefault() ?? string.Empty,
 					LastName = profile.FullName.Split(' ').LastOrDefault() ?? string.Empty,
-					TelegramUsername = profile.TelegramUsername,
-					LanguageCode = profile.LanguageCode,
+					Username = profile.Username,
+					LangCode = profile.LangCode,
 					IsActive = profile.IsActive,
 					Roles = profile.Roles,
 					Balance = profile.Balance,
@@ -121,8 +122,8 @@ public class Start : BaseHandler, ICommandHandler
 				session.SetState(BotState.ProfileViewing);
 				await _sessionService.UpdateSessionAsync(session, cancellationToken);
 
-				var profileText = _profileService.FormatProfileText(profile, session.LanguageCode ?? "en");
-				var keyboard = GetProfileKeyboard(session.LanguageCode ?? "en");
+				var profileText = _profileService.FormatProfileText(profile, session.LangCode ?? "en");
+				var keyboard = GetProfileKeyboard(session.LangCode ?? "en");
 
 				await _botClient.SendMessage(
 					message.Chat.Id,

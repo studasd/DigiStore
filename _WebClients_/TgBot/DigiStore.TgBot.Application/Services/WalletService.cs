@@ -3,32 +3,35 @@ using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.DTOs;
 using DigiStore.TgBot.Application.Interfaces.Services;
+using DigiStore.TgBot.Application.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 
 namespace DigiStore.TgBot.Application.Services;
 
 
-public class TelegramWalletService : ITelegramWalletService
+public class WalletService : IWalletService
 {
 	private readonly HttpClient _httpClient;
-	private readonly ILogger<TelegramWalletService> _logger;
+	private readonly ILogger<WalletService> _logger;
 	private readonly string _walletServiceUrl;
 
-	public TelegramWalletService(
+	public WalletService(
 		HttpClient httpClient,
 		IConfiguration configuration,
-		ILogger<TelegramWalletService> logger)
+		IOptions<ServiceOptions> options,
+		ILogger<WalletService> logger)
 	{
 		_httpClient = httpClient;
 		_logger = logger;
-		_walletServiceUrl = configuration["Services:WalletService:Url"]
+		_walletServiceUrl = options.Value.WalletServiceUrl // configuration["Services:WalletService:Url"]
 			?? throw new InvalidOperationException("WalletService URL not configured");
 	}
 
 
-	public async Task<Result<TelegramBalanceDto, Error>> GetBalanceAsync(Guid userId, CancellationToken ct = default)
+	public async Task<Result<BalanceDto, Error>> GetBalanceAsync(Guid userId, CancellationToken ct = default)
 	{
 		try
 		{
@@ -42,7 +45,7 @@ public class TelegramWalletService : ITelegramWalletService
 			}
 
 			var content = await response.Content.ReadAsStringAsync(ct);
-			var wallet = JsonSerializer.Deserialize<TelegramBalanceDto>(content);
+			var wallet = JsonSerializer.Deserialize<BalanceDto>(content);
 
 			return wallet;
 		}
@@ -54,7 +57,7 @@ public class TelegramWalletService : ITelegramWalletService
 	}
 
 
-	public async Task<Result<IEnumerable<TelegramTransactionDto>, Error>> GetTransactionsAsync(
+	public async Task<Result<IEnumerable<TransactionDto>, Error>> GetTransactionsAsync(
 		Guid userId,
 		int take = 10,
 		CancellationToken ct = default)
@@ -71,7 +74,7 @@ public class TelegramWalletService : ITelegramWalletService
 			}
 
 			var content = await response.Content.ReadAsStringAsync(ct);
-			var transactions = JsonSerializer.Deserialize<List<TelegramTransactionDto>>(content);
+			var transactions = JsonSerializer.Deserialize<List<TransactionDto>>(content);
 
 			return transactions ?? new();
 		}

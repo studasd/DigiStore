@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Telegram.Bot;
 using DigiStore.UserService.Contracts.HttpClients;
 using DigiStore.TgBot.Application.Interfaces.Services;
+using DigiStore.TgBot.Application.Options;
+using Microsoft.Extensions.Options;
 
 
 namespace DigiStore.TgBot.Application;
@@ -13,11 +15,17 @@ public static class DependencyInjectionExtensions
 {
 	public static IServiceCollection AddTgBotApplication(this IServiceCollection services, IConfiguration configuration)
 	{
-		// Telegram Bot Client
-		var botToken = configuration["Telegram:BotToken"]
-			?? throw new InvalidOperationException("Telegram BotToken not configured");
-		services.AddScoped<ITelegramBotClient>(_ => new TelegramBotClient(botToken));
-		services.AddScoped<ITelegramUserService, TelegramUserService>();
+		services.Configure<ServiceOptions>(configuration.GetSection(nameof(ServiceOptions)));
+		services.Configure<TelegramOptions>(configuration.GetSection(nameof(TelegramOptions)));
+		//// Bind ServiceOptions to the DI system so it can be resolved via IOptions<ServiceOptions>
+		//services.Configure<ServiceOptions>(configuration);
+
+		services.AddScoped<ITelegramBotClient>(x => 
+		{
+			var token = x.GetRequiredService<IOptions<TelegramOptions>>().Value.BotToken;
+			return new TelegramBotClient(token);
+		});
+		services.AddScoped<IUserService, Services.UserService>();
 		services.AddUserServiceHttp(configuration);
 
 		//// User & Wallet Services (HTTP clients)
@@ -27,7 +35,7 @@ public static class DependencyInjectionExtensions
 		//		//client.Timeout = TimeSpan.FromSeconds(10);
 		//		client.Timeout = TimeSpan.FromMinutes(10);
 		//	});
-		services.AddHttpClient<ITelegramWalletService, TelegramWalletService>()
+		services.AddHttpClient<IWalletService, WalletService>()
 			.ConfigureHttpClient(client =>
 			{
 				//client.Timeout = TimeSpan.FromSeconds(10);
@@ -35,7 +43,7 @@ public static class DependencyInjectionExtensions
 			});
 
 		// Session & Localization
-		services.AddScoped<ITelegramProfileService, TelegramProfileService>();
+		services.AddScoped<IProfileService, ProfileService>();
 
 		// Автоматическая регистрация всех хэндлеров команд и колбэков
 		RegisterHandlers(services);

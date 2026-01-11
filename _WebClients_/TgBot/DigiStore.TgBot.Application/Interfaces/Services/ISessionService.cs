@@ -6,7 +6,7 @@ namespace DigiStore.TgBot.Application.Interfaces.Services;
 /// <summary>
 /// Service to manage user sessions
 /// </summary>
-public interface ITelegramSessionService
+public interface ISessionService
 {
 	/// <summary>
 	/// Get or create session

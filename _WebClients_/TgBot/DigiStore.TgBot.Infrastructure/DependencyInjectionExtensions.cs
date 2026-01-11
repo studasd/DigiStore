@@ -34,12 +34,12 @@ public static class DependencyInjectionExtensions
 
 
 		// Session & Localization
-		services.AddScoped<ITelegramSessionService, TelegramSessionService>();
+		services.AddScoped<ISessionService, SessionService>();
 		services.AddScoped<ILocalizationService, LocalizationService>();
 
 		// Repositories
-		services.AddScoped<ITelegramUserRepository, Repositories.UserRepository>();
-		services.AddScoped<ITelegramSessionRepository, Repositories.SessionRepository>();
+		services.AddScoped<IUserRepository, Repositories.UserRepository>();
+		services.AddScoped<ISessionRepository, Repositories.SessionRepository>();
 		services.AddScoped<ICommandHistoryRepository, Repositories.CommandHistoryRepository>();
 		services.AddScoped<ILocalizationRepository, Repositories.LocalizationRepository>();
 

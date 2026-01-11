@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DigiStore.TgBot.Infrastructure.Repositories;
 
-public class UserRepository : ITelegramUserRepository
+public class UserRepository : IUserRepository
 {
     private readonly TgBotDbContext _db;
 

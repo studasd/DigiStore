@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using DigiStore.TgBot.Domain;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -24,7 +22,6 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     TelegramId = table.Column<long>(type: "bigint", nullable: false),
                     Command = table.Column<string>(type: "text", nullable: false),
-                    Payload = table.Column<string>(type: "jsonb", nullable: false),
                     Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()")
                 },
                 constraints: table =>
@@ -58,10 +55,9 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
                     TelegramId = table.Column<long>(type: "bigint", nullable: false),
                     CurrentState = table.Column<string>(type: "text", nullable: false),
                     LanguageCode = table.Column<string>(type: "text", nullable: false),
-                    Data = table.Column<Dictionary<string, object>>(type: "jsonb", nullable: false),
-                    CachedProfile = table.Column<CachedUserProfile>(type: "jsonb", nullable: true),
                     LastActivity = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()")
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
+                    CachedProfile = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
                 {

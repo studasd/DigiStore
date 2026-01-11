@@ -13,17 +13,19 @@ public static class DependencyInjectionExtensions
 	public static IServiceCollection AddConfiguration(this IServiceCollection services, IConfiguration configuration)
 	{
 		var seqUrl = configuration.GetValue<string>("SeqUrl");
+		//.AddSerilogLogging(
+		//		"TgBot",
+		//		Assembly.GetExecutingAssembly(),
+		//		sp => sp.GetRequiredService<IOptions<ServiceOptions>>().Value?.SeqUrl);
 
 		services
+			.AddCore(configuration)
+			.AddInfrastructurePostgres(configuration)
 			//.AddSerilogLogging(configuration, "UserService")
 			.AddSerilogLogging("UserService", Assembly.GetExecutingAssembly(), seqUrl)
 			.AddOpenApiSpec("UserService", "v1")
 			.AddEndpoints(typeof(DependencyInjectionApplicationExtensions).Assembly)
 			;
-
-		services
-			.AddCore(configuration)
-			.AddInfrastructurePostgres(configuration);
 
 		return services;
 	}

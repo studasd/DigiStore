@@ -1,10 +1,10 @@
-using Microsoft.EntityFrameworkCore;
+п»їusing Microsoft.EntityFrameworkCore;
 using DigiStore.TgBot.Domain;
 
 namespace DigiStore.TgBot.Infrastructure.Data;
 
-// add-migration Init -c TgBotDbContext        // -s DigiStore
-// update-database -Context TgBotDbContext
+// add-migration Init -c TgBotDbContext -s DigiStore.TgBot.Web
+// update-database -Context TgBotDbContext -s DigiStore.TgBot.Web
 
 public class TgBotDbContext : DbContext
 {
@@ -21,7 +21,7 @@ public class TgBotDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-		// Все таблицы по умолчанию в схеме "business"
+		// Р’СЃРµ С‚Р°Р±Р»РёС†С‹ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РІ СЃС…РµРјРµ "business"
 		modelBuilder.HasDefaultSchema("TgBot");
 
 		modelBuilder.Entity<TgUser>(eb =>
@@ -42,9 +42,20 @@ public class TgBotDbContext : DbContext
 			eb.HasKey(e => e.Id);
 
             eb.HasIndex(e => e.TelegramId);
-            eb.Property(e => e.Data).HasColumnType("jsonb");
-            eb.Property(e => e.CachedProfile).HasColumnType("jsonb");
-            eb.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+			eb.ComplexProperty(x => x.CachedProfile, builder =>
+			{
+				builder.ToJson(); // JSONB
+				builder.IsRequired(false); // Nullable
+
+				// Properties РІРЅСѓС‚СЂРё Complex Type
+				builder.Property(x => x.Roles); // List<string> в†’ JSONB РјР°СЃСЃРёРІ
+				builder.Property(x => x.Balance).HasPrecision(18, 2);
+				builder.Property(x => x.Email).HasMaxLength(100);
+				builder.Property(x => x.FirstName).HasMaxLength(50);
+				builder.Property(x => x.LastName).HasMaxLength(50);
+				builder.Property(x => x.Username).HasMaxLength(50);
+			});
+			eb.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
             eb.Property(e => e.LastActivity).HasDefaultValueSql("now()");
         });
 
@@ -55,7 +66,6 @@ public class TgBotDbContext : DbContext
 			eb.HasKey(e => e.Id);
 
             eb.HasIndex(e => e.TelegramId);
-            eb.Property(e => e.Payload).HasColumnType("jsonb");
             eb.Property(e => e.Timestamp).HasDefaultValueSql("now()");
         });
 

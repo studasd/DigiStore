@@ -1,6 +1,7 @@
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.TgBot.Domain;
+using DigiStore.TgBot.Domain.ValueObjects;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -15,16 +16,16 @@ public class Profile : BaseHandler, ICommandHandler
 {
 	public const string Command = BotCommands.Profile;
 	
-	private readonly ITelegramProfileService _profileService;
-	private readonly ITelegramSessionService _sessionService;
+	private readonly IProfileService _profileService;
+	private readonly ISessionService _sessionService;
 	private readonly ILogger<Profile> _logger;
 
 	string ICommandHandler.Command => Command;
 
 	public Profile(
 		ITelegramBotClient botClient,
-		ITelegramProfileService profileService,
-		ITelegramSessionService sessionService,
+		IProfileService profileService,
+		ISessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<Profile> logger)
 		: base(botClient, localizationService)
@@ -54,7 +55,7 @@ public class Profile : BaseHandler, ICommandHandler
 			}
 
 			var userId = session.UserId;
-			var languageCode = session.LanguageCode ?? "en";
+			var languageCode = session.LangCode ?? "en";
 
 			// Get full profile
 			var profileResult = await _profileService.GetFullProfileAsync(userId, telegramId, cancellationToken);
@@ -67,15 +68,15 @@ public class Profile : BaseHandler, ICommandHandler
 			var profile = profileResult.Value!;
 
 			// Cache profile in session
-			session.CachedProfile = new CachedUserProfile
+			session.CachedProfile = new CachedUserProfileVO
 			{
 				UserId = profile.UserId,
 				TelegramId = profile.TelegramId,
 				Email = profile.Email,
 				FirstName = profile.FullName.Split(' ').FirstOrDefault() ?? string.Empty,
 				LastName = profile.FullName.Split(' ').LastOrDefault() ?? string.Empty,
-				TelegramUsername = profile.TelegramUsername,
-				LanguageCode = profile.LanguageCode,
+				Username = profile.Username,
+				LangCode = profile.LangCode,
 				IsActive = profile.IsActive,
 				Roles = profile.Roles,
 				Balance = profile.Balance,

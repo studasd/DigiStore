@@ -2,7 +2,7 @@ using DigiStore.TgBot.Domain;
 
 namespace DigiStore.TgBot.Application.Interfaces.Repositories;
 
-public interface ITelegramUserRepository
+public interface IUserRepository
 {
     Task<TgUser?> GetByTelegramIdAsync(long telegramId, CancellationToken ct = default);
     Task<TgUser?> GetByIdAsync(Guid id, CancellationToken ct = default);

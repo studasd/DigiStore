@@ -16,8 +16,8 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.BalanceView;
 	public const bool IsPrefix = false;
 	
-	private readonly ITelegramWalletService _walletService;
-	private readonly ITelegramSessionService _sessionService;
+	private readonly IWalletService _walletService;
+	private readonly ISessionService _sessionService;
 	private readonly ILogger<BalanceView> _logger;
 
 	string ICallbackQueryHandler.CallbackData => CallbackData;
@@ -25,8 +25,8 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 
 	public BalanceView(
 		ITelegramBotClient botClient,
-		ITelegramWalletService walletService,
-		ITelegramSessionService sessionService,
+		IWalletService walletService,
+		ISessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<BalanceView> logger)
 		: base(botClient, localizationService)
@@ -51,7 +51,7 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 			if (session?.UserId == null)
 				return;
 
-			var languageCode = session.LanguageCode ?? "en";
+			var languageCode = session.LangCode ?? "en";
 
 			var walletResult = await _walletService.GetBalanceAsync(session.UserId, cancellationToken);
 

@@ -8,18 +8,18 @@ using System.Text.Json;
 namespace DigiStore.TgBot.Application.Services;
 
 
-public class TelegramSessionService : ITelegramSessionService
+public class SessionService : ISessionService
 {
-    private readonly ITelegramSessionRepository _sessionRepository;
+    private readonly ISessionRepository _sessionRepository;
     private readonly ICommandHistoryRepository _historyRepository;
-    private readonly ILogger<TelegramSessionService> _logger;
+    private readonly ILogger<SessionService> _logger;
     private const string SessionKeyFormat = "tg:session:{0}";
     private readonly TimeSpan _sessionExpiration = TimeSpan.FromHours(24);
 
-    public TelegramSessionService(
-        ITelegramSessionRepository sessionRepository,
+    public SessionService(
+        ISessionRepository sessionRepository,
         ICommandHistoryRepository historyRepository,
-        ILogger<TelegramSessionService> logger)
+        ILogger<SessionService> logger)
     {
         _sessionRepository = sessionRepository;
         _historyRepository = historyRepository;
@@ -86,8 +86,7 @@ public class TelegramSessionService : ITelegramSessionService
         {
             TelegramId = d.TelegramId,
             CurrentState = d.CurrentState,
-            LanguageCode = d.LanguageCode,
-            Data = d.Data,
+            LangCode = d.LangCode,
             CreatedAt = d.CreatedAt,
             LastActivity = d.LastActivity,
             CachedProfile = d.CachedProfile
@@ -103,8 +102,7 @@ public class TelegramSessionService : ITelegramSessionService
             Id = Guid.NewGuid(),
             TelegramId = s.TelegramId,
             CurrentState = s.CurrentState,
-            LanguageCode = s.LanguageCode ?? "en",
-            Data = s.Data,
+            LangCode = s.LangCode ?? "en",
             CachedProfile = s.CachedProfile,
             LastActivity = s.LastActivity,
             CreatedAt = s.CreatedAt
@@ -119,7 +117,6 @@ public class TelegramSessionService : ITelegramSessionService
             Id = Guid.NewGuid(),
             TelegramId = telegramId,
             Command = command,
-            Payload = payload == null ? "{}" : JsonSerializer.Serialize(payload),
             Timestamp = DateTime.UtcNow
         };
 
