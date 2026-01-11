@@ -55,7 +55,7 @@ public class Language : BaseHandler, ICommandHandler
 			await SendLanguageSelection(chatId, currentLanguage, isStartCommand: false, cancellationToken);
 
 			// Update session
-			session.SetState(BotState.AwaitingLanguageChange);
+			session.SetState(BotState.LanguageChangeAwaiting);
 			await _sessionService.UpdateSessionAsync(session, cancellationToken);
 
 			_logger.LogInformation("Language selection sent for user: {TelegramId}", telegramId);

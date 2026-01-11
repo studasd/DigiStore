@@ -89,7 +89,8 @@ public class TelegramUserService : ITelegramUserService
 						TelegramUsername = username,
 						IsActive = createUser.IsActive,
 						LanguageCode = createUser.LanguageCode,
-						Roles = createUser.Roles?.ToList() ?? new List<string>()
+						Roles = createUser.Roles?.ToList() ?? new List<string>(),
+						IsNew = true
 					};
 
 					_logger.LogInformation("User created for Telegram ID: {TelegramId}", telegramId);

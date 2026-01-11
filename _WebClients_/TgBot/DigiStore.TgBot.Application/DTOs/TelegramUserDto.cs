@@ -15,4 +15,7 @@ public class TelegramUserDto
 	public string LanguageCode { get; set; } = "en";
 	public bool IsActive { get; set; }
 	public List<string> Roles { get; set; } = new();
+	
+	// Indicates that the user was created during GetOrCreateUserAsync
+	public bool IsNew { get; set; } = false;
 }

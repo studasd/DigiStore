@@ -84,7 +84,7 @@ public class Profile : BaseHandler, ICommandHandler
 				UpdatedAt = profile.UpdatedAt
 			};
 
-			session.SetState(BotState.ViewingProfile);
+			session.SetState(BotState.ProfileViewing);
 			await _sessionService.UpdateSessionAsync(session, cancellationToken);
 
 			// Format and send profile

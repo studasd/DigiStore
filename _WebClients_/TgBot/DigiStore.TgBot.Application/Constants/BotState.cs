@@ -5,16 +5,19 @@
 /// </summary>
 public static class BotState
 {
-	public const string Start = "Start";
-	public const string AwaitingLanguageSelection = "AwaitingLanguageSelection";
-	public const string LanguageSelected = "LanguageSelected";
-	public const string MainMenu = "MainMenu";
-	public const string ViewingProfile = "ViewingProfile";
-	public const string ViewingBalance = "ViewingBalance";
-	public const string AwaitingLanguageChange = "AwaitingLanguageChange";
-	public const string AwaitingWithdrawal = "AwaitingWithdrawal";
-	public const string ConfirmingWithdrawal = "ConfirmingWithdrawal";
-	public const string ViewingCatalog = "ViewingCatalog";
-	public const string ViewingProduct = "ViewingProduct";
-	public const string AwaitingCheckout = "AwaitingCheckout";
+	public const string Start =							"Start";
+
+	public const string LanguageSelectionAwaiting =		"LanguageSelectionAwaiting";
+	public const string LanguageSelected =				"LanguageSelected";
+	public const string LanguageChangeAwaiting =		"LanguageChangeAwaiting";
+
+	public const string MainMenu =						"MainMenu";
+	public const string ProfileViewing =				"ProfileViewing";
+	public const string BalanceViewing =				"BalanceViewing";
+	public const string CatalogViewing =				"CatalogViewing";
+	public const string ProductViewing =				"ProductViewing";
+
+	public const string WithdrawalAwaiting =			"WithdrawalAwaiting";
+	public const string WithdrawalConfirming =			"WithdrawalConfirming";
+	public const string CheckoutAwaiting =				"AwaitingCheckout";
 }
