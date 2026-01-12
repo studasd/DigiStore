@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DigiStore.TgBot.Infrastructure.Migrations
 {
     [DbContext(typeof(TgBotDbContext))]
-    [Migration("20260111214308_Init")]
+    [Migration("20260111235135_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -138,7 +138,7 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("LanguageCode")
+                    b.Property<string>("LangCode")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -153,7 +153,7 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.ComplexProperty(typeof(Dictionary<string, object>), "CachedProfile", "DigiStore.TgBot.Domain.TgUserSession.CachedProfile#CachedUserProfile", b1 =>
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "CachedProfile", "DigiStore.TgBot.Domain.TgUserSession.CachedProfile#CachedUserProfileVO", b1 =>
                         {
                             b1.Property<decimal>("Balance")
                                 .HasPrecision(18, 2);
@@ -173,7 +173,7 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
 
                             b1.Property<bool>("IsActive");
 
-                            b1.Property<string>("LanguageCode")
+                            b1.Property<string>("LangCode")
                                 .IsRequired();
 
                             b1.Property<string>("LastName")
@@ -185,12 +185,12 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
 
                             b1.Property<long>("TelegramId");
 
-                            b1.Property<string>("TelegramUsername")
-                                .HasMaxLength(50);
-
                             b1.Property<DateTime>("UpdatedAt");
 
                             b1.Property<Guid>("UserId");
+
+                            b1.Property<string>("Username")
+                                .HasMaxLength(50);
 
                             b1.ToJson("CachedProfile");
                         });

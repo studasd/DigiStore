@@ -1,5 +1,7 @@
 ﻿using DigiStore.UserService.Application.Interfaces;
 using DigiStore.UserService.Domain;
+using DigiStore.UserService.Infrastructure.Postgres.Data;
+using DigiStore.UserService.Infrastructure.Postgres.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

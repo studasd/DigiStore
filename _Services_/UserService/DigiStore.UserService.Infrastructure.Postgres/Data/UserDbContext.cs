@@ -6,11 +6,11 @@ using DigiStore.UserService.Infrastructure.Postgres.Configurations;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace DigiStore.UserService.Infrastructure.Postgres;
+namespace DigiStore.UserService.Infrastructure.Postgres.Data;
 
 
-// add-migration Init -c UserDbContext        // -s DigiStore
-// update-database -Context UserDbContext
+// add-migration Init -c UserDbContext -s DigiStore.UserService.Web
+// update-database -Context UserDbContext -s DigiStore.UserService.Web
 
 
 /// <summary>
