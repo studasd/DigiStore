@@ -64,11 +64,11 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 
 			var wallet = walletResult.Value!;
 			var text = $@"
-💰 {_localizationService.GetMessage("balance_info", langCode)}
+💰 {_localizationService.GetMessage(LocalKeys.Balances.Info, langCode)}
 
-{_localizationService.GetMessage("current_balance", langCode)}: <b>{wallet.Balance:F2} {wallet.Currency}</b>
-📊 {_localizationService.GetMessage("total_deposited", langCode)}: {wallet.TotalDeposited:F2} {wallet.Currency}
-📤 {_localizationService.GetMessage("total_withdrawn", langCode)}: {wallet.TotalWithdrawn:F2} {wallet.Currency}
+{_localizationService.GetMessage(LocalKeys.Balances.CurrentBalance, langCode)}: <b>{wallet.Balance:F2} {wallet.Currency}</b>
+📊 {_localizationService.GetMessage(LocalKeys.Balances.TotalDeposited, langCode)}: {wallet.TotalDeposited:F2} {wallet.Currency}
+📤 {_localizationService.GetMessage(LocalKeys.Balances.TotalWithdrawn, langCode)}: {wallet.TotalWithdrawn:F2} {wallet.Currency}
 ";
 
 			var keyboard = GetBackToMainMenuKeyboard(langCode);

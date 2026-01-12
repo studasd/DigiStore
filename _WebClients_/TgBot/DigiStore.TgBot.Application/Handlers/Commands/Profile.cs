@@ -51,7 +51,7 @@ public class Profile : BaseHandler, ICommandHandler
 			var session = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
 			if (session?.UserId == null)
 			{
-				await SendErrorMessage(chatId, _localizationService.GetMessage("session_expired", LanguageCodes.en), cancellationToken);
+				await SendErrorMessage(chatId, _localizationService.GetMessage(LocalKeys.Errors.SessionExpired, LanguageCodes.en), cancellationToken);
 				return;
 			}
 
@@ -62,7 +62,7 @@ public class Profile : BaseHandler, ICommandHandler
 			var profileResult = await _profileService.GetFullProfileAsync(userId, telegramId, cancellationToken);
 			if (!profileResult.IsSuccess)
 			{
-				await SendErrorMessage(chatId, _localizationService.GetMessage("error_occurred", languageCode), cancellationToken);
+				await SendErrorMessage(chatId, _localizationService.GetMessage(LocalKeys.Errors.Occurred, languageCode), cancellationToken);
 				return;
 			}
 

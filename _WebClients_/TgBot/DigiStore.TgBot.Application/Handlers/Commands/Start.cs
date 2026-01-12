@@ -97,7 +97,7 @@ public class Start : BaseHandler, ICommandHandler
 				var profileResult = await _profileService.GetFullProfileAsync(user.Id, telegramId, cancellationToken);
 				if (!profileResult.IsSuccess)
 				{
-					await SendErrorMessage(message.Chat.Id, _localizationService.GetMessage("error_occurred", session.LangCode), cancellationToken);
+					await SendErrorMessage(message.Chat.Id, _localizationService.GetMessage(LocalKeys.Errors.Occurred, session.LangCode), cancellationToken);
 					return;
 				}
 

@@ -83,30 +83,30 @@ public class ProfileService : IProfileService
 		var lang = langCode;
 		var text = $@"
 ╔════════════════════════════════════╗
-║ {loc.GetMessage("profile_info", lang)}
+║ {loc.GetMessage(LocalKeys.Profiles.Info, lang)}
 ╚════════════════════════════════════╝
-👤 {loc.GetMessage("full_name", lang)}: {profile.FullName}
+👤 {loc.GetMessage(LocalKeys.Profiles.FullName, lang)}: {profile.FullName}
 🆔 Telegram ID: {profile.TelegramId}
-📧 {loc.GetMessage("email", lang)}: {profile.Email}
+📧 {loc.GetMessage(LocalKeys.Profiles.Email, lang)}: {profile.Email}
 ";
 		if (!string.IsNullOrEmpty(profile.Username))
 		{
-			text += $"📱 {loc.GetMessage("telegram_username", lang)}: @{profile.Username}\n";
+			text += $"📱 {loc.GetMessage(LocalKeys.Profiles.Username, lang)}: @{profile.Username}\n";
 		}
 
 		text += $@"
-💰 {loc.GetMessage("balance", lang)}: {profile.Balance:F2} {profile.Currency}
-🌐 {loc.GetMessage("language", lang)}: {GetLanguageName(profile.LangCode)}
-✅ {loc.GetMessage("status", lang)}: {(profile.IsActive ? "Active" : "Inactive")}
+💰 {loc.GetMessage(LocalKeys.Commands.Balance, lang)}: {profile.Balance:F2} {profile.Currency}
+🌐 {loc.GetMessage(LocalKeys.Profiles.Language, lang)}: {GetLanguageName(profile.LangCode)}
+✅ {loc.GetMessage(LocalKeys.Profiles.Status, lang)}: {(profile.IsActive ? "Active" : "Inactive")}
 ";
 		if (profile.Roles.Count > 0)
 		{
-			text += $"🎖️ {loc.GetMessage("roles", lang)}: {string.Join(", ", profile.Roles)}\n";
+			text += $"🎖️ {loc.GetMessage(LocalKeys.Profiles.Roles, lang)}: {string.Join(", ", profile.Roles)}\n";
 		}
 
 		text += $@"
-📅 {loc.GetMessage("created_at", lang)}: {profile.CreatedAt:dd.MM.yyyy HH:mm}
-🔄 {loc.GetMessage("updated_at", lang)}: {profile.UpdatedAt:dd.MM.yyyy HH:mm}
+📅 {loc.GetMessage(LocalKeys.Profiles.CreatedAt, lang)}: {profile.CreatedAt:dd.MM.yyyy HH:mm}
+🔄 {loc.GetMessage(LocalKeys.Profiles.UpdatedAt, lang)}: {profile.UpdatedAt:dd.MM.yyyy HH:mm}
 ";
 		return text;
 	}
@@ -146,13 +146,13 @@ public class ProfileService : IProfileService
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage("change_language", langCode),
+					_localizationService.GetMessage(LocalKeys.Commands.ChangeLanguage, langCode),
 					CallbackData.MenuBack)
 			},
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage("main_menu", langCode),
+					_localizationService.GetMessage(LocalKeys.Navigations.MainMenu, langCode),
 					CallbackData.MenuMain)
 			},
 		});

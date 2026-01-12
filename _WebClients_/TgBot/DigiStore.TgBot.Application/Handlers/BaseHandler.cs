@@ -41,7 +41,7 @@ public abstract class BaseHandler
 		{
 			await _botClient.AnswerCallbackQuery(
 				callbackQueryId,
-				_localizationService.GetMessage("error_occurred", langCode),
+				_localizationService.GetMessage(LocalKeys.Errors.Occurred, langCode),
 				showAlert: true,
 				cancellationToken: cancellationToken);
 		}
@@ -74,12 +74,12 @@ public abstract class BaseHandler
 
 		if (isStartCommand)
 		{
-			text = $"{_localizationService.GetMessage("greeting", currentLang)}\n\n" +
-				   $"{_localizationService.GetMessage("select_language", currentLang)}";
+			text = $"{_localizationService.GetMessage(LocalKeys.Greetings.Greeting, currentLang)}\n\n" +
+				   $"{_localizationService.GetMessage(LocalKeys.Navigations.SelectLanguage, currentLang)}";
 		}
 		else
 		{
-			text = _localizationService.GetMessage("select_language", currentLang);
+			text = _localizationService.GetMessage(LocalKeys.Navigations.SelectLanguage, currentLang);
 		}
 
 		await _botClient.SendMessage(chatId, text, replyMarkup: keyboard, cancellationToken: cancellationToken);
@@ -117,19 +117,19 @@ public abstract class BaseHandler
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage("profile", langCode),
+					_localizationService.GetMessage(LocalKeys.Commands.Profile, langCode),
 					CallbackData.ProfileView)
 			},
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage("balance", langCode),
+					_localizationService.GetMessage(LocalKeys.Commands.Balance, langCode),
 					CallbackData.BalanceView)
 			},
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage("catalog", langCode),
+					_localizationService.GetMessage(LocalKeys.Commands.Catalog, langCode),
 					CallbackData.CatalogView)
 			},
 		});
@@ -145,13 +145,13 @@ public abstract class BaseHandler
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage("change_language", langCode),
+					_localizationService.GetMessage(LocalKeys.Commands.ChangeLanguage, langCode),
 					CallbackData.LanguageChangePrefix + "select")
 			},
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage("main_menu", langCode),
+					_localizationService.GetMessage(LocalKeys.Navigations.MainMenu, langCode),
 					CallbackData.MenuMain)
 			},
 		});
@@ -167,7 +167,7 @@ public abstract class BaseHandler
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage("back", langCode),
+					_localizationService.GetMessage(LocalKeys.Buttons.Back, langCode),
 					CallbackData.MenuMain)
 			},
 		});

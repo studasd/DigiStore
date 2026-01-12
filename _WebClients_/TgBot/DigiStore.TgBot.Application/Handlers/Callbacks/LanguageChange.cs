@@ -58,7 +58,7 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 			if (languageCode == LanguageCodes.select)
 			{
 				var keyboard = GetLanguageSelectionKeyboard(CallbackData);
-				var text = _localizationService.GetMessage("select_language", currentLanguage);
+				var text = _localizationService.GetMessage(LocalKeys.Navigations.SelectLanguage, currentLanguage);
 
 				await _botClient.EditMessageText(
 					callbackQuery.Message.Chat.Id,
@@ -94,7 +94,7 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 			session.SetState(BotState.MainMenu);
 			await _sessionService.UpdateSessionAsync(session, cancellationToken);
 
-			var confirmText = _localizationService.GetMessage("language_changed", languageCode);
+			var confirmText = _localizationService.GetMessage(LocalKeys.Navigations.LanguageChanged, languageCode);
 			var keyboard2 = GetMainMenuKeyboard(languageCode);
 
 			await _botClient.EditMessageText(

@@ -56,16 +56,16 @@ public class Balance : BaseHandler, ICommandHandler
 			var profileResult = await _profileService.GetFullProfileAsync(session.UserId, telegramId, cancellationToken);
 			if (!profileResult.IsSuccess)
 			{
-				await SendErrorMessage(chatId, _localizationService.GetMessage("error_occurred", langCode), cancellationToken);
+				await SendErrorMessage(chatId, _localizationService.GetMessage(LocalKeys.Errors.Occurred, langCode), cancellationToken);
 				return;
 			}
 
 			var profile = profileResult.Value!;
 
 			var text = $@"
-💰 {_localizationService.GetMessage("balance_info", langCode)}
-{_localizationService.GetMessage("current_balance", langCode)}: <b>{profile.Balance:F2} {profile.Currency}</b>
-🔗 {_localizationService.GetMessage("linked_accounts", langCode)}:
+💰 {_localizationService.GetMessage(LocalKeys.Balances.Info, langCode)}
+{_localizationService.GetMessage(LocalKeys.Balances.CurrentBalance, langCode)}: <b>{profile.Balance:F2} {profile.Currency}</b>
+🔗 {_localizationService.GetMessage(LocalKeys.Balances.LinkedAccounts, langCode)}:
 👤 Telegram: @{profile.Username ?? "Not set"}
 ";
 
