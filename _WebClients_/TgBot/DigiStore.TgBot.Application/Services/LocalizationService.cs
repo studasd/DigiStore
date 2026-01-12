@@ -14,9 +14,12 @@ public class LocalizationService : ILocalizationService
 	{
 		if (!_localizations.ContainsKey(languageCode))
 			languageCode = LanguageCodes.en;
+
 		if (_localizations[languageCode].TryGetValue(key, out var message))
 			return message;
+
 		_localizations[languageCode].TryGetValue(key, out var fallback);
+
 		return fallback ?? key;
 	}
 	public Dictionary<string, string> GetLanguages()

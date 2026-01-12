@@ -13,17 +13,17 @@ using System.Text.Json;
 namespace DigiStore.TgBot.Application.Services;
 
 
-public class UserService : IUserService
+public class TgUserService : ITgUserService
 {
 	private readonly IUserHttpClient _httpClient;
 	//private readonly HttpClient _httpClient;
-	private readonly ILogger<UserService> _logger;
+	private readonly ILogger<TgUserService> _logger;
 
-	public UserService(
+	public TgUserService(
 		//HttpClient httpClient,
 		IUserHttpClient httpClient,
 		IConfiguration configuration,
-		ILogger<UserService> logger)
+		ILogger<TgUserService> logger)
 	{
 		_httpClient = httpClient;
 		//_httpClient = httpClient;

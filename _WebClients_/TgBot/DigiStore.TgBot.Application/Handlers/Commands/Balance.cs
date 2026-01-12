@@ -51,25 +51,25 @@ public class Balance : BaseHandler, ICommandHandler
 				return;
 			}
 
-			var languageCode = session.LangCode;
+			var langCode = session.LangCode;
 
 			var profileResult = await _profileService.GetFullProfileAsync(session.UserId, telegramId, cancellationToken);
 			if (!profileResult.IsSuccess)
 			{
-				await SendErrorMessage(chatId, _localizationService.GetMessage("error_occurred", languageCode), cancellationToken);
+				await SendErrorMessage(chatId, _localizationService.GetMessage("error_occurred", langCode), cancellationToken);
 				return;
 			}
 
 			var profile = profileResult.Value!;
 
 			var text = $@"
-💰 {_localizationService.GetMessage("balance_info", languageCode)}
-{_localizationService.GetMessage("current_balance", languageCode)}: <b>{profile.Balance:F2} {profile.Currency}</b>
-🔗 {_localizationService.GetMessage("linked_accounts", languageCode)}:
+💰 {_localizationService.GetMessage("balance_info", langCode)}
+{_localizationService.GetMessage("current_balance", langCode)}: <b>{profile.Balance:F2} {profile.Currency}</b>
+🔗 {_localizationService.GetMessage("linked_accounts", langCode)}:
 👤 Telegram: @{profile.Username ?? "Not set"}
 ";
 
-			var keyboard = GetBackToMainMenuKeyboard(languageCode);
+			var keyboard = GetBackToMainMenuKeyboard(langCode);
 
 			await _botClient.SendMessage(
 				chatId,

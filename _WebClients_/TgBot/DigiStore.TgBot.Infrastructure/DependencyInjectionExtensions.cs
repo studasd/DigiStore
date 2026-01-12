@@ -38,7 +38,7 @@ public static class DependencyInjectionExtensions
 		services.AddScoped<ILocalizationService, LocalizationService>();
 
 		// Repositories
-		services.AddScoped<IUserRepository, Repositories.UserRepository>();
+		services.AddScoped<ITgUserRepository, Repositories.TgUserRepository>();
 		services.AddScoped<ISessionRepository, Repositories.SessionRepository>();
 		services.AddScoped<ICommandHistoryRepository, Repositories.CommandHistoryRepository>();
 		services.AddScoped<ILocalizationRepository, Repositories.LocalizationRepository>();

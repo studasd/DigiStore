@@ -131,8 +131,8 @@ public class UpdateHandler
 				try
 				{
 					var sessionService = serviceProvider.GetService<ISessionService>();
-					var userService = serviceProvider.GetService<IUserService>();
-					var userRepository = serviceProvider.GetService<IUserRepository>();
+					var userService = serviceProvider.GetService<ITgUserService>();
+					var userRepository = serviceProvider.GetService<ITgUserRepository>();
 
 					if (sessionService != null && userService != null)
 					{

@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DigiStore.TgBot.Infrastructure.Repositories;
 
-public class UserRepository : IUserRepository
+public class TgUserRepository : ITgUserRepository
 {
     private readonly TgBotDbContext _db;
 
-    public UserRepository(TgBotDbContext db)
+    public TgUserRepository(TgBotDbContext db)
     {
         _db = db;
     }

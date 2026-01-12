@@ -18,7 +18,7 @@ public class Start : BaseHandler, ICommandHandler
 {
 	public const string Command = BotCommands.Start;
 	
-	private readonly IUserService _userService;
+	private readonly ITgUserService _userService;
 	private readonly ISessionService _sessionService;
 	private readonly IProfileService _profileService;
 	private readonly ILogger<Start> _logger;
@@ -27,7 +27,7 @@ public class Start : BaseHandler, ICommandHandler
 
 	public Start(
 		ITelegramBotClient botClient,
-		IUserService userService,
+		ITgUserService userService,
 		ISessionService sessionService,
 		IProfileService profileService,
 		ILocalizationService localizationService,

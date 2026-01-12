@@ -11,12 +11,12 @@ namespace DigiStore.TgBot.Application.Services;
 
 public class ProfileService : IProfileService
 {
-	private readonly IUserService _userService;
+	private readonly ITgUserService _userService;
 	private readonly IWalletService _walletService;
 	private readonly ILocalizationService _localizationService;
 	private readonly ILogger<ProfileService> _logger;
 	public ProfileService(
-		IUserService userService,
+		ITgUserService userService,
 		IWalletService walletService,
 		ILocalizationService localizationService,
 		ILogger<ProfileService> logger)

@@ -46,7 +46,7 @@ public static class DependencyInjectionExtensions
 
 			return new TelegramBotClient(token);
 		});
-		services.AddScoped<IUserService, Services.UserService>();
+		services.AddScoped<ITgUserService, Services.TgUserService>();
 		services.AddUserServiceHttp(configuration);
 
 		//// User & Wallet Services (HTTP clients)
