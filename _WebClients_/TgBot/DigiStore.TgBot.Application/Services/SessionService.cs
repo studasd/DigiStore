@@ -84,6 +84,8 @@ public class SessionService : ISessionService
     {
         var session = new TgUserSession
         {
+            Id = d.Id,
+            UserId = d.UserId,
             TelegramId = d.TelegramId,
             CurrentState = d.CurrentState,
             LangCode = d.LangCode,
@@ -99,7 +101,8 @@ public class SessionService : ISessionService
     {
         return new TgUserSession
         {
-            Id = Guid.NewGuid(),
+            Id = s.Id == Guid.Empty ? Guid.NewGuid() : s.Id,
+            UserId = s.UserId,
             TelegramId = s.TelegramId,
             CurrentState = s.CurrentState,
             LangCode = s.LangCode,

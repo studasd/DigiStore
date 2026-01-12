@@ -34,11 +34,6 @@ public record CreateUserRequest
 	public long? TelegramId { get; set; }
 
 	/// <summary>
-	/// Telegram username
-	/// </summary>
-	public string? TelegramUsername { get; set; }
-
-	/// <summary>
 	/// Phone number
 	/// </summary>
 	public string? PhoneNumber { get; set; }

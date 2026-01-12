@@ -53,7 +53,7 @@ public class UserService : IUserService
 					TelegramId = user.TelegramId ?? telegramId,
 					Email = user.Email ?? string.Empty,
 					FullName = user.FullName ?? string.Empty,
-					Username = user.TelegramId.HasValue ? user.TelegramId.ToString() : username,
+					Username = username,
 					LangCode = user.LangCode,
 					IsActive = user.IsActive,
 					Roles = user.Roles?.ToList() ?? new List<string>()
@@ -68,7 +68,6 @@ public class UserService : IUserService
 					FirstName = firstName ?? string.Empty,
 					LastName = lastName ?? string.Empty,
 					TelegramId = telegramId,
-					TelegramUsername = username,
 					LangCode = langCode,
 					Source = "Telegram"
 				};
@@ -136,7 +135,10 @@ public class UserService : IUserService
 				TelegramId = user.TelegramId ?? 0,
 				Email = user.Email ?? string.Empty,
 				FullName = user.FullName ?? string.Empty,
-				Username = user.TelegramId.HasValue ? user.TelegramId.ToString() : null,
+				// The UserResponse currently does not contain a Telegram username property. Do NOT use TelegramId
+				// as Username. Leave Username null here; Profile caching will prefer the Telegram-side username when
+				// available during GetOrCreateUserAsync.
+				Username = null,
 				LangCode = user.LangCode,
 				IsActive = user.IsActive,
 				Roles = user.Roles?.ToList() ?? new List<string>()

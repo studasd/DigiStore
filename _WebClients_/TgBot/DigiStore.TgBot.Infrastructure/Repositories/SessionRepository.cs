@@ -28,6 +28,7 @@ public class SessionRepository : ISessionRepository
         }
         else
         {
+            existing.UserId = session.UserId; // ensure UserId is updated when session is updated
             existing.CurrentState = session.CurrentState;
             existing.LangCode = session.LangCode;
             existing.CachedProfile = session.CachedProfile;

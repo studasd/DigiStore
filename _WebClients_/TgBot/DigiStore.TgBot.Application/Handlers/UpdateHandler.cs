@@ -138,7 +138,7 @@ public class UpdateHandler
 					{
 						var session = await sessionService.GetOrCreateSessionAsync(telegramId.Value, cancellationToken);
 
-						if (session.UserId == null)
+						if (session.UserId == default)
 						{
 							var lang = session.LangCode;
 							var userResult = await userService.GetOrCreateUserAsync(telegramId.Value, username, firstName, lastName, lang, cancellationToken);
