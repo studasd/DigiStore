@@ -7,6 +7,8 @@ using DigiStore.UserService.Contracts.HttpClients;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.TgBot.Application.Options;
 using Microsoft.Extensions.Options;
+using System.Net;
+using DigiStore.Framework.Proxies;
 
 
 namespace DigiStore.TgBot.Application;
@@ -20,9 +22,28 @@ public static class DependencyInjectionExtensions
 		//// Bind ServiceOptions to the DI system so it can be resolved via IOptions<ServiceOptions>
 		//services.Configure<ServiceOptions>(configuration);
 
+		services.AddHttpClient("ProxyClient")
+			.ConfigurePrimaryHttpMessageHandler(sp =>
+			{
+				var telegramOptions = sp.GetRequiredService<IOptions<TelegramOptions>>().Value;
+				var proxyTg = telegramOptions.Proxy;
+
+				return HProxy.GetClientHandler(proxyTg);
+			});
+
+
 		services.AddScoped<ITelegramBotClient>(x => 
 		{
-			var token = x.GetRequiredService<IOptions<TelegramOptions>>().Value.BotToken;
+			var telegramOptions = x.GetRequiredService<IOptions<TelegramOptions>>().Value;
+			var token = telegramOptions.BotToken;
+
+			if (!String.IsNullOrWhiteSpace(telegramOptions.Proxy))
+			{
+				var clientFactory = x.GetRequiredService<IHttpClientFactory>();
+				var client = clientFactory.CreateClient("ProxyClient");
+				return new TelegramBotClient(token, client);
+			}
+
 			return new TelegramBotClient(token);
 		});
 		services.AddScoped<IUserService, Services.UserService>();
