@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\_Services_\UserService\DigiStore.UserService.Contracts\DigiStore.UserService.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

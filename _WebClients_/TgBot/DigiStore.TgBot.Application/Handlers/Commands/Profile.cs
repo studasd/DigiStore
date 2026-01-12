@@ -2,6 +2,7 @@ using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.TgBot.Domain;
 using DigiStore.TgBot.Domain.ValueObjects;
+using DigiStore.UserService.Contracts.Enums;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -50,12 +51,12 @@ public class Profile : BaseHandler, ICommandHandler
 			var session = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
 			if (session?.UserId == null)
 			{
-				await SendErrorMessage(chatId, _localizationService.GetMessage("session_expired", "en"), cancellationToken);
+				await SendErrorMessage(chatId, _localizationService.GetMessage("session_expired", LanguageCodes.en), cancellationToken);
 				return;
 			}
 
 			var userId = session.UserId;
-			var languageCode = session.LangCode ?? "en";
+			var languageCode = session.LangCode;
 
 			// Get full profile
 			var profileResult = await _profileService.GetFullProfileAsync(userId, telegramId, cancellationToken);

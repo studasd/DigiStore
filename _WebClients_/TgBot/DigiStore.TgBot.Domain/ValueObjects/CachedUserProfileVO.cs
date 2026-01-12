@@ -1,4 +1,6 @@
-﻿namespace DigiStore.TgBot.Domain.ValueObjects;
+﻿using DigiStore.UserService.Contracts.Enums;
+
+namespace DigiStore.TgBot.Domain.ValueObjects;
 
 /// <summary>
 /// Cached user profile for session (to avoid multiple calls)
@@ -11,7 +13,7 @@ public class CachedUserProfileVO
 	public string FirstName { get; set; } = string.Empty;
 	public string LastName { get; set; } = string.Empty;
 	public string? Username { get; set; }
-	public string LangCode { get; set; } = "en";
+	public LanguageCodes LangCode { get; set; } = LanguageCodes.en;
 	public bool IsActive { get; set; }
 	public List<string> Roles { get; set; } = new();
 	public decimal Balance { get; set; }

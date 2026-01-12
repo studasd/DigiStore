@@ -2,6 +2,7 @@
 using DigiStore.Framework.Endpoints;
 using DigiStore.SharedKernel;
 using DigiStore.UserService.Application.Interfaces;
+using DigiStore.UserService.Contracts.Enums;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +20,7 @@ public sealed class UpdateLanguage : IEndpoint
 	{
 		app.MapPost("language/{userId}/{langCode}", async Task<EndpointResult<bool>> (
 			[FromRoute] Guid userId,
-			[FromRoute] string langCode,
+			[FromRoute] LanguageCodes langCode,
 			[FromServices] UpdateLanguageHandler handler,
 			CancellationToken token) => await handler.Handle(userId, langCode, token));
 	}
@@ -39,7 +40,7 @@ public sealed class UpdateLanguageHandler
 	}
 
 
-	public async Task<Result<bool, Error>> Handle(Guid userId, string langCode, CancellationToken token)
+	public async Task<Result<bool, Error>> Handle(Guid userId, LanguageCodes langCode, CancellationToken token)
 	{
 		try
 		{
@@ -49,7 +50,7 @@ public sealed class UpdateLanguageHandler
 				return UserServiceErrors.UserNotFound;
 			}
 
-			user.LanguageCode = langCode;
+			user.LangCode = langCode;
 			user.UpdatedAt = DateTime.UtcNow;
 			await _userRepository.UpdateAsync(user, token);
 

@@ -51,7 +51,7 @@ public class Balance : BaseHandler, ICommandHandler
 				return;
 			}
 
-			var languageCode = session.LangCode ?? "en";
+			var languageCode = session.LangCode;
 
 			var profileResult = await _profileService.GetFullProfileAsync(session.UserId, telegramId, cancellationToken);
 			if (!profileResult.IsSuccess)

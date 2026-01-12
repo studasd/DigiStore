@@ -1,5 +1,6 @@
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Interfaces.Services;
+using DigiStore.UserService.Contracts.Enums;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -34,13 +35,13 @@ public abstract class BaseHandler
 	/// <summary>
 	/// Отправляет ответ на callback query с ошибкой
 	/// </summary>
-	protected async Task AnswerCallbackQueryWithError(string callbackQueryId, string languageCode, CancellationToken cancellationToken = default)
+	protected async Task AnswerCallbackQueryWithError(string callbackQueryId, LanguageCodes langCode, CancellationToken cancellationToken = default)
 	{
 		try
 		{
 			await _botClient.AnswerCallbackQuery(
 				callbackQueryId,
-				_localizationService.GetMessage("error_occurred", languageCode),
+				_localizationService.GetMessage("error_occurred", langCode),
 				showAlert: true,
 				cancellationToken: cancellationToken);
 		}
@@ -51,7 +52,7 @@ public abstract class BaseHandler
 	/// <summary>
 	/// Отправляет выбор языка
 	/// </summary>
-	protected async Task SendLanguageSelection(long chatId, string currentLanguage, bool isStartCommand, CancellationToken cancellationToken = default)
+	protected async Task SendLanguageSelection(long chatId, LanguageCodes currentLang, bool isStartCommand, CancellationToken cancellationToken = default)
 	{
 		var languages = _localizationService.GetLanguages();
 		var buttons = new List<List<InlineKeyboardButton>>();
@@ -73,12 +74,12 @@ public abstract class BaseHandler
 
 		if (isStartCommand)
 		{
-			text = $"{_localizationService.GetMessage("greeting", currentLanguage)}\n\n" +
-				   $"{_localizationService.GetMessage("select_language", currentLanguage)}";
+			text = $"{_localizationService.GetMessage("greeting", currentLang)}\n\n" +
+				   $"{_localizationService.GetMessage("select_language", currentLang)}";
 		}
 		else
 		{
-			text = _localizationService.GetMessage("select_language", currentLanguage);
+			text = _localizationService.GetMessage("select_language", currentLang);
 		}
 
 		await _botClient.SendMessage(chatId, text, replyMarkup: keyboard, cancellationToken: cancellationToken);
@@ -109,26 +110,26 @@ public abstract class BaseHandler
 	/// <summary>
 	/// Создает клавиатуру главного меню
 	/// </summary>
-	protected InlineKeyboardMarkup GetMainMenuKeyboard(string languageCode)
+	protected InlineKeyboardMarkup GetMainMenuKeyboard(LanguageCodes langCode)
 	{
 		return new InlineKeyboardMarkup(new[]
 		{
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage("profile", languageCode),
+					_localizationService.GetMessage("profile", langCode),
 					CallbackData.ProfileView)
 			},
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage("balance", languageCode),
+					_localizationService.GetMessage("balance", langCode),
 					CallbackData.BalanceView)
 			},
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage("catalog", languageCode),
+					_localizationService.GetMessage("catalog", langCode),
 					CallbackData.CatalogView)
 			},
 		});
@@ -137,20 +138,20 @@ public abstract class BaseHandler
 	/// <summary>
 	/// Создает клавиатуру профиля
 	/// </summary>
-	protected InlineKeyboardMarkup GetProfileKeyboard(string languageCode)
+	protected InlineKeyboardMarkup GetProfileKeyboard(LanguageCodes langCode)
 	{
 		return new InlineKeyboardMarkup(new[]
 		{
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage("change_language", languageCode),
+					_localizationService.GetMessage("change_language", langCode),
 					CallbackData.LanguageChangePrefix + "select")
 			},
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage("main_menu", languageCode),
+					_localizationService.GetMessage("main_menu", langCode),
 					CallbackData.MenuMain)
 			},
 		});
@@ -159,14 +160,14 @@ public abstract class BaseHandler
 	/// <summary>
 	/// Создает клавиатуру с кнопкой "Назад" к главному меню
 	/// </summary>
-	protected InlineKeyboardMarkup GetBackToMainMenuKeyboard(string languageCode)
+	protected InlineKeyboardMarkup GetBackToMainMenuKeyboard(LanguageCodes langCode)
 	{
 		return new InlineKeyboardMarkup(new[]
 		{
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage("back", languageCode),
+					_localizationService.GetMessage("back", langCode),
 					CallbackData.MenuMain)
 			},
 		});

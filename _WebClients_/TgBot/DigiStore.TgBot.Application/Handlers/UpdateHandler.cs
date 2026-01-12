@@ -140,7 +140,7 @@ public class UpdateHandler
 
 						if (session.UserId == null)
 						{
-							var lang = session.LangCode ?? "en";
+							var lang = session.LangCode;
 							var userResult = await userService.GetOrCreateUserAsync(telegramId.Value, username, firstName, lastName, lang, cancellationToken);
 							if (userResult.IsSuccess)
 							{

@@ -102,7 +102,7 @@ public class SessionService : ISessionService
             Id = Guid.NewGuid(),
             TelegramId = s.TelegramId,
             CurrentState = s.CurrentState,
-            LangCode = s.LangCode ?? "en",
+            LangCode = s.LangCode,
             CachedProfile = s.CachedProfile,
             LastActivity = s.LastActivity,
             CreatedAt = s.CreatedAt

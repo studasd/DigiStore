@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DigiStore.TgBot.Infrastructure.Migrations
 {
     [DbContext(typeof(TgBotDbContext))]
-    [Migration("20260111235135_Init")]
+    [Migration("20260112011012_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -140,7 +140,8 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
 
                     b.Property<string>("LangCode")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
 
                     b.Property<DateTime>("LastActivity")
                         .ValueGeneratedOnAdd()
@@ -174,7 +175,8 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
                             b1.Property<bool>("IsActive");
 
                             b1.Property<string>("LangCode")
-                                .IsRequired();
+                                .IsRequired()
+                                .HasMaxLength(10);
 
                             b1.Property<string>("LastName")
                                 .IsRequired()

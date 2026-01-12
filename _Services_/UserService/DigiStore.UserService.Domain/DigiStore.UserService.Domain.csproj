@@ -10,4 +10,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DigiStore.UserService.Contracts\DigiStore.UserService.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>

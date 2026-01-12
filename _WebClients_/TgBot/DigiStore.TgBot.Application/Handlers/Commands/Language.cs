@@ -1,6 +1,7 @@
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers;
 using DigiStore.TgBot.Application.Interfaces.Services;
+using DigiStore.UserService.Contracts.Enums;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -45,11 +46,11 @@ public class Language : BaseHandler, ICommandHandler
 			var session = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
 			if (session?.UserId == null)
 			{
-				await SendErrorMessage(chatId, _localizationService.GetMessage("session_expired", "en"), cancellationToken);
+				await SendErrorMessage(chatId, _localizationService.GetMessage("session_expired", LanguageCodes.en), cancellationToken);
 				return;
 			}
 
-			var currentLanguage = session.LangCode ?? "en";
+			var currentLanguage = session.LangCode;
 
 			// Send language selection
 			await SendLanguageSelection(chatId, currentLanguage, isStartCommand: false, cancellationToken);

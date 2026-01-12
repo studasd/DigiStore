@@ -1,6 +1,7 @@
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers;
 using DigiStore.TgBot.Application.Interfaces.Services;
+using DigiStore.UserService.Contracts.Enums;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -44,7 +45,7 @@ public class MainMenu : BaseHandler, ICallbackQueryHandler
 			var telegramId = callbackQuery.From.Id;
 			var session = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
 
-			var languageCode = session?.LangCode ?? "en";
+			var languageCode = session?.LangCode ?? LanguageCodes.en;
 
 			var text = $"{_localizationService.GetMessage("main_menu", languageCode)}\n\n" +
 					  $"{_localizationService.GetMessage("choose_option", languageCode)}";
@@ -63,7 +64,7 @@ public class MainMenu : BaseHandler, ICallbackQueryHandler
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in MainMenuCallbackHandler");
-			await AnswerCallbackQueryWithError(callbackQuery.Id, "en", cancellationToken);
+			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
 		}
 	}
 }

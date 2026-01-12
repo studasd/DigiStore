@@ -3,6 +3,7 @@ using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.DTOs;
 using DigiStore.TgBot.Application.Interfaces.Services;
+using DigiStore.UserService.Contracts.Enums;
 using DigiStore.UserService.Contracts.HttpClients;
 using DigiStore.UserService.Contracts.Requests;
 using Microsoft.Extensions.Configuration;
@@ -35,7 +36,7 @@ public class UserService : IUserService
 		string? username,
 		string? firstName,
 		string? lastName,
-		string languageCode,
+		LanguageCodes langCode,
 		CancellationToken ct = default)
 	{
 		try
@@ -53,7 +54,7 @@ public class UserService : IUserService
 					Email = user.Email ?? string.Empty,
 					FullName = user.FullName ?? string.Empty,
 					Username = user.TelegramId.HasValue ? user.TelegramId.ToString() : username,
-					LangCode = user.LanguageCode,
+					LangCode = user.LangCode,
 					IsActive = user.IsActive,
 					Roles = user.Roles?.ToList() ?? new List<string>()
 				};
@@ -68,7 +69,7 @@ public class UserService : IUserService
 					LastName = lastName ?? string.Empty,
 					TelegramId = telegramId,
 					TelegramUsername = username,
-					LanguageCode = languageCode,
+					LangCode = langCode,
 					Source = "Telegram"
 				};
 
@@ -85,7 +86,7 @@ public class UserService : IUserService
 						TelegramId = createUser.TelegramId ?? telegramId,
 						Username = username,
 						IsActive = createUser.IsActive,
-						LangCode = createUser.LanguageCode,
+						LangCode = createUser.LangCode,
 						Roles = createUser.Roles?.ToList() ?? new List<string>(),
 						IsNew = true
 					};
@@ -136,7 +137,7 @@ public class UserService : IUserService
 				Email = user.Email ?? string.Empty,
 				FullName = user.FullName ?? string.Empty,
 				Username = user.TelegramId.HasValue ? user.TelegramId.ToString() : null,
-				LangCode = user.LanguageCode,
+				LangCode = user.LangCode,
 				IsActive = user.IsActive,
 				Roles = user.Roles?.ToList() ?? new List<string>()
 			};
@@ -151,11 +152,11 @@ public class UserService : IUserService
 	}
 
 
-	public async Task<Result<bool, Error>> UpdateLanguageAsync(Guid userId, string languageCode, CancellationToken ct = default)
+	public async Task<Result<bool, Error>> UpdateLanguageAsync(Guid userId, LanguageCodes langCode, CancellationToken ct = default)
 	{
 		try
 		{
-			var response = await _httpClient.UpdateLanguage(userId, languageCode, ct);
+			var response = await _httpClient.UpdateLanguage(userId, langCode, ct);
 
 			if (response.IsFailure)
 			{
@@ -163,7 +164,7 @@ public class UserService : IUserService
 				return TgBotErrors.OperationFailed;
 			}
 
-			_logger.LogInformation("Language updated for user ID: {UserId} to {LanguageCode}", userId, languageCode);
+			_logger.LogInformation("Language updated for user ID: {UserId} to {LanguageCode}", userId, langCode);
 			return true;
 		}
 		catch (Exception ex)

@@ -3,6 +3,7 @@ using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.DTOs;
 using DigiStore.TgBot.Application.Interfaces.Services;
+using DigiStore.UserService.Contracts.Enums;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -76,10 +77,10 @@ public class ProfileService : IProfileService
 	}
 
 
-	public string FormatProfileText(ProfileDisplayDto profile, string languageCode)
+	public string FormatProfileText(ProfileDisplayDto profile, LanguageCodes langCode)
 	{
 		var loc = _localizationService;
-		var lang = languageCode.ToLower();
+		var lang = langCode;
 		var text = $@"
 ╔════════════════════════════════════╗
 ║ {loc.GetMessage("profile_info", lang)}
@@ -113,19 +114,19 @@ public class ProfileService : IProfileService
 
 	public async Task<Result<bool, Error>> UpdateUserLanguageAsync(
 		Guid userId,
-		string languageCode,
+		LanguageCodes langCode,
 		CancellationToken ct = default)
 	{
 		try
 		{
-			var result = await _userService.UpdateLanguageAsync(userId, languageCode, ct);
+			var result = await _userService.UpdateLanguageAsync(userId, langCode, ct);
 			if (!result.IsSuccess)
 			{
 				_logger.LogWarning("Failed to update language for user ID: {UserId}", userId);
 				return result;
 			}
 
-			_logger.LogInformation("Language updated for user ID: {UserId} to {LanguageCode}", userId, languageCode);
+			_logger.LogInformation("Language updated for user ID: {UserId} to {LanguageCode}", userId, langCode);
 			return true;
 		}
 		catch (Exception ex)
@@ -136,22 +137,22 @@ public class ProfileService : IProfileService
 	}
 
 
-	public (string text, InlineKeyboardMarkup keyboard) BuildProfileMessage(ProfileDisplayDto profile, string languageCode)
+	public (string text, InlineKeyboardMarkup keyboard) BuildProfileMessage(ProfileDisplayDto profile, LanguageCodes langCode)
 	{
-		var text = FormatProfileText(profile, languageCode);
+		var text = FormatProfileText(profile, langCode);
 
 		var keyboard = new InlineKeyboardMarkup(new[]
 		{
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage("change_language", languageCode),
+					_localizationService.GetMessage("change_language", langCode),
 					CallbackData.MenuBack)
 			},
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage("main_menu", languageCode),
+					_localizationService.GetMessage("main_menu", langCode),
 					CallbackData.MenuMain)
 			},
 		});
@@ -160,16 +161,13 @@ public class ProfileService : IProfileService
 	}
 
 
-	private string GetLanguageName(string languageCode)
+	private string GetLanguageName(LanguageCodes langCode)
 	{
-		return languageCode.ToLower() switch
+		return langCode switch
 		{
-			"en" => "🇬🇧 English",
-			"ru" => "🇷🇺 Русский",
-			"es" => "🇪🇸 Español",
-			"de" => "🇩🇪 Deutsch",
-			"fr" => "🇫🇷 Français",
-			_ => languageCode
+			LanguageCodes.en => "🇬🇧 English",
+			LanguageCodes.ru => "🇷🇺 Русский",
+			_ => langCode.ToString()
 		};
 	}
 }

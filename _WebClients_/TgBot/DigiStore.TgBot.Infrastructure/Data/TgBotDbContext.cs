@@ -32,7 +32,7 @@ public class TgBotDbContext : DbContext
 
             eb.HasIndex(e => e.TelegramId).IsUnique();
             eb.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
-            eb.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
+			eb.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<TgUserSession>(eb =>
@@ -54,9 +54,11 @@ public class TgBotDbContext : DbContext
 				builder.Property(x => x.FirstName).HasMaxLength(50);
 				builder.Property(x => x.LastName).HasMaxLength(50);
 				builder.Property(x => x.Username).HasMaxLength(50);
+				builder.Property(x => x.LangCode).HasConversion<string>().HasMaxLength(10);
 			});
+			eb.Property(e => e.LangCode).HasConversion<string>().HasMaxLength(10);
 			eb.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
-            eb.Property(e => e.LastActivity).HasDefaultValueSql("now()");
+			eb.Property(e => e.LastActivity).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<CommandHistory>(eb =>

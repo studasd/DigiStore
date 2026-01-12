@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DigiStore.UserService.Contracts.Enums;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -15,7 +16,7 @@ public record UserResponse
 	string? FullName,
 	long? TelegramId,
 	string? PhoneNumber,
-	string LanguageCode,
+	LanguageCodes LangCode,
 	bool IsActive,
 	string Source,
 	IReadOnlyList<string> Roles,

@@ -1,19 +1,19 @@
 ﻿using DigiStore.TgBot.Application.Interfaces.Services;
+using DigiStore.UserService.Contracts.Enums;
 
 namespace DigiStore.TgBot.Application.Services;
 
 public class LocalizationService : ILocalizationService
 {
-	private readonly Dictionary<string, Dictionary<string, string>> _localizations;
+	private readonly Dictionary<LanguageCodes, Dictionary<string, string>> _localizations;
 	public LocalizationService()
 	{
 		_localizations = InitializeLocalizations();
 	}
-	public string GetMessage(string key, string languageCode = "en")
+	public string GetMessage(string key, LanguageCodes languageCode = LanguageCodes.en)
 	{
-		languageCode = languageCode.ToLower();
 		if (!_localizations.ContainsKey(languageCode))
-			languageCode = "en";
+			languageCode = LanguageCodes.en;
 		if (_localizations[languageCode].TryGetValue(key, out var message))
 			return message;
 		_localizations[languageCode].TryGetValue(key, out var fallback);
@@ -30,12 +30,12 @@ public class LocalizationService : ILocalizationService
 			{ "fr", "🇫🇷 Français" }
 		};
 	}
-	private Dictionary<string, Dictionary<string, string>> InitializeLocalizations()
+	private Dictionary<LanguageCodes, Dictionary<string, string>> InitializeLocalizations()
 	{
-		return new Dictionary<string, Dictionary<string, string>>
+		return new Dictionary<LanguageCodes, Dictionary<string, string>>
 		{
 			{
-				"en", new Dictionary<string, string>
+				LanguageCodes.en, new Dictionary<string, string>
 				{
 					// Greeting & Navigation
 					{ "greeting", "👋 Welcome to PetFamily Store!" },
@@ -83,7 +83,7 @@ public class LocalizationService : ILocalizationService
 				}
 			},
 			{
-				"ru", new Dictionary<string, string>
+				LanguageCodes.ru, new Dictionary<string, string>
 				{
 					// Greeting & Navigation
 					{ "greeting", "👋 Добро пожаловать в PetFamily Store!" },

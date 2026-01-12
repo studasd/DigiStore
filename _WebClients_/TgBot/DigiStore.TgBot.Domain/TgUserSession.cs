@@ -1,4 +1,5 @@
 using DigiStore.TgBot.Domain.ValueObjects;
+using DigiStore.UserService.Contracts.Enums;
 
 namespace DigiStore.TgBot.Domain;
 
@@ -12,7 +13,7 @@ public class TgUserSession
 
     public string CurrentState { get; set; } = string.Empty;
 
-    public string LangCode { get; set; } = "en";
+    public LanguageCodes LangCode { get; set; } = LanguageCodes.en;
 
 	public CachedUserProfileVO? CachedProfile { get; set; }
 

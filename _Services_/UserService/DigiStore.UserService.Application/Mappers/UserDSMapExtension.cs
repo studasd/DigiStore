@@ -17,7 +17,7 @@ public static class UserDSMapExtension
 			FullName: user.FirstName,
 			TelegramId: user.TelegramId,
 			PhoneNumber: user.PhoneNumber,
-			LanguageCode: user.LanguageCode,
+			LangCode: user.LangCode,
 			IsActive: user.IsActive,
 			Source: user.Source.ToString(),
 			Roles: roles.ToList(),

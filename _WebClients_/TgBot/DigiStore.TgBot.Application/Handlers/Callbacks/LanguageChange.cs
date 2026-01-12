@@ -1,6 +1,8 @@
+using DigiStore.SharedKernel.Extensions;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers;
 using DigiStore.TgBot.Application.Interfaces.Services;
+using DigiStore.UserService.Contracts.Enums;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -49,11 +51,11 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 				?? throw new InvalidOperationException("Session not found");
 
 			var data = callbackQuery.Data;
-			var languageCode = data.Replace(CallbackData, "");
-			var currentLanguage = session.LangCode ?? "en";
+			var languageCode = data.Replace(CallbackData, "").ParseEnum<LanguageCodes>().Value;
+			var currentLanguage = session.LangCode;
 
 			// Handle "select" case - shows all languages
-			if (languageCode == "select")
+			if (languageCode == LanguageCodes.select)
 			{
 				var keyboard = GetLanguageSelectionKeyboard(CallbackData);
 				var text = _localizationService.GetMessage("select_language", currentLanguage);
@@ -111,7 +113,7 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in LanguageChangeCallbackHandler");
-			await AnswerCallbackQueryWithError(callbackQuery.Id, "en", cancellationToken);
+			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
 		}
 	}
 }

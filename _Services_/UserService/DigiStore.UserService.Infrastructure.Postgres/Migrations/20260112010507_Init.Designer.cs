@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DigiStore.UserService.Infrastructure.Postgres.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20260112001151_Init")]
+    [Migration("20260112010507_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -124,7 +124,7 @@ namespace DigiStore.UserService.Infrastructure.Postgres.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
-                    b.Property<string>("LanguageCode")
+                    b.Property<string>("LangCode")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(10)
@@ -165,10 +165,11 @@ namespace DigiStore.UserService.Infrastructure.Postgres.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
-                    b.Property<int>("Source")
+                    b.Property<string>("Source")
+                        .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(1);
+                        .HasColumnType("text")
+                        .HasDefaultValue("Telegram");
 
                     b.Property<long?>("TelegramId")
                         .HasColumnType("bigint");

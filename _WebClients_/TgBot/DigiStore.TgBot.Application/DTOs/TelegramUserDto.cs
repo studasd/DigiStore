@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DigiStore.UserService.Contracts.Enums;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -12,7 +13,7 @@ public class TelegramUserDto
 	public string Email { get; set; } = string.Empty;
 	public string FullName { get; set; } = string.Empty;
 	public string? Username { get; set; }
-	public string LangCode { get; set; } = "en";
+	public LanguageCodes LangCode { get; set; } = LanguageCodes.en;
 	public bool IsActive { get; set; }
 	public List<string> Roles { get; set; } = new();
 	

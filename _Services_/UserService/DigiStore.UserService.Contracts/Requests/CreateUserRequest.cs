@@ -1,4 +1,6 @@
-﻿namespace DigiStore.UserService.Contracts.Requests;
+﻿using DigiStore.UserService.Contracts.Enums;
+
+namespace DigiStore.UserService.Contracts.Requests;
 
 
 /// <summary>
@@ -44,7 +46,7 @@ public record CreateUserRequest
 	/// <summary>
 	/// Language preference (default: 'en')
 	/// </summary>
-	public string LanguageCode { get; set; } = "en";
+	public LanguageCodes LangCode { get; set; } = LanguageCodes.en;
 
 	/// <summary>
 	/// User source (Telegram, Web, etc.)

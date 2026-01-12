@@ -6,6 +6,8 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using System.Threading.Tasks;
 using DigiStore.TgBot.Domain.ValueObjects;
+using DigiStore.SharedKernel.Extensions;
+using DigiStore.UserService.Contracts.Enums;
 
 namespace DigiStore.TgBot.Application.Handlers.Commands;
 
@@ -52,7 +54,7 @@ public class Start : BaseHandler, ICommandHandler
 			var username = message.From.Username;
 			var firstName = message.From.FirstName;
 			var lastName = message.From.LastName;
-			var defaultLanguage = message.From.LanguageCode ?? "en";
+			var defaultLanguage = message.From.LanguageCode.ParseEnum<LanguageCodes>().Value;
 
 			_logger.LogInformation("Start command from Telegram ID: {TelegramId}, Name: {FirstName} {LastName}",
 				telegramId, firstName, lastName);
@@ -95,7 +97,7 @@ public class Start : BaseHandler, ICommandHandler
 				var profileResult = await _profileService.GetFullProfileAsync(user.Id, telegramId, cancellationToken);
 				if (!profileResult.IsSuccess)
 				{
-					await SendErrorMessage(message.Chat.Id, _localizationService.GetMessage("error_occurred", session.LangCode ?? "en"), cancellationToken);
+					await SendErrorMessage(message.Chat.Id, _localizationService.GetMessage("error_occurred", session.LangCode), cancellationToken);
 					return;
 				}
 
@@ -122,8 +124,8 @@ public class Start : BaseHandler, ICommandHandler
 				session.SetState(BotState.ProfileViewing);
 				await _sessionService.UpdateSessionAsync(session, cancellationToken);
 
-				var profileText = _profileService.FormatProfileText(profile, session.LangCode ?? "en");
-				var keyboard = GetProfileKeyboard(session.LangCode ?? "en");
+				var profileText = _profileService.FormatProfileText(profile, session.LangCode);
+				var keyboard = GetProfileKeyboard(session.LangCode);
 
 				await _botClient.SendMessage(
 					message.Chat.Id,

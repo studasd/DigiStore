@@ -1,6 +1,7 @@
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers;
 using DigiStore.TgBot.Application.Interfaces.Services;
+using DigiStore.UserService.Contracts.Enums;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -51,26 +52,26 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 			if (session?.UserId == null)
 				return;
 
-			var languageCode = session.LangCode ?? "en";
+			var langCode = session.LangCode;
 
 			var walletResult = await _walletService.GetBalanceAsync(session.UserId, cancellationToken);
 
 			if (!walletResult.IsSuccess)
 			{
-				await AnswerCallbackQueryWithError(callbackQuery.Id, languageCode, cancellationToken);
+				await AnswerCallbackQueryWithError(callbackQuery.Id, langCode, cancellationToken);
 				return;
 			}
 
 			var wallet = walletResult.Value!;
 			var text = $@"
-💰 {_localizationService.GetMessage("balance_info", languageCode)}
+💰 {_localizationService.GetMessage("balance_info", langCode)}
 
-{_localizationService.GetMessage("current_balance", languageCode)}: <b>{wallet.Balance:F2} {wallet.Currency}</b>
-📊 {_localizationService.GetMessage("total_deposited", languageCode)}: {wallet.TotalDeposited:F2} {wallet.Currency}
-📤 {_localizationService.GetMessage("total_withdrawn", languageCode)}: {wallet.TotalWithdrawn:F2} {wallet.Currency}
+{_localizationService.GetMessage("current_balance", langCode)}: <b>{wallet.Balance:F2} {wallet.Currency}</b>
+📊 {_localizationService.GetMessage("total_deposited", langCode)}: {wallet.TotalDeposited:F2} {wallet.Currency}
+📤 {_localizationService.GetMessage("total_withdrawn", langCode)}: {wallet.TotalWithdrawn:F2} {wallet.Currency}
 ";
 
-			var keyboard = GetBackToMainMenuKeyboard(languageCode);
+			var keyboard = GetBackToMainMenuKeyboard(langCode);
 
 			await _botClient.EditMessageText(
 				callbackQuery.Message.Chat.Id,
@@ -85,7 +86,7 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in BalanceViewCallbackHandler");
-			await AnswerCallbackQueryWithError(callbackQuery.Id, "en", cancellationToken);
+			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
 		}
 	}
 }

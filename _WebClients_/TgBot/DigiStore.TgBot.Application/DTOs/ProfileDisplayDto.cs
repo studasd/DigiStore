@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DigiStore.UserService.Contracts.Enums;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -40,7 +41,7 @@ public class ProfileDisplayDto
 	/// <summary>
 	/// Язык пользователя
 	/// </summary>
-	public string LangCode { get; set; } = "en";
+	public LanguageCodes LangCode { get; set; } = LanguageCodes.en;
 	/// <summary>
 	/// Активен ли аккаунт
 	/// </summary>

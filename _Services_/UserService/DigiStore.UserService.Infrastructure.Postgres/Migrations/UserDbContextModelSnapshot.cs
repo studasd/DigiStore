@@ -121,7 +121,7 @@ namespace DigiStore.UserService.Infrastructure.Postgres.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
-                    b.Property<string>("LanguageCode")
+                    b.Property<string>("LangCode")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(10)
@@ -162,10 +162,11 @@ namespace DigiStore.UserService.Infrastructure.Postgres.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
-                    b.Property<int>("Source")
+                    b.Property<string>("Source")
+                        .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(1);
+                        .HasColumnType("text")
+                        .HasDefaultValue("Telegram");
 
                     b.Property<long?>("TelegramId")
                         .HasColumnType("bigint");

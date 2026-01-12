@@ -34,11 +34,6 @@ public interface IUserService
 	Task<Result<UserResponse>> GetUserByTelegramIdAsync(long telegramId, CancellationToken ct = default);
 
 	/// <summary>
-	/// Link Telegram account to existing user
-	/// </summary>
-	Task<Result<UserResponse>> LinkTelegramAsync(LinkTelegramRequest request, CancellationToken ct = default);
-
-	/// <summary>
 	/// Unlink Telegram from user
 	/// </summary>
 	Task<Result> UnlinkTelegramAsync(Guid userId, CancellationToken ct = default);

@@ -1,7 +1,9 @@
+using DigiStore.SharedKernel.Extensions;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.TgBot.Domain;
 using DigiStore.TgBot.Domain.ValueObjects;
+using DigiStore.UserService.Contracts.Enums;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -50,26 +52,32 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 			var session = await _sessionService.GetSessionAsync(telegramId, cancellationToken)
 				?? throw new InvalidOperationException("Session not found");
 
-			var languageCode = callbackQuery.Data.Replace(CallbackData, "");
+			var langCodeResult = callbackQuery.Data.Replace(CallbackData, "").ParseEnum<LanguageCodes>();
+			if(langCodeResult.IsFailure)
+			{
+				await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
+				return;
+			}
+			var langCode = langCodeResult.Value;
 
 			_logger.LogInformation(
 				"Language selected from /start: {LanguageCode}, UserId: {UserId}",
-				languageCode, session.UserId);
+				langCode, session.UserId);
 
 			// Update user language in UserService
 			var updateResult = await _profileService.UpdateUserLanguageAsync(
 				session.UserId,
-				languageCode,
+				langCode,
 				cancellationToken);
 
 			if (!updateResult.IsSuccess)
 			{
-				await AnswerCallbackQueryWithError(callbackQuery.Id, languageCode, cancellationToken);
+				await AnswerCallbackQueryWithError(callbackQuery.Id, langCode, cancellationToken);
 				return;
 			}
 
 			// Update session
-			session.LangCode = languageCode;
+			session.LangCode = langCode;
 			session.SetState(BotState.LanguageSelected);
 			await _sessionService.UpdateSessionAsync(session, cancellationToken);
 
@@ -81,7 +89,7 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 
 			if (!profileResult.IsSuccess)
 			{
-				await AnswerCallbackQueryWithError(callbackQuery.Id, languageCode, cancellationToken);
+				await AnswerCallbackQueryWithError(callbackQuery.Id, langCode, cancellationToken);
 				return;
 			}
 
@@ -109,8 +117,8 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 			await _sessionService.UpdateSessionAsync(session, cancellationToken);
 
 			// Format and send profile
-			var profileText = _profileService.FormatProfileText(profile, languageCode);
-			var keyboard = GetProfileKeyboard(languageCode);
+			var profileText = _profileService.FormatProfileText(profile, langCode);
+			var keyboard = GetProfileKeyboard(langCode);
 
 			await _botClient.EditMessageText(
 				callbackQuery.Message.Chat.Id,
@@ -129,7 +137,7 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in LanguageSelectionCallbackHandler");
-			await AnswerCallbackQueryWithError(callbackQuery.Id, "en", cancellationToken);
+			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
 		}
 	}
 }

@@ -1,4 +1,5 @@
-﻿using DigiStore.UserService.Domain.Enums;
+﻿using DigiStore.UserService.Contracts.Enums;
+using DigiStore.UserService.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -32,7 +33,7 @@ public class UserDS : IdentityUser<Guid>
 	/// <summary>
 	/// Language preference (en, ru, etc.)
 	/// </summary>
-	public string LanguageCode { get; set; } = "en";
+	public LanguageCodes LangCode { get; set; }
 
 	/// <summary>
 	/// Whether user is active across all platforms

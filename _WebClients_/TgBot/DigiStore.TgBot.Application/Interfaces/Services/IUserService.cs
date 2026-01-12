@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.DTOs;
+using DigiStore.UserService.Contracts.Enums;
 
 namespace DigiStore.TgBot.Application.Interfaces.Services;
 
@@ -18,7 +19,7 @@ public interface IUserService
 		string? username,
 		string? firstName,
 		string? lastName,
-		string languageCode,
+		LanguageCodes langCode,
 		CancellationToken ct = default);
 
 	/// <summary>
@@ -29,7 +30,7 @@ public interface IUserService
 	/// <summary>
 	/// Update language preference
 	/// </summary>
-	Task<Result<bool, Error>> UpdateLanguageAsync(Guid userId, string languageCode, CancellationToken ct = default);
+	Task<Result<bool, Error>> UpdateLanguageAsync(Guid userId, LanguageCodes langCode, CancellationToken ct = default);
 
 	/// <summary>
 	/// Update user activity

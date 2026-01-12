@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.SharedKernel;
+using DigiStore.UserService.Contracts.Enums;
 using DigiStore.UserService.Contracts.Requests;
 using DigiStore.UserService.Contracts.Responses;
 using Microsoft.Extensions.Logging;
@@ -50,7 +51,7 @@ internal sealed class UserHttpClient : IUserHttpClient
 	}
 	
 	
-	public async Task<Result<bool, Error>> UpdateLanguage(Guid userId, string langCode, CancellationToken cancellationToken)
+	public async Task<Result<bool, Error>> UpdateLanguage(Guid userId, LanguageCodes langCode, CancellationToken cancellationToken)
 	{
 		try
 		{

@@ -1,6 +1,7 @@
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers;
 using DigiStore.TgBot.Application.Interfaces.Services;
+using DigiStore.UserService.Contracts.Enums;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -51,7 +52,7 @@ public class ProfileView : BaseHandler, ICallbackQueryHandler
 			if (session?.UserId == null)
 				return;
 
-			var languageCode = session.LangCode ?? "en";
+			var languageCode = session.LangCode;
 
 			var profileResult = await _profileService.GetFullProfileAsync(
 				session.UserId,
@@ -81,7 +82,7 @@ public class ProfileView : BaseHandler, ICallbackQueryHandler
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in ProfileViewCallbackHandler");
-			await AnswerCallbackQueryWithError(callbackQuery.Id, "en", cancellationToken);
+			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
 		}
 	}
 }

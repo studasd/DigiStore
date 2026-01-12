@@ -1,4 +1,5 @@
-﻿using DigiStore.UserService.Domain;
+﻿using DigiStore.UserService.Contracts.Enums;
+using DigiStore.UserService.Domain;
 using DigiStore.UserService.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -34,10 +35,11 @@ public class UserDSConfiguration : IEntityTypeConfiguration<UserDS>
 		builder.Property(u => u.TelegramId)
 			.IsRequired(false);
 
-		builder.Property(u => u.LanguageCode)
+		builder.Property(u => u.LangCode)
 			.HasMaxLength(10)
 			.IsRequired()
-			.HasDefaultValue("en");
+			.HasConversion<string>()
+			.HasDefaultValue(LanguageCodes.en);
 
 		builder.Property(u => u.IsActive)
 			.IsRequired()
@@ -45,6 +47,7 @@ public class UserDSConfiguration : IEntityTypeConfiguration<UserDS>
 
 		builder.Property(u => u.Source)
 			.IsRequired()
+			.HasConversion<string>()
 			.HasDefaultValue(UserSource.Telegram);
 
 		builder.Property(u => u.LastActivityAt)

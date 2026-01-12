@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.DTOs;
+using DigiStore.UserService.Contracts.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DigiStore.TgBot.Application.Interfaces.Services;
@@ -18,15 +19,15 @@ public interface IProfileService
 	/// <summary>
 	/// Format profile to readable text for Telegram
 	/// </summary>
-	string FormatProfileText(ProfileDisplayDto profile, string languageCode);
+	string FormatProfileText(ProfileDisplayDto profile, LanguageCodes langCode);
 
 	/// <summary>
 	/// Update user language and session
 	/// </summary>
-	Task<Result<bool, Error>> UpdateUserLanguageAsync(Guid userId, string languageCode, CancellationToken ct = default);
+	Task<Result<bool, Error>> UpdateUserLanguageAsync(Guid userId, LanguageCodes langCode, CancellationToken ct = default);
 
 	/// <summary>
 	/// Build profile message with keyboard
 	/// </summary>
-	(string text, InlineKeyboardMarkup keyboard) BuildProfileMessage(ProfileDisplayDto profile, string languageCode);
+	(string text, InlineKeyboardMarkup keyboard) BuildProfileMessage(ProfileDisplayDto profile, LanguageCodes langCode);
 }
