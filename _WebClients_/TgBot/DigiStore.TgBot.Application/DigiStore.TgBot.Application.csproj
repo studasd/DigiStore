@@ -17,4 +17,8 @@
     <ProjectReference Include="..\DigiStore.TgBot.Domain\DigiStore.TgBot.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Seeds\" />
+  </ItemGroup>
+
 </Project>

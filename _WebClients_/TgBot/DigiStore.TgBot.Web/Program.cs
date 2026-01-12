@@ -9,6 +9,8 @@ using Telegram.Bot.Types.Enums;
 using Microsoft.Extensions.Options;
 using DigiStore.TgBot.Application.Options;
 using Microsoft.Extensions.DependencyInjection;
+using DigiStore.TgBot.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +34,11 @@ var app = builder.Build();
 // Инициализация команд бота
 using var scope = app.Services.CreateScope();
 var serviceProvider = scope.ServiceProvider;
+
+var dbContext = serviceProvider.GetRequiredService<TgBotDbContext>();
+await dbContext.Database.MigrateAsync();
+
+
 var botClient = serviceProvider.GetRequiredService<ITelegramBotClient>();
 var telegramOptions = serviceProvider.GetRequiredService<IOptions<TelegramOptions>>().Value;
 

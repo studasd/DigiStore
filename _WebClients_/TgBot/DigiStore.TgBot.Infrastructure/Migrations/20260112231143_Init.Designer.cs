@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DigiStore.TgBot.Infrastructure.Migrations
 {
     [DbContext(typeof(TgBotDbContext))]
-    [Migration("20260112011012_Init")]
+    [Migration("20260112231143_Init")]
     partial class Init
     {
         /// <inheritdoc />

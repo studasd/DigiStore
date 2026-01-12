@@ -2,6 +2,7 @@
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.TgBot.Application.Services;
 using DigiStore.TgBot.Infrastructure.Data;
+using DigiStore.TgBot.Infrastructure.Data.Seeders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,17 @@ public static class DependencyInjectionExtensions
 {
 	public static IServiceCollection AddTgBotInfrastructure(this IServiceCollection services, IConfiguration configuration)
 	{
+		// Session & Localization
+		services.AddScoped<ISessionService, SessionService>();
+		services.AddScoped<ILocalizationService, LocalizationService>();
+
+		// Repositories
+		services.AddScoped<ITgUserRepository, Repositories.TgUserRepository>();
+		services.AddScoped<ISessionRepository, Repositories.SessionRepository>();
+		services.AddScoped<ICommandHistoryRepository, Repositories.CommandHistoryRepository>();
+		services.AddScoped<ILocalizationRepository, Repositories.LocalizationRepository>();
+
+
 		// Database
 		services.AddDbContextPool<TgBotDbContext>((sp, options) =>
 		{
@@ -21,7 +33,12 @@ public static class DependencyInjectionExtensions
 			IHostEnvironment hostEnvironment = sp.GetRequiredService<IHostEnvironment>();
 			ILoggerFactory loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 
-			options.UseNpgsql(connectionString);
+			options.UseNpgsql(connectionString)
+				.UseAsyncSeeding(async (context, result, token) =>
+				{
+					var seeder = ActivatorUtilities.CreateInstance<DataSeeder>(sp);
+					await seeder.SeedAsync((TgBotDbContext)context, sp);
+				});
 
 			if (hostEnvironment.IsDevelopment())
 			{
@@ -32,16 +49,6 @@ public static class DependencyInjectionExtensions
 			options.UseLoggerFactory(loggerFactory);
 		});
 
-
-		// Session & Localization
-		services.AddScoped<ISessionService, SessionService>();
-		services.AddScoped<ILocalizationService, LocalizationService>();
-
-		// Repositories
-		services.AddScoped<ITgUserRepository, Repositories.TgUserRepository>();
-		services.AddScoped<ISessionRepository, Repositories.SessionRepository>();
-		services.AddScoped<ICommandHistoryRepository, Repositories.CommandHistoryRepository>();
-		services.AddScoped<ILocalizationRepository, Repositories.LocalizationRepository>();
 
 		//// Redis
 		//var redisConnection = configuration.GetConnectionString("Redis")

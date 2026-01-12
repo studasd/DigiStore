@@ -1,16 +1,24 @@
 ﻿using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.UserService.Contracts.Enums;
 using DigiStore.TgBot.Application.Constants;
+using DigiStore.TgBot.Application.Interfaces.Repositories;
+using DigiStore.TgBot.Domain;
+using System.Linq;
 
 namespace DigiStore.TgBot.Application.Services;
 
 public class LocalizationService : ILocalizationService
 {
 	private readonly Dictionary<LanguageCodes, Dictionary<string, string>> _localizations;
-	public LocalizationService()
+	private readonly ILocalizationRepository _localizationRepository;
+
+	public LocalizationService(ILocalizationRepository localizationRepository)
 	{
+		_localizationRepository = localizationRepository;
 		_localizations = InitializeLocalizations();
 	}
+
+
 	public string GetMessage(string key, LanguageCodes languageCode = LanguageCodes.en)
 	{
 		if (!_localizations.ContainsKey(languageCode))
@@ -19,122 +27,39 @@ public class LocalizationService : ILocalizationService
 		if (_localizations[languageCode].TryGetValue(key, out var message))
 			return message;
 
-		_localizations[languageCode].TryGetValue(key, out var fallback);
+		// try fallback to English
+		if (languageCode != LanguageCodes.en && _localizations.TryGetValue(LanguageCodes.en, out var enDict) && enDict.TryGetValue(key, out var fallback))
+			return fallback;
 
-		return fallback ?? key;
+		return key;
 	}
+
 	public Dictionary<string, string> GetLanguages()
 	{
 		return new Dictionary<string, string>
 		{
 			{ "en", "🇬🇧 English" },
 			{ "ru", "🇷🇺 Русский" },
-			{ "es", "🇪🇸 Español" },
 			{ "de", "🇩🇪 Deutsch" },
-			{ "fr", "🇫🇷 Français" }
 		};
 	}
+
 	private Dictionary<LanguageCodes, Dictionary<string, string>> InitializeLocalizations()
 	{
+		// Load from database. This method blocks on async repository calls because constructor cannot be async.
+		var entries = _localizationRepository.GetAllAsync().GetAwaiter().GetResult();
+
+		if(entries == null)
+			throw new Exception("Failed to load localization entries from the database.");
+
+		// Build dictionaries
+		var enDictFinal = entries.ToDictionary(e => e.Key, e => e.En ?? e.Key);
+		var ruDictFinal = entries.ToDictionary(e => e.Key, e => e.Ru ?? e.Key);
+
 		return new Dictionary<LanguageCodes, Dictionary<string, string>>
 		{
-			{
-				LanguageCodes.en, new Dictionary<string, string>
-				{
-					// Greeting & Navigation
-					{ LocalKeys.Greetings.Greeting, "👋 Welcome to PetFamily Store!" },
-
-					{ LocalKeys.Navigations.SelectLanguage, "📍 Please select your language:" },
-					{ LocalKeys.Navigations.LanguageChanged, "✅ Language changed to English" },
-					{ LocalKeys.Navigations.MainMenu, "🏠 Main Menu" },
-					{ LocalKeys.Navigations.ChooseOption, "Choose an option below:" },
-					// Commands
-					{ LocalKeys.Commands.Profile, "👤 Profile" },
-					{ LocalKeys.Commands.Balance, "💰 Balance" },
-					{ LocalKeys.Commands.Catalog, "🛍️Catalog" },
-					{ LocalKeys.Commands.Orders, "📦 My Orders" },
-					{ LocalKeys.Commands.Settings, "⚙️ Settings" },
-					{ LocalKeys.Commands.Help, "❓ Help" },
-					{ LocalKeys.Commands.ChangeLanguage, "🌐 Change Language" },
-					// Profile
-					{ LocalKeys.Profiles.Info, "YOUR PROFILE" },
-					{ LocalKeys.Profiles.Email, "Email" },
-					{ LocalKeys.Profiles.FullName, "Name" },
-					{ LocalKeys.Profiles.Username, "Telegram" },
-					{ LocalKeys.Profiles.UserRoles, "Roles" },
-					{ LocalKeys.Profiles.Status, "Status" },
-					{ LocalKeys.Profiles.Roles, "Roles" },
-					{ LocalKeys.Profiles.CreatedAt, "Registered" },
-					{ LocalKeys.Profiles.UpdatedAt, "Last Updated" },
-					{ LocalKeys.Profiles.Language, "Language" },
-					// Balance
-					{ LocalKeys.Balances.Info, "WALLET BALANCE" },
-					{ LocalKeys.Balances.CurrentBalance, "Current Balance" },
-					{ LocalKeys.Balances.TotalDeposited, "Total Deposited" },
-					{ LocalKeys.Balances.TotalWithdrawn, "Total Withdrawn" },
-					{ LocalKeys.Balances.LinkedAccounts, "Linked Accounts" },
-					{ LocalKeys.Balances.InsufficientBalance, "❌ Insufficient balance" },
-					// Buttons
-					{ LocalKeys.Buttons.Back, "← Back" },
-					{ LocalKeys.Buttons.Cancel, "❌ Cancel" },
-					{ LocalKeys.Buttons.Ok, "✅ OK" },
-					{ LocalKeys.Buttons.Yes, "Yes" },
-					{ LocalKeys.Buttons.No, "No" },
-					// Errors
-					{ LocalKeys.Errors.Occurred, "❌ An error occurred" },
-					{ LocalKeys.Errors.SessionExpired, "⏰ Session expired. Please use /start" },
-					{ LocalKeys.Errors.UserNotFound, "👤 User not found" },
-					{ LocalKeys.Errors.OperationFailed, "❌ Operation failed" }
-				}
-			},
-			{
-				LanguageCodes.ru, new Dictionary<string, string>
-				{
-					// Greeting & Navigation
-					{ LocalKeys.Greetings.Greeting, "👋 Добро пожаловать в PetFamily Store!" },
-					{ LocalKeys.Navigations.SelectLanguage, "📍 Выберите язык:" },
-					{ LocalKeys.Navigations.LanguageChanged, "✅ Язык изменён на Русский" },
-					{ LocalKeys.Navigations.MainMenu, "🏠 Главное меню" },
-					{ LocalKeys.Navigations.ChooseOption, "Выберите опцию:" },
-					// Commands
-					{ LocalKeys.Commands.Profile, "👤 Профиль" },
-					{ LocalKeys.Commands.Balance, "💰 Баланс" },
-					{ LocalKeys.Commands.Catalog, "🛍️Каталог" },
-					{ LocalKeys.Commands.Orders, "📦 Мои заказы" },
-					{ LocalKeys.Commands.Settings, "⚙️ Настройки" },
-					{ LocalKeys.Commands.Help, "❓ Помощь" },
-					{ LocalKeys.Commands.ChangeLanguage, "🌐 Изменить язык" },
-					// Profile
-					{ LocalKeys.Profiles.Info, "ВАШ ПРОФИЛЬ" },
-					{ LocalKeys.Profiles.Email, "Email" },
-					{ LocalKeys.Profiles.FullName, "Имя" },
-					{ LocalKeys.Profiles.Username, "Telegram" },
-					{ LocalKeys.Profiles.UserRoles, "Роли" },
-					{ LocalKeys.Profiles.Status, "Статус" },
-					{ LocalKeys.Profiles.Roles, "Роли" },
-					{ LocalKeys.Profiles.CreatedAt, "Дата регистрации" },
-					{ LocalKeys.Profiles.UpdatedAt, "Последнее обновление" },
-					{ LocalKeys.Profiles.Language, "Язык" },
-					// Balance
-					{ LocalKeys.Balances.Info, "БАЛАНС КОШЕЛЬКА" },
-					{ LocalKeys.Balances.CurrentBalance, "Текущий баланс" },
-					{ LocalKeys.Balances.TotalDeposited, "Всего пополнено" },
-					{ LocalKeys.Balances.TotalWithdrawn, "Всего снято" },
-					{ LocalKeys.Balances.LinkedAccounts, "Привязанные аккаунты" },
-					{ LocalKeys.Balances.InsufficientBalance, "❌ Недостаточно средств" },
-					// Buttons
-					{ LocalKeys.Buttons.Back, "← Назад" },
-					{ LocalKeys.Buttons.Cancel, "❌ Отмена" },
-					{ LocalKeys.Buttons.Ok, "✅ ОК" },
-					{ LocalKeys.Buttons.Yes, "Да" },
-					{ LocalKeys.Buttons.No, "Нет" },
-					// Errors
-					{ LocalKeys.Errors.Occurred, "❌ Произошла ошибка" },
-					{ LocalKeys.Errors.SessionExpired, "⏰ Сессия истекла. Используйте /start" },
-					{ LocalKeys.Errors.UserNotFound, "👤 Пользователь не найден" },
-					{ LocalKeys.Errors.OperationFailed, "❌ Операция не удалась" }
-				}
-			}
+			{ LanguageCodes.en, enDictFinal },
+			{ LanguageCodes.ru, ruDictFinal }
 		};
 	}
 }

@@ -35,8 +35,8 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
                 columns: table => new
                 {
                     Key = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    En = table.Column<string>(type: "text", nullable: true),
                     Ru = table.Column<string>(type: "text", nullable: true),
+                    En = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()")
                 },

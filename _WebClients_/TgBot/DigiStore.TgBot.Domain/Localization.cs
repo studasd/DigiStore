@@ -8,9 +8,9 @@ public class Localization
     public string Key { get; set; } = string.Empty; // localization key, primary key
 
     // Language columns
-    public string? En { get; set; }
     public string? Ru { get; set; }
+    public string? En { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+	public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
