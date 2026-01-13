@@ -9,8 +9,27 @@ using DigiStore.TgBot.Application.Interfaces.Repositories;
 using DigiStore.TgBot.Domain;
 using DigiStore.TgBot.Domain.ValueObjects;
 using Telegram.Bot;
+using DigiStore.Framework.Endpoints;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Builder;
 
 namespace DigiStore.TgBot.Application.Handlers;
+
+
+public sealed class ActivateUser : IEndpoint
+{
+	public void MapEndpoint(IEndpointRouteBuilder app)
+	{
+		app.MapPost("/telegram/webhook", async Task (
+			[FromBody] Update update,
+			[FromServices] UpdateHandler updateHandler,
+			CancellationToken token) => 
+				await updateHandler.HandleUpdateAsync(update, token));
+	}
+}
+
+
 
 /// <summary>
 /// Универсальный обработчик Update, который автоматически находит и вызывает нужный хэндлер

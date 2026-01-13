@@ -30,5 +30,9 @@
     <ProjectReference Include="..\DigiStore.TgBot.Application\DigiStore.TgBot.Application.csproj" />
     <ProjectReference Include="..\DigiStore.TgBot.Infrastructure\DigiStore.TgBot.Infrastructure.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\" />
+  </ItemGroup>
   
 </Project>

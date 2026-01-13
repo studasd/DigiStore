@@ -9,6 +9,7 @@ using DigiStore.TgBot.Application.Options;
 using Microsoft.Extensions.Options;
 using System.Net;
 using DigiStore.Framework.Proxies;
+using DigiStore.Framework.Endpoints;
 
 
 namespace DigiStore.TgBot.Application;
@@ -17,6 +18,8 @@ public static class DependencyInjectionExtensions
 {
 	public static IServiceCollection AddTgBotApplication(this IServiceCollection services, IConfiguration configuration)
 	{
+		services.AddEndpoints(typeof(DependencyInjectionExtensions).Assembly);
+
 		services.Configure<ServiceOptions>(configuration.GetSection(nameof(ServiceOptions)));
 		services.Configure<TelegramOptions>(configuration.GetSection(nameof(TelegramOptions)));
 		//// Bind ServiceOptions to the DI system so it can be resolved via IOptions<ServiceOptions>
