@@ -14,7 +14,7 @@ public interface ITgUserService
 	/// <summary>
 	/// Get or create user by Telegram ID
 	/// </summary>
-	Task<Result<TelegramUserDto, Error>> GetOrCreateUserAsync(
+	Task<Result<TgUserDto, Error>> GetOrCreateUserAsync(
 		long telegramId,
 		string? username,
 		string? firstName,
@@ -25,7 +25,7 @@ public interface ITgUserService
 	/// <summary>
 	/// Get user profile
 	/// </summary>
-	Task<Result<TelegramUserDto, Error>> GetUserProfileAsync(Guid userId, CancellationToken ct = default);
+	Task<Result<TgUserDto, Error>> GetUserProfileAsync(Guid userId, CancellationToken ct = default);
 
 	/// <summary>
 	/// Update language preference

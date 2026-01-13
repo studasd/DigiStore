@@ -6,7 +6,7 @@ using System.Text;
 namespace DigiStore.TgBot.Application.DTOs;
 
 
-public class TelegramUserDto
+public class TgUserDto
 {
 	public Guid Id { get; set; }
 	public long TelegramId { get; set; }

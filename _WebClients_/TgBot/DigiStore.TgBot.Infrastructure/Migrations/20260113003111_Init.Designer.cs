@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DigiStore.TgBot.Infrastructure.Migrations
 {
     [DbContext(typeof(TgBotDbContext))]
-    [Migration("20260112231143_Init")]
+    [Migration("20260113003111_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -34,7 +34,9 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Command")
-                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Message")
                         .HasColumnType("text");
 
                     b.Property<long>("TelegramId")

@@ -212,7 +212,23 @@ public class UpdateHandler
 				return;
 			}
 
-			_logger.LogWarning("Unhandled update type: {UpdateType}", update.Type);
+
+			// Record command history if session service available
+			try
+			{
+				var sessionService = serviceProvider.GetService<ISessionService>();
+				if (sessionService != null && update.Message.From != null)
+				{
+					await sessionService.RecordCommandAsync(update.Message.From.Id, null, update.Message?.Text, cancellationToken);
+				}
+
+				_logger.LogWarning("Unhandled update type: {UpdateType}", update.Type);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogWarning(ex, "Failed to record command history for TelegramId {TelegramId}", update.Message.From?.Id);
+			}
+
 		}
 		catch (Exception ex)
 		{
@@ -246,6 +262,20 @@ public class UpdateHandler
 			}
 
 			await handler.HandleAsync(message, cancellationToken);
+
+			// Record command history if session service available
+			try
+			{
+				var sessionService = serviceProvider.GetService<ISessionService>();
+				if (sessionService != null && message.From != null)
+				{
+					await sessionService.RecordCommandAsync(message.From.Id, command, String.IsNullOrEmpty(command) ? message.Text : null, cancellationToken);
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogWarning(ex, "Failed to record command history for TelegramId {TelegramId}", message.From?.Id);
+			}
 		}
 		catch (Exception ex)
 		{
@@ -271,6 +301,19 @@ public class UpdateHandler
 		if (_callbackHandlers.TryGetValue(callbackData, out var exactHandlerType))
 		{
 			await ExecuteCallbackHandlerAsync(callbackQuery, exactHandlerType, serviceProvider, cancellationToken);
+			// Record callback history
+			try
+			{
+				var sessionService = serviceProvider.GetService<ISessionService>();
+				if (sessionService != null && callbackQuery.From != null)
+				{
+					await sessionService.RecordCommandAsync(callbackQuery.From.Id, callbackData, String.IsNullOrEmpty(callbackData) ? callbackQuery.Message?.Text : null, cancellationToken);
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogWarning(ex, "Failed to record callback history for TelegramId {TelegramId}", callbackQuery.From?.Id);
+			}
 			return;
 		}
 
@@ -280,6 +323,19 @@ public class UpdateHandler
 			if (callbackData.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
 			{
 				await ExecuteCallbackHandlerAsync(callbackQuery, handlerType, serviceProvider, cancellationToken);
+				// Record callback history
+				try
+				{
+					var sessionService = serviceProvider.GetService<ISessionService>();
+					if (sessionService != null && callbackQuery.From != null)
+					{
+						await sessionService.RecordCommandAsync(callbackQuery.From.Id, callbackData, String.IsNullOrEmpty(callbackData) ? callbackQuery.Message?.Text : null, cancellationToken);
+					}
+				}
+				catch (Exception ex)
+				{
+					_logger.LogWarning(ex, "Failed to record callback history for TelegramId {TelegramId}", callbackQuery.From?.Id);
+				}
 				return;
 			}
 		}

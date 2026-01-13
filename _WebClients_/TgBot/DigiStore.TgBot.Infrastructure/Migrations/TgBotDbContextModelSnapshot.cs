@@ -31,7 +31,9 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Command")
-                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Message")
                         .HasColumnType("text");
 
                     b.Property<long>("TelegramId")

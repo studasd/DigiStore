@@ -113,14 +113,15 @@ public class SessionService : ISessionService
     }
 
     // Additional helper to store command history
-    public async Task RecordCommandAsync(long telegramId, string command, object? payload = null, CancellationToken ct = default)
+    public async Task RecordCommandAsync(long telegramId, string command, string? message = null, CancellationToken ct = default)
     {
         var history = new CommandHistory
         {
             Id = Guid.NewGuid(),
             TelegramId = telegramId,
             Command = command,
-            Timestamp = DateTime.UtcNow
+            Message = message,
+			Timestamp = DateTime.UtcNow
         };
 
         await _historyRepository.AddAsync(history, ct);

@@ -31,7 +31,7 @@ public class TgUserService : ITgUserService
 	}
 
 
-	public async Task<Result<TelegramUserDto, Error>> GetOrCreateUserAsync(
+	public async Task<Result<TgUserDto, Error>> GetOrCreateUserAsync(
 		long telegramId,
 		string? username,
 		string? firstName,
@@ -47,7 +47,7 @@ public class TgUserService : ITgUserService
 			if (responseResult.IsSuccess)
 			{
 				var user = responseResult.Value!;
-				var telegramUser = new TelegramUserDto
+				var telegramUser = new TgUserDto
 				{
 					Id = user.Id,
 					TelegramId = user.TelegramId ?? telegramId,
@@ -77,7 +77,7 @@ public class TgUserService : ITgUserService
 				if (createResponse.IsSuccess)
 				{
 					var createUser = createResponse.Value!;
-					var newUser = new TelegramUserDto
+					var newUser = new TgUserDto
 					{
 						Email = createUser.Email ?? string.Empty,
 						FullName = createUser.FullName ?? string.Empty,
@@ -116,7 +116,7 @@ public class TgUserService : ITgUserService
 	}
 
 
-	public async Task<Result<TelegramUserDto, Error>> GetUserProfileAsync(Guid userId, CancellationToken ct = default)
+	public async Task<Result<TgUserDto, Error>> GetUserProfileAsync(Guid userId, CancellationToken ct = default)
 	{
 		try
 		{
@@ -129,7 +129,7 @@ public class TgUserService : ITgUserService
 			}
 
 			var user = response.Value!;
-			var dto = new TelegramUserDto
+			var dto = new TgUserDto
 			{
 				Id = user.Id,
 				TelegramId = user.TelegramId ?? 0,

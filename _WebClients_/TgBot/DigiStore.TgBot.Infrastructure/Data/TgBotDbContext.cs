@@ -69,7 +69,9 @@ public class TgBotDbContext : DbContext
 
             eb.HasIndex(e => e.TelegramId);
             eb.Property(e => e.Timestamp).HasDefaultValueSql("now()");
-        });
+            eb.Property(e => e.Command).IsRequired(false);
+            eb.Property(e => e.Message).IsRequired(false);
+		});
 
         modelBuilder.Entity<Localization>(eb =>
         {

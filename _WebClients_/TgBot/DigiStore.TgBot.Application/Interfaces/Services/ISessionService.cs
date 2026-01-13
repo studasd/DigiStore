@@ -27,4 +27,9 @@ public interface ISessionService
 	/// Get session
 	/// </summary>
 	Task<TgUserSession?> GetSessionAsync(long telegramId, CancellationToken ct = default);
+
+	/// <summary>
+	/// Record command or callback history for a telegram user
+	/// </summary>
+	Task RecordCommandAsync(long telegramId, string command, string? message = null, CancellationToken ct = default);
 }
