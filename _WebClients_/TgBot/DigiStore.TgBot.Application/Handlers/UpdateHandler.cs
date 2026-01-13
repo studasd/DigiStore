@@ -13,6 +13,7 @@ using DigiStore.Framework.Endpoints;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Builder;
+using DigiStore.TgBot.Application.Handlers.Adstracts;
 
 namespace DigiStore.TgBot.Application.Handlers;
 
@@ -36,85 +37,31 @@ public sealed class ActivateUser : IEndpoint
 /// </summary>
 public class UpdateHandler
 {
-	private readonly IServiceScopeFactory _serviceScopeFactory;
+	private readonly ITelegramBotClient _botClient;
+	private readonly ISessionService _sessionService;
+	private readonly ITgUserService _userService;
+	private readonly ITgUserRepository _userRepository;
+	private readonly IServiceProvider _serviceProvider;
 	private readonly ILogger<UpdateHandler> _logger;
-	private readonly ConcurrentDictionary<string, Type> _commandHandlers = new();
-	private readonly ConcurrentDictionary<string, Type> _callbackHandlers = new();
-	private readonly ConcurrentDictionary<string, Type> _callbackPrefixHandlers = new();
+    private readonly HandlerCollections _registry;
 
 	public UpdateHandler(
-		IServiceScopeFactory serviceScopeFactory,
-		ILogger<UpdateHandler> logger)
-	{
-		_serviceScopeFactory = serviceScopeFactory;
+		ITelegramBotClient botClient,
+		ISessionService sessionService,
+		ITgUserService userService,
+		ITgUserRepository userRepository,
+		IServiceProvider serviceProvider,
+		ILogger<UpdateHandler> logger,
+        HandlerCollections registry)
+    {
+		_botClient = botClient;
+		_sessionService = sessionService;
+		_userService = userService;
+		_userRepository = userRepository;
+		_serviceProvider = serviceProvider;
 		_logger = logger;
-		InitializeHandlers();
-	}
-
-	/// <summary>
-	/// Инициализирует словари хэндлеров на основе констант в хэндлерах
-	/// </summary>
-	private void InitializeHandlers()
-	{
-		// Получаем сборку Application, где находятся хэндлеры
-		var assembly = typeof(ICommandHandler).Assembly;
-		var handlerTypes = assembly.GetTypes()
-			.Where(t => !t.IsAbstract && !t.IsInterface);
-
-		foreach (var handlerType in handlerTypes)
-		{
-			// Регистрация обработчиков команд
-			if (typeof(ICommandHandler).IsAssignableFrom(handlerType))
-			{
-				// Получаем константу Command из типа
-				var commandField = handlerType.GetField("Command", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
-				if (commandField != null && commandField.IsLiteral && !commandField.IsInitOnly)
-				{
-					var command = commandField.GetValue(null)?.ToString();
-					if (!string.IsNullOrEmpty(command))
-					{
-						_commandHandlers[command.ToLowerInvariant()] = handlerType;
-						_logger.LogInformation("Registered command handler: {Command} -> {HandlerType}",
-							command, handlerType.Name);
-					}
-				}
-			}
-
-			// Регистрация обработчиков колбэков
-			if (typeof(ICallbackQueryHandler).IsAssignableFrom(handlerType))
-			{
-				// Получаем константы CallbackData и IsPrefix из типа
-				var callbackDataField = handlerType.GetField("CallbackData", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
-				var isPrefixField = handlerType.GetField("IsPrefix", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
-
-				if (callbackDataField != null && callbackDataField.IsLiteral && !callbackDataField.IsInitOnly)
-				{
-					var callbackData = callbackDataField.GetValue(null)?.ToString();
-					if (!string.IsNullOrEmpty(callbackData))
-					{
-						var isPrefix = false;
-						if (isPrefixField != null && isPrefixField.IsLiteral && !isPrefixField.IsInitOnly)
-						{
-							isPrefix = (bool)(isPrefixField.GetValue(null) ?? false);
-						}
-
-						if (isPrefix)
-						{
-							_callbackPrefixHandlers[callbackData] = handlerType;
-							_logger.LogInformation("Registered callback prefix handler: {Prefix} -> {HandlerType}",
-								callbackData, handlerType.Name);
-						}
-						else
-						{
-							_callbackHandlers[callbackData] = handlerType;
-							_logger.LogInformation("Registered callback handler: {CallbackData} -> {HandlerType}",
-								callbackData, handlerType.Name);
-						}
-					}
-				}
-			}
-		}
-	}
+        _registry = registry;
+    }
 
 
 	/// <summary>
@@ -122,10 +69,6 @@ public class UpdateHandler
 	/// </summary>
 	public async Task HandleUpdateAsync(Update update, CancellationToken cancellationToken = default)
 	{
-		// Создаем scope для каждого update, чтобы хэндлеры были scoped
-		using var scope = _serviceScopeFactory.CreateScope();
-		var serviceProvider = scope.ServiceProvider;
-
 		try
 		{
 			// Before dispatching handlers ensure we have session and linked user
@@ -149,108 +92,90 @@ public class UpdateHandler
 				lastName = update.CallbackQuery.From.LastName;
 			}
 
+
 			if (telegramId.HasValue)
 			{
-				var sessionService = serviceProvider.GetService<ISessionService>();
-				var userService = serviceProvider.GetService<ITgUserService>();
-				var userRepository = serviceProvider.GetService<ITgUserRepository>();
-
-				if (sessionService != null && userService != null)
+				var sessionResult = await _sessionService.GetOrCreateSessionAsync(telegramId.Value, cancellationToken);
+				if (sessionResult.IsFailure)
 				{
-					var sessionResult = await sessionService.GetOrCreateSessionAsync(telegramId.Value, cancellationToken);
-					if (sessionResult.IsFailure)
-					{
-						_logger.LogWarning("Failed to get or create user from Session for TelegramId {TelegramId}: {Error}", telegramId.Value, sessionResult.Error?.GetMessage());
-						return;
-					}
+					_logger.LogWarning("Failed to get or create user from Session for TelegramId {TelegramId}: {Error}", telegramId.Value, sessionResult.Error?.GetMessage());
+					return;
+				}
 
-					var session = sessionResult.Value!;
-					if (session.UserId == default)
-					{
-						var lang = session.LangCode;
-						var userResult = await userService.GetOrCreateUserAsync(telegramId.Value, username, firstName, lastName, lang, cancellationToken);
+				var session = sessionResult.Value!;
+				if (session.UserId == default)
+				{
+					var lang = session.LangCode;
+					var userResult = await _userService.GetOrCreateUserAsync(telegramId.Value, username, firstName, lastName, lang, cancellationToken);
 						
-						if (userResult.IsSuccess)
+					if (userResult.IsSuccess)
+					{
+						var userDto = userResult.Value!;
+
+						var tgUser = new TgUser
 						{
-							var dto = userResult.Value!;
+							Id = Guid.NewGuid(),
+							TelegramId = userDto.TelegramId,
+							UserId = userDto.Id,
+							FirstName = firstName ?? string.Empty,
+							LastName = lastName ?? string.Empty,
+							Username = username,
+							IsActive = userDto.IsActive,
+							CreatedAt = DateTime.UtcNow,
+							UpdatedAt = DateTime.UtcNow
+						};
 
-							// Persist local TgUser mapping if repository available
-							if (userRepository != null)
-							{
-								var tgUser = new TgUser
-								{
-									Id = Guid.NewGuid(),
-									TelegramId = dto.TelegramId,
-									UserId = dto.Id,
-									FirstName = firstName ?? string.Empty,
-									LastName = lastName ?? string.Empty,
-									Username = username,
-									IsActive = dto.IsActive,
-									CreatedAt = DateTime.UtcNow,
-									UpdatedAt = DateTime.UtcNow
-								};
+						await _userRepository.AddOrUpdateAsync(tgUser, cancellationToken);
 
-								await userRepository.AddOrUpdateAsync(tgUser, cancellationToken);
-							}
 
-							// Set session.UserId and optionally cache profile
-							session.UserId = dto.Id;
-							session.CachedProfile = new CachedUserProfileVO
-							{
-								UserId = dto.Id,
-								TelegramId = dto.TelegramId,
-								FirstName = dto.FullName?.Split(' ').FirstOrDefault() ?? string.Empty,
-								LastName = dto.FullName?.Split(' ').LastOrDefault() ?? string.Empty,
-								Username = dto.Username,
-								LangCode = dto.LangCode,
-								IsActive = dto.IsActive,
-								Roles = dto.Roles,
-							};
-
-							await sessionService.UpdateSessionAsync(session, cancellationToken);
-
-							// Notify UserService about activity
-							_ = userService.UpdateActivityAsync(dto.Id, cancellationToken);
-						}
-						else
+						// Set session.UserId and optionally cache profile
+						session.UserId = userDto.Id;
+						session.CachedProfile = new CachedUserProfileVO
 						{
-							_logger.LogWarning("Failed to get or create user from UserService for TelegramId {TelegramId}: {Error}", telegramId.Value, userResult.Error?.GetMessage());
-						}
+							UserId = userDto.Id,
+							TelegramId = userDto.TelegramId,
+							FirstName = userDto.FullName?.Split(' ').FirstOrDefault() ?? string.Empty,
+							LastName = userDto.FullName?.Split(' ').LastOrDefault() ?? string.Empty,
+							Username = userDto.Username,
+							LangCode = userDto.LangCode,
+							IsActive = userDto.IsActive,
+							Roles = userDto.Roles,
+						};
+
+						await _sessionService.UpdateSessionAsync(session, cancellationToken);
+
+						// Notify UserService about activity
+						_ = _userService.UpdateActivityAsync(userDto.Id, cancellationToken);
+					}
+					else
+					{
+						_logger.LogWarning("Failed to get or create user from UserService for TelegramId {TelegramId}: {Error}", telegramId.Value, userResult.Error?.GetMessage());
 					}
 				}
 			}
 
-			// Обработка команд
-			if (update.Message?.Text != null && update.Message.Text.StartsWith("/"))
-			{
-				var command = update.Message.Text.Split(' ')[0].ToLowerInvariant();
-				await HandleCommandAsync(update.Message, command, serviceProvider, cancellationToken);
-				return;
-			}
+            // Обработка команд
+            if (update.Message?.Text != null && update.Message.Text.StartsWith("/"))
+            {
+                var command = update.Message.Text.Split(' ')[0].ToLowerInvariant();
+                await HandleCommandAsync(update.Message, command, cancellationToken);
+                return;
+            }
 
 			// Обработка колбэков
 			if (update.CallbackQuery != null)
 			{
-				await HandleCallbackQueryAsync(update.CallbackQuery, serviceProvider, cancellationToken);
+				await HandleCallbackQueryAsync(update.CallbackQuery, cancellationToken);
 				return;
 			}
 
 
-			// Record command history if session service available
-			try
+			if (update.Message.From != null)
 			{
-				var sessionService = serviceProvider.GetService<ISessionService>();
-				if (sessionService != null && update.Message.From != null)
-				{
-					await sessionService.RecordCommandAsync(update.Message.From.Id, null, update.Message?.Text, cancellationToken);
-				}
+				await _sessionService.RecordCommandAsync(update.Message.From.Id, null, update.Message?.Text, cancellationToken);
+			}
 
-				_logger.LogWarning("Unhandled update type: {UpdateType}", update.Type);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogWarning(ex, "Failed to record command history for TelegramId {TelegramId}", update.Message.From?.Id);
-			}
+			_logger.LogWarning("Unhandled update type: {UpdateType}", update.Type);
 
 		}
 		catch (Exception ex)
@@ -265,10 +190,9 @@ public class UpdateHandler
 	private async Task HandleCommandAsync(
 		Message message,
 		string command,
-		IServiceProvider serviceProvider,
 		CancellationToken cancellationToken)
 	{
-		if (!_commandHandlers.TryGetValue(command, out var handlerType))
+        if (!_registry.CommandHandlers.TryGetValue(command, out var handlerType))
 		{
 			_logger.LogWarning("No handler found for command: {Command}", command);
 			return;
@@ -276,7 +200,7 @@ public class UpdateHandler
 
 		try
 		{
-			var handler = serviceProvider.GetService(handlerType) as ICommandHandler;
+			var handler = _serviceProvider.GetService(handlerType) as ICommandHandler;
 			if (handler == null)
 			{
 				_logger.LogError("Failed to create handler instance for command: {Command}, Type: {Type}",
@@ -289,10 +213,9 @@ public class UpdateHandler
 			// Record command history if session service available
 			try
 			{
-				var sessionService = serviceProvider.GetService<ISessionService>();
-				if (sessionService != null && message.From != null)
+				if (message.From != null)
 				{
-					await sessionService.RecordCommandAsync(message.From.Id, command, String.IsNullOrEmpty(command) ? message.Text : null, cancellationToken);
+					await _sessionService.RecordCommandAsync(message.From.Id, command, String.IsNullOrEmpty(command) ? message.Text : null, cancellationToken);
 				}
 			}
 			catch (Exception ex)
@@ -312,7 +235,6 @@ public class UpdateHandler
 	/// </summary>
 	private async Task HandleCallbackQueryAsync(
 		CallbackQuery callbackQuery,
-		IServiceProvider serviceProvider,
 		CancellationToken cancellationToken)
 	{
 		if (callbackQuery.Data == null)
@@ -320,17 +242,16 @@ public class UpdateHandler
 
 		var callbackData = callbackQuery.Data;
 
-		// Сначала проверяем точное совпадение
-		if (_callbackHandlers.TryGetValue(callbackData, out var exactHandlerType))
+        // Сначала проверяем точное совпадение
+        if (_registry.CallbackHandlers.TryGetValue(callbackData, out var exactHandlerType))
 		{
-			await ExecuteCallbackHandlerAsync(callbackQuery, exactHandlerType, serviceProvider, cancellationToken);
+			await ExecuteCallbackHandlerAsync(callbackQuery, exactHandlerType, cancellationToken);
 			// Record callback history
 			try
 			{
-				var sessionService = serviceProvider.GetService<ISessionService>();
-				if (sessionService != null && callbackQuery.From != null)
+				if (callbackQuery.From != null)
 				{
-					await sessionService.RecordCommandAsync(callbackQuery.From.Id, callbackData, String.IsNullOrEmpty(callbackData) ? callbackQuery.Message?.Text : null, cancellationToken);
+					await _sessionService.RecordCommandAsync(callbackQuery.From.Id, callbackData, String.IsNullOrEmpty(callbackData) ? callbackQuery.Message?.Text : null, cancellationToken);
 				}
 			}
 			catch (Exception ex)
@@ -341,18 +262,17 @@ public class UpdateHandler
 		}
 
 		// Затем проверяем префиксы
-		foreach (var (prefix, handlerType) in _callbackPrefixHandlers)
+        foreach (var (prefix, handlerType) in _registry.CallbackPrefixHandlers)
 		{
 			if (callbackData.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
 			{
-				await ExecuteCallbackHandlerAsync(callbackQuery, handlerType, serviceProvider, cancellationToken);
+				await ExecuteCallbackHandlerAsync(callbackQuery, handlerType, cancellationToken);
 				// Record callback history
 				try
 				{
-					var sessionService = serviceProvider.GetService<ISessionService>();
-					if (sessionService != null && callbackQuery.From != null)
+					if (callbackQuery.From != null)
 					{
-						await sessionService.RecordCommandAsync(callbackQuery.From.Id, callbackData, String.IsNullOrEmpty(callbackData) ? callbackQuery.Message?.Text : null, cancellationToken);
+						await _sessionService.RecordCommandAsync(callbackQuery.From.Id, callbackData, String.IsNullOrEmpty(callbackData) ? callbackQuery.Message?.Text : null, cancellationToken);
 					}
 				}
 				catch (Exception ex)
@@ -365,9 +285,7 @@ public class UpdateHandler
 
 		_logger.LogWarning("No handler found for callback: {CallbackData}", callbackData);
 
-		var botClient = serviceProvider.GetService<ITelegramBotClient>();
-
-		await botClient.AnswerCallbackQuery(callbackQuery.Id, "Не реализовано", cancellationToken: cancellationToken);
+		await _botClient.AnswerCallbackQuery(callbackQuery.Id, "Не реализовано", cancellationToken: cancellationToken);
 	}
 
 	/// <summary>
@@ -376,12 +294,11 @@ public class UpdateHandler
 	private async Task ExecuteCallbackHandlerAsync(
 		CallbackQuery callbackQuery,
 		Type handlerType,
-		IServiceProvider serviceProvider,
 		CancellationToken cancellationToken)
 	{
 		try
 		{
-			var handler = serviceProvider.GetService(handlerType) as ICallbackQueryHandler;
+			var handler = _serviceProvider.GetService(handlerType) as ICallbackQueryHandler;
 			if (handler == null)
 			{
 				_logger.LogError("Failed to create handler instance for callback: {Type}", handlerType.Name);

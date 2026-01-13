@@ -1,6 +1,6 @@
 using Telegram.Bot.Types;
 
-namespace DigiStore.TgBot.Application.Handlers;
+namespace DigiStore.TgBot.Application.Handlers.Adstracts;
 
 /// <summary>
 /// Базовый интерфейс для обработчиков колбэков

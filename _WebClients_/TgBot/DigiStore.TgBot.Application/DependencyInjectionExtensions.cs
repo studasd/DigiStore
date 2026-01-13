@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using System.Net;
 using DigiStore.Framework.Proxies;
 using DigiStore.Framework.Endpoints;
+using DigiStore.TgBot.Application.Handlers.Adstracts;
 
 
 namespace DigiStore.TgBot.Application;
@@ -35,7 +36,7 @@ public static class DependencyInjectionExtensions
 			});
 
 
-		services.AddScoped<ITelegramBotClient>(x => 
+		services.AddScoped<ITelegramBotClient>(x =>
 		{
 			var telegramOptions = x.GetRequiredService<IOptions<TelegramOptions>>().Value;
 			var token = telegramOptions.BotToken;
@@ -69,11 +70,12 @@ public static class DependencyInjectionExtensions
 		// Session & Localization
 		services.AddScoped<IProfileService, ProfileService>();
 
+		services.AddSingleton<HandlerCollections>();
+		services.AddScoped<UpdateHandler>();
+
 		// Автоматическая регистрация всех хэндлеров команд и колбэков
 		RegisterHandlers(services);
 
-		// UpdateHandler (singleton, так как инициализирует словари при создании, использует IServiceScopeFactory для scope)
-		services.AddSingleton<UpdateHandler>();
 
 		//// Redis
 		//var redisConnection = configuration.GetConnectionString("Redis")

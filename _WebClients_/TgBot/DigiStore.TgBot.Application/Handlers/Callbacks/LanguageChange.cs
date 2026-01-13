@@ -1,6 +1,6 @@
 using DigiStore.SharedKernel.Extensions;
 using DigiStore.TgBot.Application.Constants;
-using DigiStore.TgBot.Application.Handlers;
+using DigiStore.TgBot.Application.Handlers.Adstracts;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.UserService.Contracts.Enums;
 using Microsoft.Extensions.Logging;

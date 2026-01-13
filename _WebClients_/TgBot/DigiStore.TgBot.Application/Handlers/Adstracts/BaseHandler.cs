@@ -5,7 +5,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace DigiStore.TgBot.Application.Handlers;
+namespace DigiStore.TgBot.Application.Handlers.Adstracts;
 
 /// <summary>
 /// Базовый класс для хэндлеров с общими методами
