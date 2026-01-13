@@ -1,5 +1,4 @@
 using DigiStore.TgBot.Application.Constants;
-using DigiStore.TgBot.Application.Handlers;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
@@ -14,7 +13,7 @@ namespace DigiStore.TgBot.Application.Handlers.Commands;
 public class Balance : BaseHandler, ICommandHandler
 {
 	public const string Command = BotCommands.Balance;
-	
+
 	private readonly IProfileService _profileService;
 	private readonly ISessionService _sessionService;
 	private readonly ILogger<Balance> _logger;
@@ -44,13 +43,14 @@ public class Balance : BaseHandler, ICommandHandler
 			var chatId = message.Chat.Id;
 
 			// Get session
-			var session = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
-			if (session?.UserId == null)
+			var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+			if (sessionResult.IsFailure || sessionResult.Value.UserId == default)
 			{
 				await SendErrorMessage(chatId, "Session expired", cancellationToken);
 				return;
 			}
 
+			var session = sessionResult.Value;
 			var langCode = session.LangCode;
 
 			var profileResult = await _profileService.GetFullProfileAsync(session.UserId, telegramId, cancellationToken);

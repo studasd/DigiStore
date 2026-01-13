@@ -35,6 +35,13 @@ public class WalletService : IWalletService
 	{
 		try
 		{
+			// Заглушка
+			return new BalanceDto
+			{
+				Balance = -1.11m,
+				Currency = "RUB"
+			};
+
 			var url = $"{_walletServiceUrl}/api/wallet/{userId}";
 			var response = await _httpClient.GetAsync(url, ct);
 

@@ -1,4 +1,6 @@
-﻿using DigiStore.TgBot.Domain;
+﻿using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
+using DigiStore.TgBot.Domain;
 
 namespace DigiStore.TgBot.Application.Interfaces.Services;
 
@@ -11,7 +13,7 @@ public interface ISessionService
 	/// <summary>
 	/// Get or create session
 	/// </summary>
-	Task<TgUserSession> GetOrCreateSessionAsync(long telegramId, CancellationToken ct = default);
+	Task<Result<TgUserSession, Error>> GetOrCreateSessionAsync(long telegramId, CancellationToken ct = default);
 
 	/// <summary>
 	/// Update session
@@ -26,7 +28,7 @@ public interface ISessionService
 	/// <summary>
 	/// Get session
 	/// </summary>
-	Task<TgUserSession?> GetSessionAsync(long telegramId, CancellationToken ct = default);
+	Task<Result<TgUserSession, Error>> GetSessionAsync(long telegramId, CancellationToken ct = default);
 
 	/// <summary>
 	/// Record command or callback history for a telegram user

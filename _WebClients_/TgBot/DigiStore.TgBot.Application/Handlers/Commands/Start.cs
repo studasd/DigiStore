@@ -1,13 +1,11 @@
+using DigiStore.SharedKernel.Extensions;
 using DigiStore.TgBot.Application.Constants;
-using DigiStore.TgBot.Application.Handlers;
 using DigiStore.TgBot.Application.Interfaces.Services;
+using DigiStore.TgBot.Domain.ValueObjects;
+using DigiStore.UserService.Contracts.Enums;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using System.Threading.Tasks;
-using DigiStore.TgBot.Domain.ValueObjects;
-using DigiStore.SharedKernel.Extensions;
-using DigiStore.UserService.Contracts.Enums;
 
 namespace DigiStore.TgBot.Application.Handlers.Commands;
 
@@ -68,7 +66,7 @@ public class Start : BaseHandler, ICommandHandler
 				defaultLanguage,
 				cancellationToken);
 
-			if (!userResult.IsSuccess)
+			if (userResult.IsFailure)
 			{
 				await SendErrorMessage(message.Chat.Id, "Failed to initialize user account", cancellationToken);
 				return;
@@ -77,7 +75,12 @@ public class Start : BaseHandler, ICommandHandler
 			var user = userResult.Value!;
 
 			// Get or create session
-			var session = await _sessionService.GetOrCreateSessionAsync(telegramId, cancellationToken);
+			var sessionResult = await _sessionService.GetOrCreateSessionAsync(telegramId, cancellationToken);
+
+			if (sessionResult.IsFailure)
+				return;
+			
+			var session = sessionResult.Value!;
 			session.UserId = user.Id;
 			session.LangCode = user.LangCode;
 

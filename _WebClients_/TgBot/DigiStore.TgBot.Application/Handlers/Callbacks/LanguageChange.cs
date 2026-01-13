@@ -47,8 +47,15 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 		try
 		{
 			var telegramId = callbackQuery.From.Id;
-			var session = await _sessionService.GetSessionAsync(telegramId, cancellationToken)
-				?? throw new InvalidOperationException("Session not found");
+			var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+
+			if (sessionResult.IsFailure)
+			{
+				_logger.LogWarning("Session not found for TelegramId: {TelegramId}", telegramId);
+				return;
+			}
+
+			var session = sessionResult.Value;
 
 			var data = callbackQuery.Data;
 			var languageCode = data.Replace(CallbackData, "").ParseEnum<LanguageCodes>().Value;

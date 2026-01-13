@@ -43,9 +43,14 @@ public class MainMenu : BaseHandler, ICallbackQueryHandler
 		try
 		{
 			var telegramId = callbackQuery.From.Id;
-			var session = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+			var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
 
-			var languageCode = session?.LangCode ?? LanguageCodes.en;
+			var languageCode = LanguageCodes.en;
+
+			if(sessionResult.IsSuccess)
+			{
+				languageCode = sessionResult.Value.LangCode;
+			}
 
 			var text = $"{_localizationService.GetMessage(LocalKeys.Navigations.MainMenu, languageCode)}\n\n" +
 					  $"{_localizationService.GetMessage(LocalKeys.Navigations.ChooseOption, languageCode)}";

@@ -43,13 +43,14 @@ public class Language : BaseHandler, ICommandHandler
 			_logger.LogInformation("Language command from Telegram ID: {TelegramId}", telegramId);
 
 			// Get session
-			var session = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
-			if (session?.UserId == null)
+			var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+			if (sessionResult.IsFailure)
 			{
 				await SendErrorMessage(chatId, _localizationService.GetMessage(LocalKeys.Errors.SessionExpired, LanguageCodes.en), cancellationToken);
 				return;
 			}
 
+			var session = sessionResult.Value;
 			var currentLanguage = session.LangCode;
 
 			// Send language selection

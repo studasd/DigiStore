@@ -14,7 +14,7 @@ namespace DigiStore.TgBot.Application.Handlers.Callbacks;
 /// </summary>
 public class BalanceView : BaseHandler, ICallbackQueryHandler
 {
-	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.BalanceView;
+	public const string CallbackData = Constants.CallbackData.BalanceView;
 	public const bool IsPrefix = false;
 	
 	private readonly IWalletService _walletService;
@@ -47,8 +47,15 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 		try
 		{
 			var telegramId = callbackQuery.From.Id;
-			var session = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+			var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
 
+			if(sessionResult.IsFailure)
+			{
+				await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
+				return;
+			}
+
+			var session = sessionResult.Value;
 			if (session?.UserId == null)
 				return;
 

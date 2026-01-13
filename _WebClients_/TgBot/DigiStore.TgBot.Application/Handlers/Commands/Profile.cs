@@ -1,6 +1,5 @@
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Interfaces.Services;
-using DigiStore.TgBot.Domain;
 using DigiStore.TgBot.Domain.ValueObjects;
 using DigiStore.UserService.Contracts.Enums;
 using Microsoft.Extensions.Logging;
@@ -16,7 +15,7 @@ namespace DigiStore.TgBot.Application.Handlers.Commands;
 public class Profile : BaseHandler, ICommandHandler
 {
 	public const string Command = BotCommands.Profile;
-	
+
 	private readonly IProfileService _profileService;
 	private readonly ISessionService _sessionService;
 	private readonly ILogger<Profile> _logger;
@@ -48,13 +47,14 @@ public class Profile : BaseHandler, ICommandHandler
 			_logger.LogInformation("Profile command from Telegram ID: {TelegramId}", telegramId);
 
 			// Get session
-			var session = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
-			if (session?.UserId == null)
+			var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+			if (sessionResult.IsFailure)
 			{
 				await SendErrorMessage(chatId, _localizationService.GetMessage(LocalKeys.Errors.SessionExpired, LanguageCodes.en), cancellationToken);
 				return;
 			}
 
+			var session = sessionResult.Value!;
 			var userId = session.UserId;
 			var languageCode = session.LangCode;
 

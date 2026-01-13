@@ -47,11 +47,12 @@ public class ProfileView : BaseHandler, ICallbackQueryHandler
 		try
 		{
 			var telegramId = callbackQuery.From.Id;
-			var session = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+			var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
 
-			if (session?.UserId == null)
+			if (sessionResult.IsFailure || sessionResult.Value.UserId == null)
 				return;
 
+			var session = sessionResult.Value;
 			var languageCode = session.LangCode;
 
 			var profileResult = await _profileService.GetFullProfileAsync(

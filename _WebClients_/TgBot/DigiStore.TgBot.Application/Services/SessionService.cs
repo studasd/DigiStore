@@ -1,4 +1,6 @@
-﻿using DigiStore.TgBot.Application.Constants;
+﻿using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
+using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Interfaces.Repositories;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.TgBot.Domain;
@@ -26,7 +28,7 @@ public class SessionService : ISessionService
         _logger = logger;
     }
 
-    public async Task<TgUserSession> GetOrCreateSessionAsync(long telegramId, CancellationToken ct = default)
+    public async Task<Result<TgUserSession, Error>> GetOrCreateSessionAsync(long telegramId, CancellationToken ct = default)
     {
         var domain = await _sessionRepository.GetByTelegramIdAsync(telegramId, ct);
         if (domain != null)
@@ -64,11 +66,14 @@ public class SessionService : ISessionService
     }
 
 
-    public async Task<TgUserSession?> GetSessionAsync(long telegramId, CancellationToken ct = default)
+    public async Task<Result<TgUserSession, Error>> GetSessionAsync(long telegramId, CancellationToken ct = default)
     {
         var domain = await _sessionRepository.GetByTelegramIdAsync(telegramId, ct);
         if (domain == null)
-            return null;
+        {
+            _logger.LogWarning("Session not found for Telegram ID: {TelegramId}", telegramId);
+			return Error.Failure("get.session.bytelegramid", $"Session not found telegramId: {telegramId}");
+        }
         return MapToDomain(domain);
     }
 

@@ -49,8 +49,12 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 		try
 		{
 			var telegramId = callbackQuery.From.Id;
-			var session = await _sessionService.GetSessionAsync(telegramId, cancellationToken)
-				?? throw new InvalidOperationException("Session not found");
+			var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+
+			if (sessionResult.IsFailure)
+				return;
+
+			var session = sessionResult.Value;
 
 			var langCodeResult = callbackQuery.Data.Replace(CallbackData, "").ParseEnum<LanguageCodes>();
 			if(langCodeResult.IsFailure)
