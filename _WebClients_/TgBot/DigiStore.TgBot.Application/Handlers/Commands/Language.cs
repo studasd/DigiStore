@@ -1,3 +1,5 @@
+using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
 using DigiStore.TgBot.Application.Interfaces.Services;
@@ -30,41 +32,39 @@ public class Language : BaseHandler, ICommandHandler
 		_logger = logger;
 	}
 
-	public async Task HandleAsync(Message message, CancellationToken cancellationToken = default)
+	public async Task<UnitResult<Error>> HandleAsync(Message message, CancellationToken cancellationToken = default)
 	{
 		// Handle /language command - change language
 
-		try
+		var telegramId = message.From!.Id;
+		var chatId = message.Chat.Id;
+
+		_logger.LogInformation("Language command from Telegram ID: {TelegramId}", telegramId);
+
+		// Get session
+		var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+		if (sessionResult.IsFailure)
 		{
-			var telegramId = message.From!.Id;
-			var chatId = message.Chat.Id;
-
-			_logger.LogInformation("Language command from Telegram ID: {TelegramId}", telegramId);
-
-			// Get session
-			var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
-			if (sessionResult.IsFailure)
-			{
-				await SendErrorMessage(chatId, _localService.GetMessage(LocalKeys.Errors.SessionExpired, LanguageCodes.en), cancellationToken);
-				return;
-			}
-
-			var session = sessionResult.Value;
-			var currentLanguage = session.LangCode;
-
-			// Send language selection
-			await SendLanguageSelection(chatId, currentLanguage, isStartCommand: false, cancellationToken);
-
-			// Update session
-			session.SetState(BotState.LanguageChangeAwaiting);
-			await _sessionService.UpdateSessionAsync(session, cancellationToken);
-
-			_logger.LogInformation("Language selection sent for user: {TelegramId}", telegramId);
+			await SendErrorMessage(chatId, _localService.GetMessage(LocalKeys.Errors.SessionExpired, LanguageCodes.en), cancellationToken);
+			return sessionResult.Error;
 		}
-		catch (Exception ex)
+
+		var session = sessionResult.Value;
+		var currentLanguage = session.LangCode;
+
+		// Send language selection
+		var sendLangResult = await SendLanguageSelection(chatId, currentLanguage, isStartCommand: false, cancellationToken);
+
+		if (sendLangResult.IsFailure)
 		{
-			_logger.LogError(ex, "Error in LanguageCommandHandler");
-			await SendErrorMessage(message.Chat.Id, "An error occurred", cancellationToken);
+			return sendLangResult.Error;
 		}
+
+		// Update session
+		session.SetState(BotState.LanguageChangeAwaiting);
+		await _sessionService.UpdateSessionAsync(session, cancellationToken);
+
+		_logger.LogInformation("Language selection sent for user: {TelegramId}", telegramId);
+		return Result.Success<Error>();
 	}
 }

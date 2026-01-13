@@ -74,6 +74,7 @@ public class SessionService : ISessionService
             _logger.LogWarning("Session not found for Telegram ID: {TelegramId}", telegramId);
 			return Error.Failure("get.session.bytelegramid", $"Session not found telegramId: {telegramId}");
         }
+
         return MapToDomain(domain);
     }
 
@@ -120,15 +121,22 @@ public class SessionService : ISessionService
     // Additional helper to store command history
     public async Task RecordCommandAsync(long telegramId, string command, string? message = null, CancellationToken ct = default)
     {
-        var history = new CommandHistory
+        try
         {
-            Id = Guid.NewGuid(),
-            TelegramId = telegramId,
-            Command = command,
-            Message = message,
-			Timestamp = DateTime.UtcNow
-        };
+            var history = new CommandHistory
+            {
+                Id = Guid.NewGuid(),
+                TelegramId = telegramId,
+                Command = command,
+                Message = message,
+                Timestamp = DateTime.UtcNow
+            };
 
-        await _historyRepository.AddAsync(history, ct);
-    }
+            await _historyRepository.AddAsync(history, ct);
+        }
+        catch(Exception e) 
+        {
+			_logger.LogWarning(e, "Failed to record callback history for TelegramId {TelegramId}", telegramId);
+		}
+	}
 }

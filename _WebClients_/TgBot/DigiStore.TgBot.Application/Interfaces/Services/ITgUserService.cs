@@ -30,10 +30,10 @@ public interface ITgUserService
 	/// <summary>
 	/// Update language preference
 	/// </summary>
-	Task<Result<bool, Error>> UpdateLanguageAsync(Guid userId, LanguageCodes langCode, CancellationToken ct = default);
+	Task<UnitResult<Error>> UpdateLanguageAsync(Guid userId, LanguageCodes langCode, CancellationToken ct = default);
 
 	/// <summary>
 	/// Update user activity
 	/// </summary>
-	Task<Result<bool, Error>> UpdateActivityAsync(Guid userId, CancellationToken ct = default);
+	Task<UnitResult<Error>> UpdateActivityAsync(Guid userId, CancellationToken ct = default);
 }

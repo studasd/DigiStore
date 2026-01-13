@@ -1,3 +1,5 @@
+using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.UserService.Contracts.Enums;
@@ -28,7 +30,11 @@ public abstract class BaseHandler
 	/// </summary>
 	protected async Task SendErrorMessage(long chatId, string error, CancellationToken cancellationToken = default)
 	{
-		await _botClient.SendMessage(chatId, $"❌ {error}", cancellationToken: cancellationToken);
+		try
+		{
+			await _botClient.SendMessage(chatId, $"❌ {error}", cancellationToken: cancellationToken);
+		}
+		catch {	}
 	}
 
 
@@ -52,7 +58,7 @@ public abstract class BaseHandler
 	/// <summary>
 	/// Отправляет выбор языка
 	/// </summary>
-	protected async Task SendLanguageSelection(long chatId, LanguageCodes currentLang, bool isStartCommand, CancellationToken cancellationToken = default)
+	protected async Task<UnitResult<Error>> SendLanguageSelection(long chatId, LanguageCodes currentLang, bool isStartCommand, CancellationToken cancellationToken = default)
 	{
 		var languages = _localService.GetLanguages();
 		var buttons = new List<List<InlineKeyboardButton>>();
@@ -82,7 +88,18 @@ public abstract class BaseHandler
 			text = _localService.GetMessage(LocalKeys.Navigations.SelectLanguage, currentLang);
 		}
 
-		await _botClient.SendMessage(chatId, text, replyMarkup: keyboard, cancellationToken: cancellationToken);
+
+		try
+		{
+			await _botClient.SendMessage(chatId, text, replyMarkup: keyboard, cancellationToken: cancellationToken);
+		}
+		catch(Exception ex)
+		{
+			await SendErrorMessage(chatId, "An error occurred", cancellationToken);
+			return Error.Failure("bot.send.error", "Failed to send language selection message");
+		}
+
+		return Result.Success<Error>();
 	}
 
 

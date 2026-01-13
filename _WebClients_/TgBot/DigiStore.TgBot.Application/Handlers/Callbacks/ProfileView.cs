@@ -1,3 +1,5 @@
+using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
 using DigiStore.TgBot.Application.Interfaces.Services;
@@ -35,39 +37,40 @@ public class ProfileView : BaseHandler, ICallbackQueryHandler
 		_logger = logger;
 	}
 
-	public async Task HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
+	public async Task<UnitResult<Error>> HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
 	{
 		// Handle profile view callback
 
 		if (callbackQuery.Message == null)
-			return;
+			return Error.Failure("callback.profile.nomessage", "No message in ProfileViewCallbackHandler");
+		
+
+		var telegramId = callbackQuery.From.Id;
+		var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+
+		if (sessionResult.IsFailure)
+			return sessionResult.Error;
+
+		var session = sessionResult.Value;
+		var languageCode = session.LangCode;
+
+		var profileResult = await _profileService.GetFullProfileAsync(
+			session.UserId,
+			session.TelegramId,
+			cancellationToken);
+
+		if (profileResult.IsFailure)
+		{
+			await AnswerCallbackQueryWithError(callbackQuery.Id, languageCode, cancellationToken);
+			return profileResult.Error;
+		}
+
+		var profile = profileResult.Value!;
+		var profileText = _profileService.FormatProfileText(profile, languageCode);
+		var keyboard = GetProfileKeyboard(languageCode);
 
 		try
 		{
-			var telegramId = callbackQuery.From.Id;
-			var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
-
-			if (sessionResult.IsFailure || sessionResult.Value.UserId == null)
-				return;
-
-			var session = sessionResult.Value;
-			var languageCode = session.LangCode;
-
-			var profileResult = await _profileService.GetFullProfileAsync(
-				session.UserId,
-				session.TelegramId,
-				cancellationToken);
-
-			if (!profileResult.IsSuccess)
-			{
-				await AnswerCallbackQueryWithError(callbackQuery.Id, languageCode, cancellationToken);
-				return;
-			}
-
-			var profile = profileResult.Value!;
-			var profileText = _profileService.FormatProfileText(profile, languageCode);
-			var keyboard = GetProfileKeyboard(languageCode);
-
 			await _botClient.EditMessageText(
 				callbackQuery.Message.Chat.Id,
 				callbackQuery.Message.MessageId,
@@ -82,6 +85,9 @@ public class ProfileView : BaseHandler, ICallbackQueryHandler
 		{
 			_logger.LogError(ex, "Error in ProfileViewCallbackHandler");
 			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
+			return Error.Failure("callback.profile.error", "Error in ProfileViewCallbackHandler");
 		}
+
+		return Result.Success<Error>();
 	}
 }

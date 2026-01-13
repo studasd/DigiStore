@@ -1,3 +1,5 @@
+using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
 using DigiStore.TgBot.Application.Interfaces.Services;
@@ -35,64 +37,64 @@ public class Profile : BaseHandler, ICommandHandler
 		_logger = logger;
 	}
 
-	public async Task HandleAsync(Message message, CancellationToken cancellationToken = default)
+	public async Task<UnitResult<Error>> HandleAsync(Message message, CancellationToken cancellationToken = default)
 	{
 		// Handle /profile command - show user profile with balance
+		
+		var telegramId = message.From!.Id;
+		var chatId = message.Chat.Id;
+
+		_logger.LogInformation("Profile command from Telegram ID: {TelegramId}", telegramId);
+
+		// Get session
+		var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+		if (sessionResult.IsFailure)
+		{
+			await SendErrorMessage(chatId, _localService.GetMessage(LocalKeys.Errors.SessionExpired, LanguageCodes.en), cancellationToken);
+			return sessionResult.Error;
+		}
+
+		var session = sessionResult.Value!;
+		var userId = session.UserId;
+		var languageCode = session.LangCode;
+
+		// Get full profile
+		var profileResult = await _profileService.GetFullProfileAsync(userId, telegramId, cancellationToken);
+		if (profileResult.IsFailure)
+		{
+			await SendErrorMessage(chatId, _localService.GetMessage(LocalKeys.Errors.Occurred, languageCode), cancellationToken);
+			return sessionResult.Error;
+		}
+
+		var profile = profileResult.Value!;
+
+		// Cache profile in session
+		session.CachedProfile = new CachedUserProfileVO
+		{
+			UserId = profile.UserId,
+			TelegramId = profile.TelegramId,
+			Email = profile.Email,
+			FirstName = profile.FullName.Split(' ').FirstOrDefault() ?? string.Empty,
+			LastName = profile.FullName.Split(' ').LastOrDefault() ?? string.Empty,
+			Username = profile.Username,
+			LangCode = profile.LangCode,
+			IsActive = profile.IsActive,
+			Roles = profile.Roles,
+			Balance = profile.Balance,
+			Currency = profile.Currency,
+			CreatedAt = profile.CreatedAt,
+			UpdatedAt = profile.UpdatedAt
+		};
+
+		session.SetState(BotState.ProfileViewing);
+		await _sessionService.UpdateSessionAsync(session, cancellationToken);
+
+		// Format and send profile
+		var profileText = _profileService.FormatProfileText(profile, languageCode);
+		var keyboard = GetProfileKeyboard(languageCode);
 
 		try
 		{
-			var telegramId = message.From!.Id;
-			var chatId = message.Chat.Id;
-
-			_logger.LogInformation("Profile command from Telegram ID: {TelegramId}", telegramId);
-
-			// Get session
-			var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
-			if (sessionResult.IsFailure)
-			{
-				await SendErrorMessage(chatId, _localService.GetMessage(LocalKeys.Errors.SessionExpired, LanguageCodes.en), cancellationToken);
-				return;
-			}
-
-			var session = sessionResult.Value!;
-			var userId = session.UserId;
-			var languageCode = session.LangCode;
-
-			// Get full profile
-			var profileResult = await _profileService.GetFullProfileAsync(userId, telegramId, cancellationToken);
-			if (!profileResult.IsSuccess)
-			{
-				await SendErrorMessage(chatId, _localService.GetMessage(LocalKeys.Errors.Occurred, languageCode), cancellationToken);
-				return;
-			}
-
-			var profile = profileResult.Value!;
-
-			// Cache profile in session
-			session.CachedProfile = new CachedUserProfileVO
-			{
-				UserId = profile.UserId,
-				TelegramId = profile.TelegramId,
-				Email = profile.Email,
-				FirstName = profile.FullName.Split(' ').FirstOrDefault() ?? string.Empty,
-				LastName = profile.FullName.Split(' ').LastOrDefault() ?? string.Empty,
-				Username = profile.Username,
-				LangCode = profile.LangCode,
-				IsActive = profile.IsActive,
-				Roles = profile.Roles,
-				Balance = profile.Balance,
-				Currency = profile.Currency,
-				CreatedAt = profile.CreatedAt,
-				UpdatedAt = profile.UpdatedAt
-			};
-
-			session.SetState(BotState.ProfileViewing);
-			await _sessionService.UpdateSessionAsync(session, cancellationToken);
-
-			// Format and send profile
-			var profileText = _profileService.FormatProfileText(profile, languageCode);
-			var keyboard = GetProfileKeyboard(languageCode);
-
 			await _botClient.SendMessage(
 				chatId,
 				profileText,
@@ -106,6 +108,9 @@ public class Profile : BaseHandler, ICommandHandler
 		{
 			_logger.LogError(ex, "Error in ProfileCommandHandler");
 			await SendErrorMessage(message.Chat.Id, "An error occurred", cancellationToken);
+			return Error.Failure("command.handler.profile", "Error in ProfileCommandHandler");
 		}
+
+		return Result.Success<Error>();
 	}
 }

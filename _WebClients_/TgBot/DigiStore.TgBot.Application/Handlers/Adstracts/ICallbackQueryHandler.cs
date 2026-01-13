@@ -1,3 +1,5 @@
+using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
 using Telegram.Bot.Types;
 
 namespace DigiStore.TgBot.Application.Handlers.Adstracts;
@@ -10,5 +12,5 @@ public interface ICallbackQueryHandler
 	/// <summary>
 	/// Обрабатывает колбэк
 	/// </summary>
-	Task HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default);
+	Task<UnitResult<Error>> HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default);
 }

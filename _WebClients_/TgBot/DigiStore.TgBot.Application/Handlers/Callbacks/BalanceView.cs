@@ -1,3 +1,5 @@
+using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
 using DigiStore.TgBot.Application.Interfaces.Services;
@@ -36,40 +38,39 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 		_logger = logger;
 	}
 
-	public async Task HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
+	public async Task<UnitResult<Error>> HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
 	{
 		// Handle balance view callback
 
 		if (callbackQuery.Message == null)
-			return;
+			return Error.Failure("callback.balance.nomessage", "No message in BalanceViewCallbackHandler");
 
-		try
+		
+		var telegramId = callbackQuery.From.Id;
+		var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+
+		if(sessionResult.IsFailure)
 		{
-			var telegramId = callbackQuery.From.Id;
-			var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
+			return sessionResult.Error;
+		}
 
-			if(sessionResult.IsFailure)
-			{
-				await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
-				return;
-			}
+		var session = sessionResult.Value;
+		if (session?.UserId == null)
+			return Error.Failure("callback.balance.noserid", "No UserId in BalanceViewCallbackHandler"); ;
 
-			var session = sessionResult.Value;
-			if (session?.UserId == null)
-				return;
+		var langCode = session.LangCode;
 
-			var langCode = session.LangCode;
+		var walletResult = await _walletService.GetBalanceAsync(session.UserId, cancellationToken);
 
-			var walletResult = await _walletService.GetBalanceAsync(session.UserId, cancellationToken);
+		if (walletResult.IsFailure)
+		{
+			await AnswerCallbackQueryWithError(callbackQuery.Id, langCode, cancellationToken);
+			return walletResult.Error;
+		}
 
-			if (!walletResult.IsSuccess)
-			{
-				await AnswerCallbackQueryWithError(callbackQuery.Id, langCode, cancellationToken);
-				return;
-			}
-
-			var wallet = walletResult.Value!;
-			var text = $@"
+		var wallet = walletResult.Value!;
+		var text = $@"
 💰 {_localService.GetMessage(LocalKeys.Balances.Info, langCode)}
 
 {_localService.GetMessage(LocalKeys.Balances.CurrentBalance, langCode)}: <b>{wallet.Balance:F2} {wallet.Currency}</b>
@@ -77,8 +78,10 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 📤 {_localService.GetMessage(LocalKeys.Balances.TotalWithdrawn, langCode)}: {wallet.TotalWithdrawn:F2} {wallet.Currency}
 ";
 
-			var keyboard = GetBackToMainMenuKeyboard(langCode);
+		var keyboard = GetBackToMainMenuKeyboard(langCode);
 
+		try
+		{
 			await _botClient.EditMessageText(
 				callbackQuery.Message.Chat.Id,
 				callbackQuery.Message.MessageId,
@@ -93,6 +96,9 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 		{
 			_logger.LogError(ex, "Error in BalanceViewCallbackHandler");
 			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
+			return Error.Failure("callback.balance.error", "Error in BalanceViewCallbackHandler");
 		}
+
+		return Result.Success<Error>();
 	}
 }

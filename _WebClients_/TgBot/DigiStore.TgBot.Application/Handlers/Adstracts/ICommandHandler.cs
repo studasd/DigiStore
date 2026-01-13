@@ -1,3 +1,5 @@
+using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
 using Telegram.Bot.Types;
 
 namespace DigiStore.TgBot.Application.Handlers.Adstracts;
@@ -10,5 +12,5 @@ public interface ICommandHandler
 	/// <summary>
 	/// Обрабатывает команду
 	/// </summary>
-	Task HandleAsync(Message message, CancellationToken cancellationToken = default);
+	Task<UnitResult<Error>> HandleAsync(Message message, CancellationToken cancellationToken = default);
 }

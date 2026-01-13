@@ -1,3 +1,5 @@
+using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
 using DigiStore.TgBot.Application.Interfaces.Services;
@@ -31,30 +33,32 @@ public class MainMenu : BaseHandler, ICallbackQueryHandler
 		_logger = logger;
 	}
 
-	public async Task HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
+	public async Task<UnitResult<Error>> HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
 	{
 		// Handle main menu
 
 		if (callbackQuery.Message == null)
-			return;
+			return Error.Failure("callback.mainmenu.nomessage", "No message in MainMenuCallbackHandler");
+
+
+		var telegramId = callbackQuery.From.Id;
+		var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+
+		var languageCode = LanguageCodes.en;
+
+		if(sessionResult.IsSuccess)
+		{
+			languageCode = sessionResult.Value.LangCode;
+		}
+
+		var text =	$"{_localService.GetMessage(LocalKeys.Navigations.MainMenu, languageCode)}\n\n" +
+					$"{_localService.GetMessage(LocalKeys.Navigations.ChooseOption, languageCode)}";
+
+		var keyboard = GetMainMenuKeyboard(languageCode);
+
 
 		try
 		{
-			var telegramId = callbackQuery.From.Id;
-			var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
-
-			var languageCode = LanguageCodes.en;
-
-			if(sessionResult.IsSuccess)
-			{
-				languageCode = sessionResult.Value.LangCode;
-			}
-
-			var text = $"{_localService.GetMessage(LocalKeys.Navigations.MainMenu, languageCode)}\n\n" +
-					  $"{_localService.GetMessage(LocalKeys.Navigations.ChooseOption, languageCode)}";
-
-			var keyboard = GetMainMenuKeyboard(languageCode);
-
 			await _botClient.EditMessageText(
 				callbackQuery.Message.Chat.Id,
 				callbackQuery.Message.MessageId,
@@ -68,6 +72,9 @@ public class MainMenu : BaseHandler, ICallbackQueryHandler
 		{
 			_logger.LogError(ex, "Error in MainMenuCallbackHandler");
 			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
+			return Error.Failure("callback.mainmenu.error", "Error in MainMenuCallbackHandler");
 		}
+
+		return Result.Success<Error>();
 	}
 }

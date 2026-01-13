@@ -1,3 +1,5 @@
+using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
 using DigiStore.SharedKernel.Extensions;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
@@ -39,91 +41,91 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 		_logger = logger;
 	}
 
-	public async Task HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
+	public async Task<UnitResult<Error>> HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
 	{
 		// Handle language selection from /start command
 
 		if (callbackQuery.Data == null || callbackQuery.Message == null)
-			return;
+			return Error.Failure("callback.langselect.nodata", "No data in LanguageSelectionCallbackHandler");
+
+		
+		var telegramId = callbackQuery.From.Id;
+		var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+
+		if (sessionResult.IsFailure)
+			return sessionResult.Error;
+
+		var session = sessionResult.Value;
+
+		var langCodeResult = callbackQuery.Data.Replace(CallbackData, "").ParseEnum<LanguageCodes>();
+		if(langCodeResult.IsFailure)
+		{
+			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
+			return langCodeResult.Error;
+		}
+		var langCode = langCodeResult.Value;
+
+		_logger.LogInformation("Language selected from /start: {LanguageCode}, UserId: {UserId}", langCode, session.UserId);
+
+		// Update user language in UserService
+		var updateResult = await _profileService.UpdateUserLanguageAsync(
+			session.UserId,
+			langCode,
+			cancellationToken);
+
+		if (updateResult.IsFailure)
+		{
+			await AnswerCallbackQueryWithError(callbackQuery.Id, langCode, cancellationToken);
+			return updateResult.Error;
+		}
+
+		// Update session
+		session.LangCode = langCode;
+		session.SetState(BotState.LanguageSelected);
+		await _sessionService.UpdateSessionAsync(session, cancellationToken);
+
+		// Get full profile
+		var profileResult = await _profileService.GetFullProfileAsync(
+			session.UserId,
+			session.TelegramId,
+			cancellationToken);
+
+		if (profileResult.IsFailure)
+		{
+			await AnswerCallbackQueryWithError(callbackQuery.Id, langCode, cancellationToken);
+			return profileResult.Error;
+		}
+
+		var profile = profileResult.Value!;
+
+		// Cache profile in session
+		session.CachedProfile = new CachedUserProfileVO
+		{
+			UserId = profile.UserId,
+			TelegramId = profile.TelegramId,
+			Email = profile.Email,
+			FirstName = profile.FullName.Split(' ').FirstOrDefault() ?? string.Empty,
+			LastName = profile.FullName.Split(' ').LastOrDefault() ?? string.Empty,
+			Username = profile.Username,
+			LangCode = profile.LangCode,
+			IsActive = profile.IsActive,
+			Roles = profile.Roles,
+			Balance = profile.Balance,
+			Currency = profile.Currency,
+			CreatedAt = profile.CreatedAt,
+			UpdatedAt = profile.UpdatedAt
+		};
+
+		session.SetState(BotState.ProfileViewing);
+		await _sessionService.UpdateSessionAsync(session, cancellationToken);
+
+		// Format and send profile
+		var profileText = _profileService.FormatProfileText(profile, langCode);
+		var keyboard = GetProfileKeyboard(langCode);
+
 
 		try
 		{
-			var telegramId = callbackQuery.From.Id;
-			var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
-
-			if (sessionResult.IsFailure)
-				return;
-
-			var session = sessionResult.Value;
-
-			var langCodeResult = callbackQuery.Data.Replace(CallbackData, "").ParseEnum<LanguageCodes>();
-			if(langCodeResult.IsFailure)
-			{
-				await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
-				return;
-			}
-			var langCode = langCodeResult.Value;
-
-			_logger.LogInformation(
-				"Language selected from /start: {LanguageCode}, UserId: {UserId}",
-				langCode, session.UserId);
-
-			// Update user language in UserService
-			var updateResult = await _profileService.UpdateUserLanguageAsync(
-				session.UserId,
-				langCode,
-				cancellationToken);
-
-			if (!updateResult.IsSuccess)
-			{
-				await AnswerCallbackQueryWithError(callbackQuery.Id, langCode, cancellationToken);
-				return;
-			}
-
-			// Update session
-			session.LangCode = langCode;
-			session.SetState(BotState.LanguageSelected);
-			await _sessionService.UpdateSessionAsync(session, cancellationToken);
-
-			// Get full profile
-			var profileResult = await _profileService.GetFullProfileAsync(
-				session.UserId,
-				session.TelegramId,
-				cancellationToken);
-
-			if (!profileResult.IsSuccess)
-			{
-				await AnswerCallbackQueryWithError(callbackQuery.Id, langCode, cancellationToken);
-				return;
-			}
-
-			var profile = profileResult.Value!;
-
-			// Cache profile in session
-			session.CachedProfile = new CachedUserProfileVO
-			{
-				UserId = profile.UserId,
-				TelegramId = profile.TelegramId,
-				Email = profile.Email,
-				FirstName = profile.FullName.Split(' ').FirstOrDefault() ?? string.Empty,
-				LastName = profile.FullName.Split(' ').LastOrDefault() ?? string.Empty,
-				Username = profile.Username,
-				LangCode = profile.LangCode,
-				IsActive = profile.IsActive,
-				Roles = profile.Roles,
-				Balance = profile.Balance,
-				Currency = profile.Currency,
-				CreatedAt = profile.CreatedAt,
-				UpdatedAt = profile.UpdatedAt
-			};
-
-			session.SetState(BotState.ProfileViewing);
-			await _sessionService.UpdateSessionAsync(session, cancellationToken);
-
-			// Format and send profile
-			var profileText = _profileService.FormatProfileText(profile, langCode);
-			var keyboard = GetProfileKeyboard(langCode);
-
 			await _botClient.EditMessageText(
 				callbackQuery.Message.Chat.Id,
 				callbackQuery.Message.MessageId,
@@ -142,6 +144,9 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 		{
 			_logger.LogError(ex, "Error in LanguageSelectionCallbackHandler");
 			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
+			return Error.Failure("callback.langselect.error", "Error in LanguageSelectionCallbackHandler");
 		}
+
+		return Result.Success<Error>();
 	}
 }

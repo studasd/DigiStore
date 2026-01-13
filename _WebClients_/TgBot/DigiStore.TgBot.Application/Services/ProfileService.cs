@@ -29,51 +29,43 @@ public class ProfileService : IProfileService
 
 	public async Task<Result<ProfileDisplayDto, Error>> GetFullProfileAsync(Guid userId, long telegramId, CancellationToken ct = default)
 	{
-		try
+		// Get user profile
+		var userResult = await _userService.GetUserProfileAsync(userId, ct);
+		if (!userResult.IsSuccess)
 		{
-			// Get user profile
-			var userResult = await _userService.GetUserProfileAsync(userId, ct);
-			if (!userResult.IsSuccess)
-			{
-				_logger.LogWarning("Failed to get user profile for user ID: {UserId}", userId);
-				return userResult.Error;
-			}
-			var user = userResult.Value!;
-			
-			// Get wallet/balance
-			var walletResult = await _walletService.GetBalanceAsync(userId, ct);
-			decimal balance = 0;
-			string currency = "RUB";
-			if (walletResult.IsSuccess)
-			{
-				balance = walletResult.Value!.Balance;
-				currency = walletResult.Value.Currency;
-			}
-			
-			var profile = new ProfileDisplayDto
-			{
-				TelegramId = telegramId,
-				UserId = userId,
-				FullName = user.FullName,
-				Email = user.Email,
-				Username = user.Username,
-				Balance = balance,
-				Currency = currency,
-				LangCode = user.LangCode,
-				IsActive = user.IsActive,
-				Roles = user.Roles,
-				CreatedAt = DateTime.UtcNow,
-				UpdatedAt = DateTime.UtcNow
-			};
-			_logger.LogInformation("Full profile retrieved for user ID: {UserId}", userId);
-			
-			return profile;
+			_logger.LogWarning("Failed to get user profile for user ID: {UserId}", userId);
+			return userResult.Error;
 		}
-		catch (Exception ex)
+		var user = userResult.Value!;
+			
+		// Get wallet/balance
+		var walletResult = await _walletService.GetBalanceAsync(userId, ct);
+		decimal balance = 0;
+		string currency = "RUB";
+		if (walletResult.IsSuccess)
 		{
-			_logger.LogError(ex, "Error getting full profile for user ID: {UserId}", userId);
-			return Error.Failure("profile.retrieval_error", ex.Message);
+			balance = walletResult.Value!.Balance;
+			currency = walletResult.Value.Currency;
 		}
+			
+		var profile = new ProfileDisplayDto
+		{
+			TelegramId = telegramId,
+			UserId = userId,
+			FullName = user.FullName,
+			Email = user.Email,
+			Username = user.Username,
+			Balance = balance,
+			Currency = currency,
+			LangCode = user.LangCode,
+			IsActive = user.IsActive,
+			Roles = user.Roles,
+			CreatedAt = DateTime.UtcNow,
+			UpdatedAt = DateTime.UtcNow
+		};
+		_logger.LogInformation("Full profile retrieved for user ID: {UserId}", userId);
+			
+		return profile;
 	}
 
 
@@ -113,28 +105,20 @@ public class ProfileService : IProfileService
 	}
 
 
-	public async Task<Result<bool, Error>> UpdateUserLanguageAsync(
+	public async Task<UnitResult<Error>> UpdateUserLanguageAsync(
 		Guid userId,
 		LanguageCodes langCode,
 		CancellationToken ct = default)
 	{
-		try
+		var result = await _userService.UpdateLanguageAsync(userId, langCode, ct);
+		if (result.IsFailure)
 		{
-			var result = await _userService.UpdateLanguageAsync(userId, langCode, ct);
-			if (!result.IsSuccess)
-			{
-				_logger.LogWarning("Failed to update language for user ID: {UserId}", userId);
-				return result;
-			}
+			_logger.LogWarning("Failed to update language for user ID: {UserId}", userId);
+			return result.Error;
+		}
 
-			_logger.LogInformation("Language updated for user ID: {UserId} to {LanguageCode}", userId, langCode);
-			return true;
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error updating language for user ID: {UserId}", userId);
-			return Error.Failure("profile.language_update_error", ex.Message);
-		}
+		_logger.LogInformation("Language updated for user ID: {UserId} to {LanguageCode}", userId, langCode);
+		return result;
 	}
 
 

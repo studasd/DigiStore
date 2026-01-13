@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Builder;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
+using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
 
 namespace DigiStore.TgBot.Application.Handlers;
 
@@ -158,14 +160,25 @@ public class UpdateHandler
             if (update.Message?.Text != null && update.Message.Text.StartsWith("/"))
             {
                 var command = update.Message.Text.Split(' ')[0].ToLowerInvariant();
-                await HandleCommandAsync(update.Message, command, cancellationToken);
+                var handleCommandResult = await HandleCommandAsync(update.Message, command, cancellationToken);
+
+				if (handleCommandResult.IsFailure)
+				{
+					_logger.LogError("Bad error HandleCommand: {errors}", handleCommandResult.Error.GetMessage());
+				}
                 return;
             }
 
 			// Обработка колбэков
 			if (update.CallbackQuery != null)
 			{
-				await HandleCallbackQueryAsync(update.CallbackQuery, cancellationToken);
+				var handleCallbackQueryResult = await HandleCallbackQueryAsync(update.CallbackQuery, cancellationToken);
+
+				if (handleCallbackQueryResult.IsFailure)
+				{
+					_logger.LogError("Bad error HandleCallbackQuery: {errors}", handleCallbackQueryResult.Error.GetMessage());
+					await _botClient.AnswerCallbackQuery(update.CallbackQuery.Id, "Не реализовано", cancellationToken: cancellationToken);
+				}
 				return;
 			}
 
@@ -187,7 +200,7 @@ public class UpdateHandler
 	/// <summary>
 	/// Обрабатывает команду
 	/// </summary>
-	private async Task HandleCommandAsync(
+	private async Task<UnitResult<Error>> HandleCommandAsync(
 		Message message,
 		string command,
 		CancellationToken cancellationToken)
@@ -195,121 +208,107 @@ public class UpdateHandler
         if (!_registry.CommandHandlers.TryGetValue(command, out var handlerType))
 		{
 			_logger.LogWarning("No handler found for command: {Command}", command);
-			return;
+			return Error.NotFound("handle.command", "No handler found for command");
 		}
 
-		try
+		var handler = _serviceProvider.GetService(handlerType) as ICommandHandler;
+		if (handler == null)
 		{
-			var handler = _serviceProvider.GetService(handlerType) as ICommandHandler;
-			if (handler == null)
-			{
-				_logger.LogError("Failed to create handler instance for command: {Command}, Type: {Type}",
-					command, handlerType.Name);
-				return;
-			}
-
-			await handler.HandleAsync(message, cancellationToken);
-
-			// Record command history if session service available
-			try
-			{
-				if (message.From != null)
-				{
-					await _sessionService.RecordCommandAsync(message.From.Id, command, String.IsNullOrEmpty(command) ? message.Text : null, cancellationToken);
-				}
-			}
-			catch (Exception ex)
-			{
-				_logger.LogWarning(ex, "Failed to record command history for TelegramId {TelegramId}", message.From?.Id);
-			}
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error executing command handler: {Command}, Type: {Type}",
+			_logger.LogError("Failed to create handler instance for command: {Command}, Type: {Type}",
 				command, handlerType.Name);
+			return Error.NotFound("handler.command", "Failed to create handler instance for command");
 		}
+
+		var handlerResult = await handler.HandleAsync(message, cancellationToken);
+
+		if(handlerResult.IsFailure)
+		{
+			return handlerResult.Error;
+		}
+
+		// Record command history if session service available
+		if (message.From != null)
+		{
+			await _sessionService.RecordCommandAsync(message.From.Id, command, String.IsNullOrEmpty(command) ? message.Text : null, cancellationToken);
+		}
+
+		return Result.Success<Error>();
 	}
 
 	/// <summary>
 	/// Обрабатывает колбэк
 	/// </summary>
-	private async Task HandleCallbackQueryAsync(
+	private async Task<UnitResult<Error>> HandleCallbackQueryAsync(
 		CallbackQuery callbackQuery,
 		CancellationToken cancellationToken)
 	{
 		if (callbackQuery.Data == null)
-			return;
-
+			return Error.NotFound("handle.callback", "No data found for callbackQuery");
+		
 		var callbackData = callbackQuery.Data;
 
         // Сначала проверяем точное совпадение
         if (_registry.CallbackHandlers.TryGetValue(callbackData, out var exactHandlerType))
 		{
-			await ExecuteCallbackHandlerAsync(callbackQuery, exactHandlerType, cancellationToken);
-			// Record callback history
-			try
+			var executeResult = await ExecuteCallbackHandlerAsync(callbackQuery, exactHandlerType, cancellationToken);
+
+			if(executeResult.IsFailure)
+				return executeResult.Error;
+			
+			if (callbackQuery.From != null)
 			{
+				await _sessionService.RecordCommandAsync(callbackQuery.From.Id, callbackData, String.IsNullOrEmpty(callbackData) ? callbackQuery.Message?.Text : null, cancellationToken);
+			}
+			return Result.Success<Error>();
+		}
+
+		// Затем проверяем префиксы
+		foreach (var (prefix, handlerType) in _registry.CallbackPrefixHandlers)
+		{
+			if (callbackData.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+			{
+				var executeResult = await ExecuteCallbackHandlerAsync(callbackQuery, handlerType, cancellationToken);
+				
+				if (executeResult.IsFailure)
+					return executeResult.Error;
+
 				if (callbackQuery.From != null)
 				{
 					await _sessionService.RecordCommandAsync(callbackQuery.From.Id, callbackData, String.IsNullOrEmpty(callbackData) ? callbackQuery.Message?.Text : null, cancellationToken);
 				}
-			}
-			catch (Exception ex)
-			{
-				_logger.LogWarning(ex, "Failed to record callback history for TelegramId {TelegramId}", callbackQuery.From?.Id);
-			}
-			return;
-		}
-
-		// Затем проверяем префиксы
-        foreach (var (prefix, handlerType) in _registry.CallbackPrefixHandlers)
-		{
-			if (callbackData.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-			{
-				await ExecuteCallbackHandlerAsync(callbackQuery, handlerType, cancellationToken);
-				// Record callback history
-				try
-				{
-					if (callbackQuery.From != null)
-					{
-						await _sessionService.RecordCommandAsync(callbackQuery.From.Id, callbackData, String.IsNullOrEmpty(callbackData) ? callbackQuery.Message?.Text : null, cancellationToken);
-					}
-				}
-				catch (Exception ex)
-				{
-					_logger.LogWarning(ex, "Failed to record callback history for TelegramId {TelegramId}", callbackQuery.From?.Id);
-				}
-				return;
+				return Result.Success<Error>();
 			}
 		}
 
 		_logger.LogWarning("No handler found for callback: {CallbackData}", callbackData);
 
 		await _botClient.AnswerCallbackQuery(callbackQuery.Id, "Не реализовано", cancellationToken: cancellationToken);
+
+		return Result.Success<Error>();
 	}
 
 	/// <summary>
 	/// Выполняет обработчик колбэка
 	/// </summary>
-	private async Task ExecuteCallbackHandlerAsync(
+	private async Task<UnitResult<Error>> ExecuteCallbackHandlerAsync(
 		CallbackQuery callbackQuery,
 		Type handlerType,
 		CancellationToken cancellationToken)
 	{
-		try
+		var handler = _serviceProvider.GetService(handlerType) as ICallbackQueryHandler;
+		if (handler == null)
 		{
-			var handler = _serviceProvider.GetService(handlerType) as ICallbackQueryHandler;
-			if (handler == null)
-			{
-				_logger.LogError("Failed to create handler instance for callback: {Type}", handlerType.Name);
-				return;
-			}
+			_logger.LogError("Failed to create handler instance for callback: {Type}", handlerType.Name);
+			return Error.NotFound("handler.callback", "Failed to create handler instance for callback");
+		}
 
-			await handler.HandleAsync(callbackQuery, cancellationToken);
-		}
-		catch (Exception ex)
+		var handlerResult = await handler.HandleAsync(callbackQuery, cancellationToken);
+
+		if (handlerResult.IsFailure)
 		{
-			_logger.LogError(ex, "Error executing callback handler: {Type}", handlerType.Name);
+			return handlerResult.Error;
 		}
+
+		return Result.Success<Error>();
 	}
 }

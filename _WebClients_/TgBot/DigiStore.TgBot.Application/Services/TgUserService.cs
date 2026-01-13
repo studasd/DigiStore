@@ -8,25 +8,21 @@ using DigiStore.UserService.Contracts.HttpClients;
 using DigiStore.UserService.Contracts.Requests;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
 
 namespace DigiStore.TgBot.Application.Services;
 
 
 public class TgUserService : ITgUserService
 {
-	private readonly IUserHttpClient _httpClient;
-	//private readonly HttpClient _httpClient;
+	private readonly IUserHttpClient _userClient;
 	private readonly ILogger<TgUserService> _logger;
 
 	public TgUserService(
-		//HttpClient httpClient,
-		IUserHttpClient httpClient,
+		IUserHttpClient userClient,
 		IConfiguration configuration,
 		ILogger<TgUserService> logger)
 	{
-		_httpClient = httpClient;
-		//_httpClient = httpClient;
+		_userClient = userClient;
 		_logger = logger;
 	}
 
@@ -39,162 +35,124 @@ public class TgUserService : ITgUserService
 		LanguageCodes langCode,
 		CancellationToken ct = default)
 	{
-		try
+		var responseResult = await _userClient.GetUserByTelegramId(telegramId, ct);
+
+		if (responseResult.IsFailure && responseResult.Error.Type == ErrorType.NOT_FOUND)
 		{
-			var responseResult = await _httpClient.GetUserByTelegramId(telegramId, ct);
-
-
-			if (responseResult.IsSuccess)
+			var createRequest = new CreateUserRequest
 			{
-				var user = responseResult.Value!;
-				var telegramUser = new TgUserDto
-				{
-					Id = user.Id,
-					TelegramId = user.TelegramId ?? telegramId,
-					Email = user.Email ?? string.Empty,
-					FullName = user.FullName ?? string.Empty,
-					Username = username,
-					LangCode = user.LangCode,
-					IsActive = user.IsActive,
-					Roles = user.Roles?.ToList() ?? new List<string>()
-				};
-				return telegramUser;
-			}
-			else if (responseResult.IsFailure && responseResult.Error.Type == ErrorType.NOT_FOUND)
+				Email = $"telegram_{telegramId}@digistore.local",
+				FirstName = firstName ?? string.Empty,
+				LastName = lastName ?? string.Empty,
+				TelegramId = telegramId,
+				LangCode = langCode,
+				Source = "Telegram"
+			};
+
+			var createResponse = await _userClient.RegisterUser(createRequest, ct);
+
+			if (createResponse.IsFailure)
 			{
-				var createRequest = new CreateUserRequest
-				{
-					Email = $"telegram_{telegramId}@digistore.local",
-					FirstName = firstName ?? string.Empty,
-					LastName = lastName ?? string.Empty,
-					TelegramId = telegramId,
-					LangCode = langCode,
-					Source = "Telegram"
-				};
-
-				var createResponse = await _httpClient.RegisterUser(createRequest, ct);
-
-				if (createResponse.IsSuccess)
-				{
-					var createUser = createResponse.Value!;
-					var newUser = new TgUserDto
-					{
-						Email = createUser.Email ?? string.Empty,
-						FullName = createUser.FullName ?? string.Empty,
-						Id = createUser.Id,
-						TelegramId = createUser.TelegramId ?? telegramId,
-						Username = username,
-						IsActive = createUser.IsActive,
-						LangCode = createUser.LangCode,
-						Roles = createUser.Roles?.ToList() ?? new List<string>(),
-						IsNew = true
-					};
-
-					_logger.LogInformation("User created for Telegram ID: {TelegramId}", telegramId);
-					return newUser;
-				}
-				else
-				{
-					_logger.LogWarning("Failed to create user in UserService for Telegram ID {TelegramId}: {Error}", telegramId, createResponse.Error?.GetMessage());
-					return createResponse.Error ?? TgBotErrors.OperationFailed;
-				}
-			}
-			else if (responseResult.IsFailure)
-			{
-				_logger.LogWarning("GetUserByTelegramId failed for {TelegramId}: {Error}", telegramId, responseResult.Error?.GetMessage());
-				return responseResult.Error ?? TgBotErrors.UserNotFound;
+				_logger.LogWarning("Failed to create user in UserService for Telegram ID {TelegramId}: {Error}", telegramId, createResponse.Error?.GetMessage());
+				return createResponse.Error ?? TgBotErrors.OperationFailed;
 			}
 
-			_logger.LogError("Failed to get or create user for Telegram ID: {TelegramId}", telegramId);
-			return TgBotErrors.UserNotFound;
+			var createUser = createResponse.Value!;
+			var newUser = new TgUserDto
+			{
+				Email = createUser.Email ?? string.Empty,
+				FullName = createUser.FullName ?? string.Empty,
+				Id = createUser.Id,
+				TelegramId = createUser.TelegramId ?? telegramId,
+				Username = username,
+				IsActive = createUser.IsActive,
+				LangCode = createUser.LangCode,
+				Roles = createUser.Roles?.ToList() ?? new List<string>(),
+				IsNew = true
+			};
+
+			_logger.LogInformation("User created for Telegram ID: {TelegramId}", telegramId);
+			return newUser;
 		}
-		catch (Exception ex)
+		else if (responseResult.IsFailure)
 		{
-			_logger.LogError(ex, "Error in GetOrCreateUserAsync for Telegram ID: {TelegramId}", telegramId);
-			return Error.Failure("bot.user_service_error", ex.Message);
+			_logger.LogWarning("GetUserByTelegramId failed for {TelegramId}: {Error}", telegramId, responseResult.Error?.GetMessage());
+			return responseResult.Error ?? TgBotErrors.UserNotFound;
 		}
+
+
+		var user = responseResult.Value!;
+		var telegramUser = new TgUserDto
+		{
+			Id = user.Id,
+			TelegramId = user.TelegramId ?? telegramId,
+			Email = user.Email ?? string.Empty,
+			FullName = user.FullName ?? string.Empty,
+			Username = username,
+			LangCode = user.LangCode,
+			IsActive = user.IsActive,
+			Roles = user.Roles?.ToList() ?? new List<string>()
+		};
+		return telegramUser;
 	}
 
 
 	public async Task<Result<TgUserDto, Error>> GetUserProfileAsync(Guid userId, CancellationToken ct = default)
 	{
-		try
+		var responseResult = await _userClient.GetUserById(userId, ct);
+
+		if (responseResult.IsFailure)
 		{
-			var response = await _httpClient.GetUserById(userId, ct);
-
-			if (response.IsFailure)
-			{
-				_logger.LogWarning("Failed to get user profile for user ID: {UserId}: {Error}", userId, response.Error?.GetMessage());
-				return response.Error ?? TgBotErrors.UserNotFound;
-			}
-
-			var user = response.Value!;
-			var dto = new TgUserDto
-			{
-				Id = user.Id,
-				TelegramId = user.TelegramId ?? 0,
-				Email = user.Email ?? string.Empty,
-				FullName = user.FullName ?? string.Empty,
-				// The UserResponse currently does not contain a Telegram username property. Do NOT use TelegramId
-				// as Username. Leave Username null here; Profile caching will prefer the Telegram-side username when
-				// available during GetOrCreateUserAsync.
-				Username = null,
-				LangCode = user.LangCode,
-				IsActive = user.IsActive,
-				Roles = user.Roles?.ToList() ?? new List<string>()
-			};
-
-			return dto;
+			_logger.LogWarning("Failed to get user profile for user ID: {UserId}: {Error}", userId, responseResult.Error?.GetMessage());
+			return responseResult.Error ?? TgBotErrors.UserNotFound;
 		}
-		catch (Exception ex)
+
+		var user = responseResult.Value!;
+		var userDto = new TgUserDto
 		{
-			_logger.LogError(ex, "Error getting user profile for user ID: {UserId}", userId);
-			return Error.Failure("bot.user_service_error", ex.Message);
-		}
+			Id = user.Id,
+			TelegramId = user.TelegramId ?? 0,
+			Email = user.Email ?? string.Empty,
+			FullName = user.FullName ?? string.Empty,
+			// The UserResponse currently does not contain a Telegram username property. Do NOT use TelegramId
+			// as Username. Leave Username null here; Profile caching will prefer the Telegram-side username when
+			// available during GetOrCreateUserAsync.
+			Username = null,
+			LangCode = user.LangCode,
+			IsActive = user.IsActive,
+			Roles = user.Roles?.ToList() ?? new List<string>()
+		};
+
+		return userDto;
 	}
 
 
-	public async Task<Result<bool, Error>> UpdateLanguageAsync(Guid userId, LanguageCodes langCode, CancellationToken ct = default)
+	public async Task<UnitResult<Error>> UpdateLanguageAsync(Guid userId, LanguageCodes langCode, CancellationToken ct = default)
 	{
-		try
-		{
-			var response = await _httpClient.UpdateLanguage(userId, langCode, ct);
+		var responseResult = await _userClient.UpdateLanguage(userId, langCode, ct);
 
-			if (response.IsFailure)
-			{
-				_logger.LogWarning("Failed to update language for user ID: {UserId}", userId);
-				return TgBotErrors.OperationFailed;
-			}
-
-			_logger.LogInformation("Language updated for user ID: {UserId} to {LanguageCode}", userId, langCode);
-			return true;
-		}
-		catch (Exception ex)
+		if (responseResult.IsFailure)
 		{
-			_logger.LogError(ex, "Error updating language for user ID: {UserId}", userId);
-			return Error.Failure("bot.user_service_error", ex.Message);
+			_logger.LogWarning("Failed to update language for user ID: {UserId}", userId);
+			return responseResult.Error;
 		}
+
+		_logger.LogInformation("Language updated for user ID: {UserId} to {LanguageCode}", userId, langCode);
+
+		return Result.Success<Error>();
 	}
 
 
-	public async Task<Result<bool, Error>> UpdateActivityAsync(Guid userId, CancellationToken ct = default)
+	public async Task<UnitResult<Error>> UpdateActivityAsync(Guid userId, CancellationToken ct = default)
 	{
-		try
-		{
-			var response = await _httpClient.UpdateActivity(userId, ct);
+		var responseResult = await _userClient.UpdateActivity(userId, ct);
 
-			if (response.IsFailure)
-			{
-				_logger.LogWarning("Failed to update activity for user ID: {UserId}", userId);
-				return TgBotErrors.OperationFailed;
-			}
-
-			return true;
-		}
-		catch (Exception ex)
+		if (responseResult.IsFailure)
 		{
-			_logger.LogError(ex, "Error updating activity for user ID: {UserId}", userId);
-			return Error.Failure("bot.user_service_error", ex.Message);
+			_logger.LogWarning("Failed to update activity for user ID: {UserId}", userId);
+			return responseResult.Error;
 		}
+
+		return Result.Success<Error>();
 	}
 }

@@ -24,7 +24,7 @@ public interface IProfileService
 	/// <summary>
 	/// Update user language and session
 	/// </summary>
-	Task<Result<bool, Error>> UpdateUserLanguageAsync(Guid userId, LanguageCodes langCode, CancellationToken ct = default);
+	Task<UnitResult<Error>> UpdateUserLanguageAsync(Guid userId, LanguageCodes langCode, CancellationToken ct = default);
 
 	/// <summary>
 	/// Build profile message with keyboard

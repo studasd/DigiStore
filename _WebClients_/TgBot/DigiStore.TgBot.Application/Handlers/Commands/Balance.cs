@@ -1,3 +1,5 @@
+using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
 using DigiStore.TgBot.Application.Interfaces.Services;
@@ -33,44 +35,45 @@ public class Balance : BaseHandler, ICommandHandler
 		_logger = logger;
 	}
 
-	public async Task HandleAsync(Message message, CancellationToken cancellationToken = default)
+	public async Task<UnitResult<Error>> HandleAsync(Message message, CancellationToken cancellationToken = default)
 	{
 		// Handle /balance command - show wallet info
 
-		try
+		
+		var telegramId = message.From!.Id;
+		var chatId = message.Chat.Id;
+
+		// Get session
+		var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+		if (sessionResult.IsFailure)
 		{
-			var telegramId = message.From!.Id;
-			var chatId = message.Chat.Id;
+			await SendErrorMessage(chatId, "Session expired", cancellationToken);
+			return sessionResult.Error;
+		}
 
-			// Get session
-			var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
-			if (sessionResult.IsFailure || sessionResult.Value.UserId == default)
-			{
-				await SendErrorMessage(chatId, "Session expired", cancellationToken);
-				return;
-			}
+		var session = sessionResult.Value;
+		var langCode = session.LangCode;
 
-			var session = sessionResult.Value;
-			var langCode = session.LangCode;
+		var profileResult = await _profileService.GetFullProfileAsync(session.UserId, telegramId, cancellationToken);
+		if (profileResult.IsFailure)
+		{
+			await SendErrorMessage(chatId, _localService.GetMessage(LocalKeys.Errors.Occurred, langCode), cancellationToken);
+			return profileResult;
+		}
 
-			var profileResult = await _profileService.GetFullProfileAsync(session.UserId, telegramId, cancellationToken);
-			if (!profileResult.IsSuccess)
-			{
-				await SendErrorMessage(chatId, _localService.GetMessage(LocalKeys.Errors.Occurred, langCode), cancellationToken);
-				return;
-			}
+		var profile = profileResult.Value!;
 
-			var profile = profileResult.Value!;
-
-			var text = $@"
+		var text = $@"
 💰 {_localService.GetMessage(LocalKeys.Balances.Info, langCode)}
 {_localService.GetMessage(LocalKeys.Balances.CurrentBalance, langCode)}: <b>{profile.Balance:F2} {profile.Currency}</b>
 🔗 {_localService.GetMessage(LocalKeys.Balances.LinkedAccounts, langCode)}:
 👤 Telegram: @{profile.Username ?? ""}
 ";
 
-			var keyboard = GetBackToMainMenuKeyboard(langCode);
+		var keyboard = GetBackToMainMenuKeyboard(langCode);
 
+		try
+		{
 			await _botClient.SendMessage(
 				chatId,
 				text,
@@ -82,6 +85,9 @@ public class Balance : BaseHandler, ICommandHandler
 		{
 			_logger.LogError(ex, "Error in BalanceCommandHandler");
 			await SendErrorMessage(message.Chat.Id, "An error occurred", cancellationToken);
+			return Error.Failure("command.handler.balance", "Error in BalanceCommandHandler");
 		}
+
+		return Result.Success<Error>();
 	}
 }

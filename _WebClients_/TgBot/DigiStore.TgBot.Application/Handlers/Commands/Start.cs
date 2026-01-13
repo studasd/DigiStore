@@ -1,3 +1,5 @@
+using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
 using DigiStore.SharedKernel.Extensions;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
@@ -39,7 +41,7 @@ public class Start : BaseHandler, ICommandHandler
 	}
 
 
-	public async Task HandleAsync(Message message, CancellationToken cancellationToken = default)
+	public async Task<UnitResult<Error>> HandleAsync(Message message, CancellationToken cancellationToken = default)
 	{
 		// Handle /start command
 		// 1. Check if user exists
@@ -47,90 +49,96 @@ public class Start : BaseHandler, ICommandHandler
 		// 3. Ask for language (only for newly created users)
 		// 4. Show profile immediately if user already existed
 		
-		try
+		
+		var telegramId = message.From!.Id;
+		var username = message.From.Username;
+		var firstName = message.From.FirstName;
+		var lastName = message.From.LastName;
+		var defaultLanguage = message.From.LanguageCode.ParseEnum<LanguageCodes>().Value;
+
+		_logger.LogInformation("Start command from Telegram ID: {TelegramId}, Name: {FirstName} {LastName}",
+			telegramId, firstName, lastName);
+
+		// Get or create user
+		var userResult = await _userService.GetOrCreateUserAsync(
+			telegramId,
+			username,
+			firstName,
+			lastName,
+			defaultLanguage,
+			cancellationToken);
+
+		if (userResult.IsFailure)
 		{
-			var telegramId = message.From!.Id;
-			var username = message.From.Username;
-			var firstName = message.From.FirstName;
-			var lastName = message.From.LastName;
-			var defaultLanguage = message.From.LanguageCode.ParseEnum<LanguageCodes>().Value;
+			await SendErrorMessage(message.Chat.Id, "Failed to initialize user account", cancellationToken);
+			return userResult.Error;
+		}
 
-			_logger.LogInformation("Start command from Telegram ID: {TelegramId}, Name: {FirstName} {LastName}",
-				telegramId, firstName, lastName);
+		var user = userResult.Value!;
 
-			// Get or create user
-			var userResult = await _userService.GetOrCreateUserAsync(
-				telegramId,
-				username,
-				firstName,
-				lastName,
-				defaultLanguage,
-				cancellationToken);
+		// Get or create session
+		var sessionResult = await _sessionService.GetOrCreateSessionAsync(telegramId, cancellationToken);
 
-			if (userResult.IsFailure)
-			{
-				await SendErrorMessage(message.Chat.Id, "Failed to initialize user account", cancellationToken);
-				return;
-			}
-
-			var user = userResult.Value!;
-
-			// Get or create session
-			var sessionResult = await _sessionService.GetOrCreateSessionAsync(telegramId, cancellationToken);
-
-			if (sessionResult.IsFailure)
-				return;
+		if (sessionResult.IsFailure)
+			return sessionResult.Error;
 			
-			var session = sessionResult.Value!;
-			session.UserId = user.Id;
-			session.LangCode = user.LangCode;
+		var session = sessionResult.Value!;
+		session.UserId = user.Id;
+		session.LangCode = user.LangCode;
 
-			// If user was just created -> ask for language
-			if (user.IsNew)
+		// If user was just created -> ask for language
+		if (user.IsNew)
+		{
+			// Send greeting and language selection
+			var sendLangResult = await SendLanguageSelection(message.Chat.Id, session.LangCode, isStartCommand: true, cancellationToken);
+			if (sendLangResult.IsFailure)
 			{
-				// Send greeting and language selection
-				await SendLanguageSelection(message.Chat.Id, session.LangCode, isStartCommand: true, cancellationToken);
-
-				// Update session - waiting for language selection
-				session.SetState(BotState.LanguageSelectionAwaiting);
-				await _sessionService.UpdateSessionAsync(session, cancellationToken);
+				return sendLangResult.Error;
 			}
-			else
+
+			// Update session - waiting for language selection
+			session.SetState(BotState.LanguageSelectionAwaiting);
+			await _sessionService.UpdateSessionAsync(session, cancellationToken);
+		}
+		else
+		{
+			// Existing user - show profile immediately
+			var profileResult = await _profileService.GetFullProfileAsync(user.Id, telegramId, cancellationToken);
+			
+			if (profileResult.IsFailure)
 			{
-				// Existing user - show profile immediately
-				var profileResult = await _profileService.GetFullProfileAsync(user.Id, telegramId, cancellationToken);
-				if (!profileResult.IsSuccess)
-				{
-					await SendErrorMessage(message.Chat.Id, _localService.GetMessage(LocalKeys.Errors.Occurred, session.LangCode), cancellationToken);
-					return;
-				}
+				await SendErrorMessage(message.Chat.Id, _localService.GetMessage(LocalKeys.Errors.Occurred, session.LangCode), cancellationToken);
+				return profileResult.Error;
+			}
 
-				var profile = profileResult.Value!;
+			var profile = profileResult.Value!;
 
-				// Cache profile in session
-				session.CachedProfile = new CachedUserProfileVO
-				{
-					UserId = profile.UserId,
-					TelegramId = profile.TelegramId,
-					Email = profile.Email,
-					FirstName = profile.FullName.Split(' ').FirstOrDefault() ?? string.Empty,
-					LastName = profile.FullName.Split(' ').LastOrDefault() ?? string.Empty,
-					Username = profile.Username,
-					LangCode = profile.LangCode,
-					IsActive = profile.IsActive,
-					Roles = profile.Roles,
-					Balance = profile.Balance,
-					Currency = profile.Currency,
-					CreatedAt = profile.CreatedAt,
-					UpdatedAt = profile.UpdatedAt
-				};
+			// Cache profile in session
+			session.CachedProfile = new CachedUserProfileVO
+			{
+				UserId = profile.UserId,
+				TelegramId = profile.TelegramId,
+				Email = profile.Email,
+				FirstName = profile.FullName.Split(' ').FirstOrDefault() ?? string.Empty,
+				LastName = profile.FullName.Split(' ').LastOrDefault() ?? string.Empty,
+				Username = profile.Username,
+				LangCode = profile.LangCode,
+				IsActive = profile.IsActive,
+				Roles = profile.Roles,
+				Balance = profile.Balance,
+				Currency = profile.Currency,
+				CreatedAt = profile.CreatedAt,
+				UpdatedAt = profile.UpdatedAt
+			};
 
-				session.SetState(BotState.ProfileViewing);
-				await _sessionService.UpdateSessionAsync(session, cancellationToken);
+			session.SetState(BotState.ProfileViewing);
+			await _sessionService.UpdateSessionAsync(session, cancellationToken);
 
-				var profileText = _profileService.FormatProfileText(profile, session.LangCode);
-				var keyboard = GetProfileKeyboard(session.LangCode);
+			var profileText = _profileService.FormatProfileText(profile, session.LangCode);
+			var keyboard = GetProfileKeyboard(session.LangCode);
 
+			try
+			{
 				await _botClient.SendMessage(
 					message.Chat.Id,
 					profileText,
@@ -138,14 +146,17 @@ public class Start : BaseHandler, ICommandHandler
 					replyMarkup: keyboard,
 					cancellationToken: cancellationToken);
 			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error in StartCommandHandler");
+				await SendErrorMessage(message.Chat.Id, "An error occurred", cancellationToken);
+				return Error.Failure("command.handler.start", "Error in StartCommandHandler");
+			}
 
 			_logger.LogInformation("User initialized: TelegramId: {TelegramId}, UserId: {UserId}",
 				telegramId, user.Id);
 		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error in StartCommandHandler");
-			await SendErrorMessage(message.Chat.Id, "An error occurred", cancellationToken);
-		}
+
+		return Result.Success<Error>();
 	}
 }

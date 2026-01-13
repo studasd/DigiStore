@@ -51,7 +51,7 @@ internal sealed class UserHttpClient : IUserHttpClient
 	}
 	
 	
-	public async Task<Result<bool, Error>> UpdateLanguage(Guid userId, LanguageCodes langCode, CancellationToken cancellationToken)
+	public async Task<UnitResult<Error>> UpdateLanguage(Guid userId, LanguageCodes langCode, CancellationToken cancellationToken)
 	{
 		try
 		{
@@ -60,21 +60,20 @@ internal sealed class UserHttpClient : IUserHttpClient
 
 			if (result.IsSuccess)
 			{
-				return true;
+				return Result.Success<Error>();
 			}
-
-			return false;
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error update language for {userId}", userId);
 
-			return Error.Failure("server.internal", "Failed to request update language");
 		}
+		
+		return Error.Failure("server.internal", "Failed to request update language");
 	}
-	
-	
-	public async Task<Result<bool, Error>> UpdateActivity(Guid userId, CancellationToken cancellationToken)
+
+
+	public async Task<UnitResult<Error>> UpdateActivity(Guid userId, CancellationToken cancellationToken)
 	{
 		try
 		{
@@ -83,20 +82,19 @@ internal sealed class UserHttpClient : IUserHttpClient
 			
 			if (result.IsSuccess)
 			{
-				return true;
+				return Result.Success<Error>();
 			}
-
-			return false;
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error getting media assets for {userId}", userId);
 
-			return Error.Failure("server.internal", "Failed to request media assets info");
 		}
+		
+		return Error.Failure("server.internal", "Failed to request media assets info");
 	}
-	
-	
+
+
 	public async Task<Result<UserResponse, Error>> RegisterUser(CreateUserRequest request, CancellationToken cancellationToken)
 	{
 		try
