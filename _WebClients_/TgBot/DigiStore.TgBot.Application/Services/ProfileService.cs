@@ -81,10 +81,11 @@ public class ProfileService : IProfileService
 	{
 		var loc = _localizationService;
 		var lang = langCode;
+
 		var text = $@"
-╔════════════════════════════════════╗
-║ {loc.GetMessage(LocalKeys.Profiles.Info, lang)}
-╚════════════════════════════════════╝
+════════════════════════════════════
+ <b> {loc.GetMessage(LocalKeys.Profiles.Info, lang)} </b>
+════════════════════════════════════
 👤 {loc.GetMessage(LocalKeys.Profiles.FullName, lang)}: {profile.FullName}
 🆔 Telegram ID: {profile.TelegramId}
 📧 {loc.GetMessage(LocalKeys.Profiles.Email, lang)}: {profile.Email}

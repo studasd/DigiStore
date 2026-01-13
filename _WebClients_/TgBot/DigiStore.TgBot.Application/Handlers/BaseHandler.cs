@@ -13,14 +13,14 @@ namespace DigiStore.TgBot.Application.Handlers;
 public abstract class BaseHandler
 {
 	protected readonly ITelegramBotClient _botClient;
-	protected readonly ILocalizationService _localizationService;
+	protected readonly ILocalizationService _localService;
 
 	protected BaseHandler(
 		ITelegramBotClient botClient,
 		ILocalizationService localizationService)
 	{
 		_botClient = botClient;
-		_localizationService = localizationService;
+		_localService = localizationService;
 	}
 
 	/// <summary>
@@ -41,7 +41,7 @@ public abstract class BaseHandler
 		{
 			await _botClient.AnswerCallbackQuery(
 				callbackQueryId,
-				_localizationService.GetMessage(LocalKeys.Errors.Occurred, langCode),
+				_localService.GetMessage(LocalKeys.Errors.Occurred, langCode),
 				showAlert: true,
 				cancellationToken: cancellationToken);
 		}
@@ -54,7 +54,7 @@ public abstract class BaseHandler
 	/// </summary>
 	protected async Task SendLanguageSelection(long chatId, LanguageCodes currentLang, bool isStartCommand, CancellationToken cancellationToken = default)
 	{
-		var languages = _localizationService.GetLanguages();
+		var languages = _localService.GetLanguages();
 		var buttons = new List<List<InlineKeyboardButton>>();
 
 		foreach (var lang in languages)
@@ -74,12 +74,12 @@ public abstract class BaseHandler
 
 		if (isStartCommand)
 		{
-			text = $"{_localizationService.GetMessage(LocalKeys.Greetings.Greeting, currentLang)}\n\n" +
-				   $"{_localizationService.GetMessage(LocalKeys.Navigations.SelectLanguage, currentLang)}";
+			text = $"{_localService.GetMessage(LocalKeys.Greetings.Greeting, currentLang)}\n\n" +
+				   $"{_localService.GetMessage(LocalKeys.Navigations.SelectLanguage, currentLang)}";
 		}
 		else
 		{
-			text = _localizationService.GetMessage(LocalKeys.Navigations.SelectLanguage, currentLang);
+			text = _localService.GetMessage(LocalKeys.Navigations.SelectLanguage, currentLang);
 		}
 
 		await _botClient.SendMessage(chatId, text, replyMarkup: keyboard, cancellationToken: cancellationToken);
@@ -91,7 +91,7 @@ public abstract class BaseHandler
 	/// </summary>
 	protected InlineKeyboardMarkup GetLanguageSelectionKeyboard(string languageChangePrefix)
 	{
-		var languages = _localizationService.GetLanguages();
+		var languages = _localService.GetLanguages();
 		var buttons = new List<List<InlineKeyboardButton>>();
 
 		foreach (var lang in languages)
@@ -117,19 +117,19 @@ public abstract class BaseHandler
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage(LocalKeys.Commands.Profile, langCode),
+					_localService.GetMessage(LocalKeys.Commands.Profile, langCode),
 					CallbackData.ProfileView)
 			},
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage(LocalKeys.Commands.Balance, langCode),
+					_localService.GetMessage(LocalKeys.Commands.Balance, langCode),
 					CallbackData.BalanceView)
 			},
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage(LocalKeys.Commands.Catalog, langCode),
+					_localService.GetMessage(LocalKeys.Commands.Catalog, langCode),
 					CallbackData.CatalogView)
 			},
 		});
@@ -145,13 +145,13 @@ public abstract class BaseHandler
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage(LocalKeys.Commands.ChangeLanguage, langCode),
+					_localService.GetMessage(LocalKeys.Commands.ChangeLanguage, langCode),
 					CallbackData.LanguageChangePrefix + "select")
 			},
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage(LocalKeys.Navigations.MainMenu, langCode),
+					_localService.GetMessage(LocalKeys.Navigations.MainMenu, langCode),
 					CallbackData.MenuMain)
 			},
 		});
@@ -167,7 +167,7 @@ public abstract class BaseHandler
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage(LocalKeys.Buttons.Back, langCode),
+					_localService.GetMessage(LocalKeys.Buttons.Back, langCode),
 					CallbackData.MenuMain)
 			},
 		});

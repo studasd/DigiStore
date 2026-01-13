@@ -14,11 +14,10 @@ namespace DigiStore.TgBot.Application.Handlers.Commands;
 public class Language : BaseHandler, ICommandHandler
 {
 	public const string Command = BotCommands.Language;
-	
+
 	private readonly ISessionService _sessionService;
 	private readonly ILogger<Language> _logger;
 
-	string ICommandHandler.Command => Command;
 
 	public Language(
 		ITelegramBotClient botClient,
@@ -46,7 +45,7 @@ public class Language : BaseHandler, ICommandHandler
 			var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
 			if (sessionResult.IsFailure)
 			{
-				await SendErrorMessage(chatId, _localizationService.GetMessage(LocalKeys.Errors.SessionExpired, LanguageCodes.en), cancellationToken);
+				await SendErrorMessage(chatId, _localService.GetMessage(LocalKeys.Errors.SessionExpired, LanguageCodes.en), cancellationToken);
 				return;
 			}
 

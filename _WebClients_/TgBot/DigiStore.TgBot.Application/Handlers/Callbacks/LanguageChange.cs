@@ -14,15 +14,14 @@ namespace DigiStore.TgBot.Application.Handlers.Callbacks;
 /// </summary>
 public class LanguageChange : BaseHandler, ICallbackQueryHandler
 {
-	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.LanguageChangePrefix;
+	public const string CallbackData = Constants.CallbackData.LanguageChangePrefix;
 	public const bool IsPrefix = true;
-	
+
 	private readonly IProfileService _profileService;
 	private readonly ISessionService _sessionService;
 	private readonly ILogger<LanguageChange> _logger;
 
-	string ICallbackQueryHandler.CallbackData => CallbackData;
-	bool ICallbackQueryHandler.IsPrefix => IsPrefix;
+	
 
 	public LanguageChange(
 		ITelegramBotClient botClient,
@@ -65,7 +64,7 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 			if (languageCode == LanguageCodes.select)
 			{
 				var keyboard = GetLanguageSelectionKeyboard(CallbackData);
-				var text = _localizationService.GetMessage(LocalKeys.Navigations.SelectLanguage, currentLanguage);
+				var text = _localService.GetMessage(LocalKeys.Navigations.SelectLanguage, currentLanguage);
 
 				await _botClient.EditMessageText(
 					callbackQuery.Message.Chat.Id,
@@ -101,7 +100,7 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 			session.SetState(BotState.MainMenu);
 			await _sessionService.UpdateSessionAsync(session, cancellationToken);
 
-			var confirmText = _localizationService.GetMessage(LocalKeys.Navigations.LanguageChanged, languageCode);
+			var confirmText = _localService.GetMessage(LocalKeys.Navigations.LanguageChanged, languageCode);
 			var keyboard2 = GetMainMenuKeyboard(languageCode);
 
 			await _botClient.EditMessageText(

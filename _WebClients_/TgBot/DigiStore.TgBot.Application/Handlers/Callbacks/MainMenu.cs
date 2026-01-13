@@ -13,14 +13,12 @@ namespace DigiStore.TgBot.Application.Handlers.Callbacks;
 /// </summary>
 public class MainMenu : BaseHandler, ICallbackQueryHandler
 {
-	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.MenuMain;
+	public const string CallbackData = Constants.CallbackData.MenuMain;
 	public const bool IsPrefix = false;
 	
 	private readonly ISessionService _sessionService;
 	private readonly ILogger<MainMenu> _logger;
 
-	string ICallbackQueryHandler.CallbackData => CallbackData;
-	bool ICallbackQueryHandler.IsPrefix => IsPrefix;
 
 	public MainMenu(
 		ITelegramBotClient botClient,
@@ -52,8 +50,8 @@ public class MainMenu : BaseHandler, ICallbackQueryHandler
 				languageCode = sessionResult.Value.LangCode;
 			}
 
-			var text = $"{_localizationService.GetMessage(LocalKeys.Navigations.MainMenu, languageCode)}\n\n" +
-					  $"{_localizationService.GetMessage(LocalKeys.Navigations.ChooseOption, languageCode)}";
+			var text = $"{_localService.GetMessage(LocalKeys.Navigations.MainMenu, languageCode)}\n\n" +
+					  $"{_localService.GetMessage(LocalKeys.Navigations.ChooseOption, languageCode)}";
 
 			var keyboard = GetMainMenuKeyboard(languageCode);
 

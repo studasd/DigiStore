@@ -15,13 +15,12 @@ namespace DigiStore.TgBot.Application.Handlers.Commands;
 public class Start : BaseHandler, ICommandHandler
 {
 	public const string Command = BotCommands.Start;
-	
+
 	private readonly ITgUserService _userService;
 	private readonly ISessionService _sessionService;
 	private readonly IProfileService _profileService;
 	private readonly ILogger<Start> _logger;
 
-	string ICommandHandler.Command => Command;
 
 	public Start(
 		ITelegramBotClient botClient,
@@ -37,6 +36,7 @@ public class Start : BaseHandler, ICommandHandler
 		_profileService = profileService;
 		_logger = logger;
 	}
+
 
 	public async Task HandleAsync(Message message, CancellationToken cancellationToken = default)
 	{
@@ -100,7 +100,7 @@ public class Start : BaseHandler, ICommandHandler
 				var profileResult = await _profileService.GetFullProfileAsync(user.Id, telegramId, cancellationToken);
 				if (!profileResult.IsSuccess)
 				{
-					await SendErrorMessage(message.Chat.Id, _localizationService.GetMessage(LocalKeys.Errors.Occurred, session.LangCode), cancellationToken);
+					await SendErrorMessage(message.Chat.Id, _localService.GetMessage(LocalKeys.Errors.Occurred, session.LangCode), cancellationToken);
 					return;
 				}
 

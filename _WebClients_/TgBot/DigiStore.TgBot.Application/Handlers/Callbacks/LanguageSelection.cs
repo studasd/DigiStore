@@ -16,15 +16,14 @@ namespace DigiStore.TgBot.Application.Handlers.Callbacks;
 /// </summary>
 public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 {
-	public const string CallbackData = DigiStore.TgBot.Application.Constants.CallbackData.LanguagePrefix;
+	public const string CallbackData = Constants.CallbackData.LanguagePrefix;
 	public const bool IsPrefix = true;
-	
+
 	private readonly IProfileService _profileService;
 	private readonly ISessionService _sessionService;
 	private readonly ILogger<LanguageSelection> _logger;
 
-	string ICallbackQueryHandler.CallbackData => CallbackData;
-	bool ICallbackQueryHandler.IsPrefix => IsPrefix;
+	
 
 	public LanguageSelection(
 		ITelegramBotClient botClient,

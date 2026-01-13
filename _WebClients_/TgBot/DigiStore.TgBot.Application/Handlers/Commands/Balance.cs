@@ -18,7 +18,6 @@ public class Balance : BaseHandler, ICommandHandler
 	private readonly ISessionService _sessionService;
 	private readonly ILogger<Balance> _logger;
 
-	string ICommandHandler.Command => Command;
 
 	public Balance(
 		ITelegramBotClient botClient,
@@ -56,17 +55,17 @@ public class Balance : BaseHandler, ICommandHandler
 			var profileResult = await _profileService.GetFullProfileAsync(session.UserId, telegramId, cancellationToken);
 			if (!profileResult.IsSuccess)
 			{
-				await SendErrorMessage(chatId, _localizationService.GetMessage(LocalKeys.Errors.Occurred, langCode), cancellationToken);
+				await SendErrorMessage(chatId, _localService.GetMessage(LocalKeys.Errors.Occurred, langCode), cancellationToken);
 				return;
 			}
 
 			var profile = profileResult.Value!;
 
 			var text = $@"
-💰 {_localizationService.GetMessage(LocalKeys.Balances.Info, langCode)}
-{_localizationService.GetMessage(LocalKeys.Balances.CurrentBalance, langCode)}: <b>{profile.Balance:F2} {profile.Currency}</b>
-🔗 {_localizationService.GetMessage(LocalKeys.Balances.LinkedAccounts, langCode)}:
-👤 Telegram: @{profile.Username ?? "Not set"}
+💰 {_localService.GetMessage(LocalKeys.Balances.Info, langCode)}
+{_localService.GetMessage(LocalKeys.Balances.CurrentBalance, langCode)}: <b>{profile.Balance:F2} {profile.Currency}</b>
+🔗 {_localService.GetMessage(LocalKeys.Balances.LinkedAccounts, langCode)}:
+👤 Telegram: @{profile.Username ?? ""}
 ";
 
 			var keyboard = GetBackToMainMenuKeyboard(langCode);

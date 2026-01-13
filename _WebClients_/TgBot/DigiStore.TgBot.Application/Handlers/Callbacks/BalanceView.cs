@@ -16,13 +16,12 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 {
 	public const string CallbackData = Constants.CallbackData.BalanceView;
 	public const bool IsPrefix = false;
-	
+
 	private readonly IWalletService _walletService;
 	private readonly ISessionService _sessionService;
 	private readonly ILogger<BalanceView> _logger;
 
-	string ICallbackQueryHandler.CallbackData => CallbackData;
-	bool ICallbackQueryHandler.IsPrefix => IsPrefix;
+	
 
 	public BalanceView(
 		ITelegramBotClient botClient,
@@ -71,11 +70,11 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 
 			var wallet = walletResult.Value!;
 			var text = $@"
-💰 {_localizationService.GetMessage(LocalKeys.Balances.Info, langCode)}
+💰 {_localService.GetMessage(LocalKeys.Balances.Info, langCode)}
 
-{_localizationService.GetMessage(LocalKeys.Balances.CurrentBalance, langCode)}: <b>{wallet.Balance:F2} {wallet.Currency}</b>
-📊 {_localizationService.GetMessage(LocalKeys.Balances.TotalDeposited, langCode)}: {wallet.TotalDeposited:F2} {wallet.Currency}
-📤 {_localizationService.GetMessage(LocalKeys.Balances.TotalWithdrawn, langCode)}: {wallet.TotalWithdrawn:F2} {wallet.Currency}
+{_localService.GetMessage(LocalKeys.Balances.CurrentBalance, langCode)}: <b>{wallet.Balance:F2} {wallet.Currency}</b>
+📊 {_localService.GetMessage(LocalKeys.Balances.TotalDeposited, langCode)}: {wallet.TotalDeposited:F2} {wallet.Currency}
+📤 {_localService.GetMessage(LocalKeys.Balances.TotalWithdrawn, langCode)}: {wallet.TotalWithdrawn:F2} {wallet.Currency}
 ";
 
 			var keyboard = GetBackToMainMenuKeyboard(langCode);
