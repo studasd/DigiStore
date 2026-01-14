@@ -32,7 +32,7 @@
     <Project Path="_Services_/WalletService/DigiStore.WalletService.Application/DigiStore.WalletService.Application.csproj" Id="5688cf11-5c05-41e5-86e0-96e359d6a0cb" />
     <Project Path="_Services_/WalletService/DigiStore.WalletService.Contracts/DigiStore.WalletService.Contracts.csproj" Id="8cab43d4-aa9a-4177-b04a-a34a1b28d0b5" />
     <Project Path="_Services_/WalletService/DigiStore.WalletService.Domain/DigiStore.WalletService.Domain.csproj" Id="9ede8557-dc33-4f45-a3c5-1d09b8ecbc53" />
-    <Project Path="_Services_/WalletService/DigiStore.WalletService.Infrastructure/DigiStore.WalletService.Infrastructure.csproj" Id="b0e9a924-fb58-4b39-82e4-87ddf8720497" />
+    <Project Path="_Services_/WalletService/DigiStore.WalletService.Infrastructure.Postgres/DigiStore.WalletService.Infrastructure.Postgres.csproj" Id="b0e9a924-fb58-4b39-82e4-87ddf8720497" />
     <Project Path="_Services_/WalletService/DigiStore.WalletService.Web/DigiStore.WalletService.Web.csproj" Id="059e1c7a-cc45-4eb3-9c6c-22a3852d360f" />
   </Folder>
   <Folder Name="/Solution Items/">

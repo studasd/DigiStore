@@ -1,6 +1,6 @@
 ﻿using DigiStore.WalletService.Application.Interfaces;
-using DigiStore.WalletService.Infrastructure.Data;
-using DigiStore.WalletService.Infrastructure.Repositories;
+using DigiStore.WalletService.Infrastructure.Postgres.Data;
+using DigiStore.WalletService.Infrastructure.Postgres.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DigiStore.WalletService.Infrastructure;
+namespace DigiStore.WalletService.Infrastructure.Postgres;
 
 public static class DependencyInjectionExtensions
 {

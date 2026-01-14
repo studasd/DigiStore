@@ -2,7 +2,7 @@
 using DigiStore.WalletService.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace DigiStore.WalletService.Infrastructure.Data;
+namespace DigiStore.WalletService.Infrastructure.Postgres.Data;
 
 public class WalletDbContext : DbContext
 {

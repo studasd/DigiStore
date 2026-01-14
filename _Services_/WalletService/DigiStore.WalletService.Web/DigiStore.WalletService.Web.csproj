@@ -29,7 +29,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DigiStore.WalletService.Application\DigiStore.WalletService.Application.csproj" />
-    <ProjectReference Include="..\DigiStore.WalletService.Infrastructure\DigiStore.WalletService.Infrastructure.csproj" />
+    <ProjectReference Include="..\DigiStore.WalletService.Infrastructure.Postgres\DigiStore.WalletService.Infrastructure.Postgres.csproj" />
+    <ProjectReference Include="..\DigiStore.WalletService.Infrastructure\DigiStore.WalletService.Infrastructure.Postgres.csproj" />
   </ItemGroup>
   
 </Project>

@@ -2,7 +2,7 @@
 using DigiStore.Framework.Logging;
 using DigiStore.Framework.Swagger;
 using DigiStore.WalletService.Application;
-using DigiStore.WalletService.Infrastructure;
+using DigiStore.WalletService.Infrastructure.Postgres;
 using System.Reflection;
 
 namespace DigiStore.WalletService.Web.Configurations;

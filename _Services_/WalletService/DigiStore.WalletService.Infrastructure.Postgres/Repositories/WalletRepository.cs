@@ -1,10 +1,10 @@
 ﻿using DigiStore.WalletService.Application.Interfaces;
 using DigiStore.WalletService.Domain;
-using DigiStore.WalletService.Infrastructure.Data;
+using DigiStore.WalletService.Infrastructure.Postgres.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace DigiStore.WalletService.Infrastructure.Repositories;
+namespace DigiStore.WalletService.Infrastructure.Postgres.Repositories;
 
 public class WalletRepository : IWalletRepository
 {
