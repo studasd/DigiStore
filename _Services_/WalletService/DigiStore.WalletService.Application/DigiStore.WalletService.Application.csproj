@@ -6,4 +6,22 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DigiStore.Core" Version="0.0.6" />
+    <PackageReference Include="DigiStore.Framework" Version="0.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DigiStore.WalletService.Contracts\DigiStore.WalletService.Contracts.csproj" />
+    <ProjectReference Include="..\DigiStore.WalletService.Domain\DigiStore.WalletService.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
