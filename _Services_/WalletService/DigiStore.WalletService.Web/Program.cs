@@ -1,15 +1,26 @@
-using Microsoft.AspNetCore.Http.HttpResults;
-using System.Text.Json.Serialization;
+﻿using DigiStore.WalletService.Web.Configurations;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Constraints;
+
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
-builder.Services.ConfigureHttpJsonOptions(options =>
+// ✅ РЕГИСТРАЦИЯ ВСЕХ НУЖНЫХ CONSTRAINTS
+builder.Services.Configure<RouteOptions>(options =>
 {
-	options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
+	// Regex и другие
+	options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
 });
+
+builder.Services.AddEndpointsApiExplorer();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+
+builder.Services.AddConfiguration(builder.Configuration);
+
+builder.Services.AddCors();
 
 var app = builder.Build();
 
@@ -18,31 +29,6 @@ if (app.Environment.IsDevelopment())
 	app.MapOpenApi();
 }
 
-Todo[] sampleTodos =
-[
-	new(1, "Walk the dog"),
-	new(2, "Do the dishes", DateOnly.FromDateTime(DateTime.Now)),
-	new(3, "Do the laundry", DateOnly.FromDateTime(DateTime.Now.AddDays(1))),
-	new(4, "Clean the bathroom"),
-	new(5, "Clean the car", DateOnly.FromDateTime(DateTime.Now.AddDays(2)))
-];
-
-var todosApi = app.MapGroup("/todos");
-todosApi.MapGet("/", () => sampleTodos)
-		.WithName("GetTodos");
-
-todosApi.MapGet("/{id}", Results<Ok<Todo>, NotFound> (int id) =>
-	sampleTodos.FirstOrDefault(a => a.Id == id) is { } todo
-		? TypedResults.Ok(todo)
-		: TypedResults.NotFound())
-	.WithName("GetTodoById");
+app.Configure();
 
 app.Run();
-
-public record Todo(int Id, string? Title, DateOnly? DueBy = null, bool IsComplete = false);
-
-[JsonSerializable(typeof(Todo[]))]
-internal partial class AppJsonSerializerContext : JsonSerializerContext
-{
-
-}
