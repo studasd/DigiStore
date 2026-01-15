@@ -20,18 +20,6 @@ using DigiStore.SharedKernel;
 namespace DigiStore.TgBot.Application.Handlers;
 
 
-public sealed class ActivateUser : IEndpoint
-{
-	public void MapEndpoint(IEndpointRouteBuilder app)
-	{
-		app.MapPost("/telegram/webhook", async Task (
-			[FromBody] Update update,
-			[FromServices] UpdateHandler updateHandler,
-			CancellationToken token) => 
-				await updateHandler.HandleUpdateAsync(update, token));
-	}
-}
-
 
 
 /// <summary>

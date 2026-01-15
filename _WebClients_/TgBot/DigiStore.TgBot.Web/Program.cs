@@ -3,7 +3,7 @@ using DigiStore.TgBot.Application.Handlers;
 using DigiStore.TgBot.Application.Services;
 using DigiStore.TgBot.Infrastructure.Data;
 using DigiStore.TgBot.Web;
-using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization.Metadata;
 using Telegram.Bot.Types;
@@ -13,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Гарантирует, что в runtime используется DefaultJsonTypeInfoResolver (reflection-based)
 // и не произойдёт NotSupportedException при GetTypeInfo для типов, не зарегистрированных в OpenAPI контексте.
-builder.Services.Configure<JsonOptions>(opts =>
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(opts =>
 {
 	opts.SerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
 });
@@ -37,5 +37,11 @@ var dbContext = serviceProvider.GetRequiredService<TgBotDbContext>();
 await dbContext.Database.MigrateAsync();
 
 app.MapEndpoints();
+
+app.MapPost("/telegram/webhook", async Task (
+	[FromBody] Update update,
+	[FromServices] UpdateHandler updateHandler,
+	CancellationToken token) =>
+		await updateHandler.HandleUpdateAsync(update, token));
 
 app.Run();
