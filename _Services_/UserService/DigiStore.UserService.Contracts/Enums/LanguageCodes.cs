@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DigiStore.UserService.Contracts.Enums;
+﻿namespace DigiStore.UserService.Contracts.Enums;
 
 public enum LanguageCodes
 {

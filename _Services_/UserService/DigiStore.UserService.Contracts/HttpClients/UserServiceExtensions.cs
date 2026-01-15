@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using DigiStore.SharedKernel.Extensions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -11,14 +12,18 @@ public static class UserServiceExtensions
 	{
 		services.Configure<UserServiceOptions>(configuration.GetSection(nameof(UserServiceOptions)));
 
-		services.AddHttpClient<IUserHttpClient, UserHttpClient>((sp, config) =>
-		{
-			UserServiceOptions fileOptions = sp.GetRequiredService<IOptions<UserServiceOptions>>().Value;
+		services.AddScoped<IUserHttpClient, UserHttpClient>();
 
-			config.BaseAddress = new Uri(fileOptions.Url);
 
-			config.Timeout = TimeSpan.FromSeconds(fileOptions.TimeoutSeconds);
-		});
+		services.AddHttpServiceFactory()
+			.AddHttpService<UserHttpClient>((sp, opts) =>
+			{
+				var fileOptions = sp.GetRequiredService<IOptions<UserServiceOptions>>().Value;
+
+				opts.Url = fileOptions.Url;
+				opts.TimeoutSeconds = fileOptions.TimeoutSeconds;
+			});
+
 
 		return services;
 	}

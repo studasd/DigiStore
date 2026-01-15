@@ -1,4 +1,5 @@
-﻿using DigiStore.UserService.Application.Features;
+﻿using DigiStore.Framework.Endpoints;
+using DigiStore.UserService.Application.Features;
 using DigiStore.UserService.Application.Features.Roles;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +15,9 @@ public static class DependencyInjectionApplicationExtensions
 	public static IServiceCollection AddCore(this IServiceCollection services, IConfiguration configuration)
 	{
 		services.AddValidatorsFromAssembly(typeof(DependencyInjectionApplicationExtensions).Assembly);
+
+		// Регистрируем все эндпоинты из текущей сборки
+		services.AddEndpoints(typeof(DependencyInjectionApplicationExtensions).Assembly);
 
 		services.AddScoped<ActivateUserHandler>();
 		services.AddScoped<AssignRoleHandler>();

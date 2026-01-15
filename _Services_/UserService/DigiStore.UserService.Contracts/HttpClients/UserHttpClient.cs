@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.SharedKernel;
+using DigiStore.SharedKernel.HttpServices;
 using DigiStore.UserService.Contracts.Enums;
 using DigiStore.UserService.Contracts.Requests;
 using DigiStore.UserService.Contracts.Responses;
@@ -10,106 +11,45 @@ namespace DigiStore.UserService.Contracts.HttpClients;
 
 internal sealed class UserHttpClient : IUserHttpClient
 {
-	private readonly HttpClient _httpClient;
 	private readonly ILogger<UserHttpClient> _logger;
+    private readonly HttpService _httpService;
 
-	public UserHttpClient(HttpClient httpClient, ILogger<UserHttpClient> logger)
+    public UserHttpClient(ILogger<UserHttpClient> logger, IHttpServiceFactory httpServiceFactory)
 	{
-		_httpClient = httpClient;
 		_logger = logger;
-	}
+        _httpService = httpServiceFactory.CreateHttpService<UserHttpClient>();
+    }
 
 
 	public async Task<Result<UserResponse, Error>> GetUserByTelegramId(long telegramId, CancellationToken cancellationToken)
 	{
-		try
-		{
-			HttpResponseMessage response = await _httpClient.GetAsync($"/getUser/byTelegram/{telegramId}", cancellationToken);
-			return await response.HandleResponseAsync<UserResponse>(cancellationToken);
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error get user by telegram id for {telegramId}", telegramId);
-
-			return Error.Failure("server.internal", "Failed to request get user by telegram id");
-		}
+		return await _httpService.GetAsync<UserResponse>($"/getUser/byTelegram/{telegramId}", cancellationToken);
 	}
 	
 	public async Task<Result<UserResponse, Error>> GetUserById(Guid userId, CancellationToken cancellationToken)
 	{
-		try
-		{
-			HttpResponseMessage response = await _httpClient.GetAsync($"/getUser/byId/{userId}", cancellationToken);
-			return await response.HandleResponseAsync<UserResponse>(cancellationToken);
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error get user by id for {userId}", userId);
-
-			return Error.Failure("server.internal", "Failed to request get user by id");
-		}
+		return await _httpService.GetAsync<UserResponse>($"/getUser/byId/{userId}", cancellationToken);
 	}
 	
 	
 	public async Task<UnitResult<Error>> UpdateLanguage(Guid userId, LanguageCodes langCode, CancellationToken cancellationToken)
 	{
-		try
-		{
-			HttpResponseMessage response = await _httpClient.PostAsync($"/language/{userId}/{langCode}", null, cancellationToken);
-			var result = await response.HandleResponseAsync(cancellationToken);
-
-			if (result.IsSuccess)
-			{
-				return Result.Success<Error>();
-			}
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error update language for {userId}", userId);
-
-		}
-		
-		return Error.Failure("server.internal", "Failed to request update language");
+		return await _httpService.PostAsync($"/language/{userId}/{langCode}", null, cancellationToken);
 	}
 
 
 	public async Task<UnitResult<Error>> UpdateActivity(Guid userId, CancellationToken cancellationToken)
 	{
-		try
-		{
-			HttpResponseMessage response = await _httpClient.PostAsync($"/activity/{userId}", null, cancellationToken);
-			var result = await response.HandleResponseAsync(cancellationToken);
-			
-			if (result.IsSuccess)
-			{
-				return Result.Success<Error>();
-			}
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error getting media assets for {userId}", userId);
-
-		}
-		
-		return Error.Failure("server.internal", "Failed to request media assets info");
+		return await _httpService.PostAsync($"/activity/{userId}", null, cancellationToken);
 	}
 
 
 	public async Task<Result<UserResponse, Error>> RegisterUser(CreateUserRequest request, CancellationToken cancellationToken)
 	{
-		try
-		{
-			var json = JsonSerializer.Serialize(request);
-			var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+		
+		var json = JsonSerializer.Serialize(request);
+		var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-			HttpResponseMessage response = await _httpClient.PostAsync($"/register", content, cancellationToken);
-			return await response.HandleResponseAsync<UserResponse>(cancellationToken);
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error register user for {telegramId}", request.TelegramId);
-
-			return Error.Failure("server.internal", "Failed to request register user");
-		}
+		return await _httpService.PostAsync<UserResponse>($"/register", content, cancellationToken);
 	}
 }
