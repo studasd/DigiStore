@@ -26,7 +26,7 @@ public sealed class UpdateLanguage : IEndpoint
 	}
 }
 
-public sealed class UpdateLanguageHandler
+public sealed class UpdateLanguageHandler : IUserServiceHandler
 {
 	private readonly ILogger<UpdateLanguageHandler> _logger;
 	private readonly IUserRepository _userRepository;

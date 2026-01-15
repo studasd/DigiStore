@@ -21,7 +21,7 @@ public sealed class DeactivateUser : IEndpoint
 	}
 }
 
-public sealed class DeactivateUserHandler
+public sealed class DeactivateUserHandler : IUserServiceHandler
 {
 	private readonly ILogger<DeactivateUserHandler> _logger;
 	private readonly IUserRepository _userRepository;

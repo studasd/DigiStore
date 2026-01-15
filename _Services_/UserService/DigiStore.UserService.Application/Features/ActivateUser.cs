@@ -20,7 +20,7 @@ public sealed class ActivateUser : IEndpoint
 	}
 }
 
-public sealed class ActivateUserHandler
+public sealed class ActivateUserHandler : IUserServiceHandler
 {
 	private readonly ILogger<ActivateUserHandler> _logger;
 	private readonly IUserRepository _userRepository;

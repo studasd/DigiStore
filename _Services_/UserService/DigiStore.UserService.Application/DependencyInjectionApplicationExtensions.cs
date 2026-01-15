@@ -1,12 +1,16 @@
 ﻿using DigiStore.Framework.Endpoints;
 using DigiStore.UserService.Application.Features;
 using DigiStore.UserService.Application.Features.Roles;
+using DigiStore.UserService.Application.Interfaces;
+using System.Linq;
+using System.Reflection;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using DigiStore.SharedKernel.Extensions;
 
 namespace DigiStore.UserService.Application;
 
@@ -19,17 +23,10 @@ public static class DependencyInjectionApplicationExtensions
 		// Регистрируем все эндпоинты из текущей сборки
 		services.AddEndpoints(typeof(DependencyInjectionApplicationExtensions).Assembly);
 
-		services.AddScoped<ActivateUserHandler>();
-		services.AddScoped<AssignRoleHandler>();
-		services.AddScoped<DeactivateUserHandler>();
-		services.AddScoped<GetRolesHandler>();
-		services.AddScoped<GetUserByEmailHandler>();
-		services.AddScoped<GetUserByIdHandler>();
-		services.AddScoped<GetUserByTelegramIdHandler>();
-		services.AddScoped<RegisterUserHandler>();
-		services.AddScoped<RemoveRoleHandler>();
-		services.AddScoped<UpdateActivityHandler>();
-		services.AddScoped<UpdateLanguageHandler>();
+		// Automatically register all handlers that implement IUserServiceHandler
+		services.AddScopedFromInterface<IUserServiceHandler>(typeof(DependencyInjectionApplicationExtensions).Assembly);
+
+
 
 		//services.AddStackExchangeRedisCache(setup =>
 		//{

@@ -27,7 +27,7 @@ public sealed class UpdateActivity : IEndpoint
 	}
 }
 
-public sealed class UpdateActivityHandler
+public sealed class UpdateActivityHandler : IUserServiceHandler
 {
 	private readonly UserManager<UserDS> _userManager;
 	private readonly ILogger<UpdateActivityHandler> _logger;

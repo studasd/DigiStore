@@ -25,7 +25,7 @@ public sealed class RemoveRole : IEndpoint
 	}
 }
 
-public sealed class RemoveRoleHandler
+public sealed class RemoveRoleHandler : IUserServiceHandler
 {
 	private readonly UserManager<UserDS> _userManager;
 	private readonly RoleManager<RoleDS> _roleManager;

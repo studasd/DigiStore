@@ -25,7 +25,7 @@ public sealed class AssignRole : IEndpoint
 	}
 }
 
-public sealed class AssignRoleHandler
+public sealed class AssignRoleHandler : IUserServiceHandler
 {
 	private readonly UserManager<UserDS> _userManager;
 	private readonly RoleManager<RoleDS> _roleManager;

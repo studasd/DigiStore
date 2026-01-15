@@ -27,7 +27,7 @@ public sealed class GetUserByTelegramId : IEndpoint
 	}
 }
 
-public sealed class GetUserByTelegramIdHandler
+public sealed class GetUserByTelegramIdHandler : IUserServiceHandler
 {
 	private readonly UserManager<UserDS> _userManager;
 	private readonly ILogger<GetUserByTelegramIdHandler> _logger;

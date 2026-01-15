@@ -37,7 +37,7 @@ public sealed class RegisterUser : IEndpoint
 	}
 }
 
-public sealed class RegisterUserHandler
+public sealed class RegisterUserHandler : IUserServiceHandler
 {
 	private readonly UserManager<UserDS> _userManager;
 	private readonly ILogger<RegisterUserHandler> _logger;

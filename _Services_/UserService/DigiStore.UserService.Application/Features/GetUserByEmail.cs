@@ -27,7 +27,7 @@ public sealed class GetUserByEmail : IEndpoint
 	}
 }
 
-public sealed class GetUserByEmailHandler
+public sealed class GetUserByEmailHandler : IUserServiceHandler
 {
 	private readonly UserManager<UserDS> _userManager;
 	private readonly ILogger<GetUserByEmailHandler> _logger;

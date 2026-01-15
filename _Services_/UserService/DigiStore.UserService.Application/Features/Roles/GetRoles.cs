@@ -28,7 +28,7 @@ public sealed class GetRoles : IEndpoint
 }
 
 
-public sealed class GetRolesHandler
+public sealed class GetRolesHandler : IUserServiceHandler
 {
 	private readonly UserManager<UserDS> _userManager;
 	private readonly ILogger<GetRolesHandler> _logger;

@@ -29,7 +29,7 @@ public sealed class GetUserById : IEndpoint
 	}
 }
 
-public sealed class GetUserByIdHandler
+public sealed class GetUserByIdHandler : IUserServiceHandler
 {
 	private readonly UserManager<UserDS> _userManager;
 	private readonly ILogger<GetUserByIdHandler> _logger;
