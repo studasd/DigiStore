@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.DTOs;
+using DigiStore.WalletService.Contracts.Responses;
 
 namespace DigiStore.TgBot.Application.Interfaces.Services;
 
@@ -18,7 +19,7 @@ public interface IWalletService
 	/// <summary>
 	/// Get transactions
 	/// </summary>
-	Task<Result<IEnumerable<TransactionDto>, Error>> GetTransactionsAsync(Guid userId, int take = 10, CancellationToken ct = default);
+	Task<Result<IEnumerable<TransactionResponse>, Error>> GetTransactionsAsync(Guid userId, int take = 10, CancellationToken ct = default);
 
 	/// <summary>
 	/// Initiate withdrawal

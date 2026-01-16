@@ -3,10 +3,10 @@ using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.DTOs;
 using DigiStore.TgBot.Application.Interfaces.Services;
-using DigiStore.TgBot.Application.Options;
+using DigiStore.UserService.Contracts.HttpClients;
+using DigiStore.WalletService.Contracts.Responses;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System.Text.Json;
 
 namespace DigiStore.TgBot.Application.Services;
@@ -14,20 +14,16 @@ namespace DigiStore.TgBot.Application.Services;
 
 public class WalletService : IWalletService
 {
-	private readonly HttpClient _httpClient;
-	private readonly ILogger<WalletService> _logger;
-	private readonly string _walletServiceUrl;
+    private readonly IWalletHttpClient _walletHttpClient;
+    private readonly ILogger<WalletService> _logger;
 
 	public WalletService(
-		HttpClient httpClient,
+		IWalletHttpClient walletHttpClient,
 		IConfiguration configuration,
-		IOptions<ServiceOptions> options,
 		ILogger<WalletService> logger)
 	{
-		_httpClient = httpClient;
-		_logger = logger;
-		_walletServiceUrl = options.Value.WalletServiceUrl // configuration["Services:WalletService:Url"]
-			?? throw new InvalidOperationException("WalletService URL not configured");
+        _walletHttpClient = walletHttpClient;
+        _logger = logger;
 	}
 
 
@@ -36,25 +32,32 @@ public class WalletService : IWalletService
 		try
 		{
 			// Заглушка
-			return new BalanceDto
-			{
-				Balance = -1.11m,
-				Currency = "RUB"
-			};
 
-			var url = $"{_walletServiceUrl}/api/wallet/{userId}";
-			var response = await _httpClient.GetAsync(url, ct);
+			var result = await _walletHttpClient.GetBalanceAsync(userId, ct);
+			if(result.IsFailure)
+				return result.Error;
 
-			if (!response.IsSuccessStatusCode)
-			{
-				_logger.LogWarning("Failed to get balance for user ID: {UserId}", userId);
-				return TgBotErrors.OperationFailed;
-			}
+			return new BalanceDto(result.Value.Value);
 
-			var content = await response.Content.ReadAsStringAsync(ct);
-			var wallet = JsonSerializer.Deserialize<BalanceDto>(content);
+			//return new BalanceDto
+			//{
+			//	Balance = -1.11m,
+			//	Currency = "RUB"
+			//};
 
-			return wallet;
+			//var url = $"{_walletServiceUrl}/api/wallet/{userId}";
+			//var response = await _httpClient.GetAsync(url, ct);
+
+			//if (!response.IsSuccessStatusCode)
+			//{
+			//	_logger.LogWarning("Failed to get balance for user ID: {UserId}", userId);
+			//	return TgBotErrors.OperationFailed;
+			//}
+
+			//var content = await response.Content.ReadAsStringAsync(ct);
+			//var wallet = JsonSerializer.Deserialize<BalanceDto>(content);
+
+			//return wallet;
 		}
 		catch (Exception ex)
 		{
@@ -64,32 +67,36 @@ public class WalletService : IWalletService
 	}
 
 
-	public async Task<Result<IEnumerable<TransactionDto>, Error>> GetTransactionsAsync(
+	public async Task<Result<IEnumerable<TransactionResponse>, Error>> GetTransactionsAsync(
 		Guid userId,
 		int take = 10,
 		CancellationToken ct = default)
 	{
-		try
-		{
-			var url = $"{_walletServiceUrl}/api/wallet/{userId}/transactions?skip=0&take={take}";
-			var response = await _httpClient.GetAsync(url, ct);
+		//try
+		//{
+			var result = await _walletHttpClient.GetTransactionsAsync(userId, 0, take, ct);
 
-			if (!response.IsSuccessStatusCode)
-			{
-				_logger.LogWarning("Failed to get transactions for user ID: {UserId}", userId);
-				return TgBotErrors.OperationFailed;
-			}
+			return result;
 
-			var content = await response.Content.ReadAsStringAsync(ct);
-			var transactions = JsonSerializer.Deserialize<List<TransactionDto>>(content);
+			//var url = $"{_walletServiceUrl}/api/wallet/{userId}/transactions?skip=0&take={take}";
+			//var response = await _httpClient.GetAsync(url, ct);
 
-			return transactions ?? new();
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error getting transactions for user ID: {UserId}", userId);
-			return Error.Failure("bot.wallet_service_error", ex.Message);
-		}
+			//if (!response.IsSuccessStatusCode)
+			//{
+			//	_logger.LogWarning("Failed to get transactions for user ID: {UserId}", userId);
+			//	return TgBotErrors.OperationFailed;
+			//}
+
+			//var content = await response.Content.ReadAsStringAsync(ct);
+			//var transactions = JsonSerializer.Deserialize<List<TransactionDto>>(content);
+
+			//return transactions ?? new();
+		//}
+		//catch (Exception ex)
+		//{
+		//	_logger.LogError(ex, "Error getting transactions for user ID: {UserId}", userId);
+		//	return Error.Failure("bot.wallet_service_error", ex.Message);
+		//}
 	}
 
 
@@ -98,28 +105,28 @@ public class WalletService : IWalletService
 		decimal amount,
 		CancellationToken ct = default)
 	{
-		try
-		{
-			var url = $"{_walletServiceUrl}/api/wallet/{userId}/withdraw";
-			var request = new { amount = amount, description = "Withdrawal via Telegram bot" };
+		//try
+		//{
+		//	var url = $"{_walletServiceUrl}/api/wallet/{userId}/withdraw";
+		//	var request = new { amount = amount, description = "Withdrawal via Telegram bot" };
 
-			var json = JsonSerializer.Serialize(request);
-			var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+		//	var json = JsonSerializer.Serialize(request);
+		//	var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-			var response = await _httpClient.PostAsync(url, content, ct);
+		//	var response = await _httpClient.PostAsync(url, content, ct);
 
-			if (!response.IsSuccessStatusCode)
-			{
-				_logger.LogWarning("Failed to initiate withdrawal for user ID: {UserId}", userId);
-				return TgBotErrors.OperationFailed;
-			}
+		//	if (!response.IsSuccessStatusCode)
+		//	{
+		//		_logger.LogWarning("Failed to initiate withdrawal for user ID: {UserId}", userId);
+		//		return TgBotErrors.OperationFailed;
+		//	}
 
 			return true;
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error initiating withdrawal for user ID: {UserId}", userId);
-			return Error.Failure("bot.wallet_service_error", ex.Message);
-		}
+		//}
+		//catch (Exception ex)
+		//{
+		//	_logger.LogError(ex, "Error initiating withdrawal for user ID: {UserId}", userId);
+		//	return Error.Failure("bot.wallet_service_error", ex.Message);
+		//}
 	}
 }

@@ -52,6 +52,7 @@ public static class DependencyInjectionExtensions
 		});
 		services.AddScoped<ITgUserService, Services.TgUserService>();
 		services.AddUserServiceHttp(configuration);
+		services.AddWalletServiceHttp(configuration);
 
 		//// User & Wallet Services (HTTP clients)
 		//services.AddHttpClient<ITelegramUserService, TelegramUserService>()
@@ -60,7 +61,7 @@ public static class DependencyInjectionExtensions
 		//		//client.Timeout = TimeSpan.FromSeconds(10);
 		//		client.Timeout = TimeSpan.FromMinutes(10);
 		//	});
-		services.AddHttpClient<IWalletService, WalletService>()
+		services.AddHttpClient<IWalletService, Services.WalletService>()
 			.ConfigureHttpClient(client =>
 			{
 				//client.Timeout = TimeSpan.FromSeconds(10);
