@@ -3,7 +3,7 @@ using DigiStore.SharedKernel;
 using DigiStore.WalletService.Contracts.Requests;
 using DigiStore.WalletService.Contracts.Responses;
 
-namespace DigiStore.UserService.Contracts.HttpClients;
+namespace DigiStore.WalletService.Contracts.HttpClients;
 
 public interface IWalletHttpClient
 {

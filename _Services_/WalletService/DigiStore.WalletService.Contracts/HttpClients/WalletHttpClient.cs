@@ -5,7 +5,7 @@ using DigiStore.WalletService.Contracts.Requests;
 using DigiStore.WalletService.Contracts.Responses;
 using Microsoft.Extensions.Logging;
 
-namespace DigiStore.UserService.Contracts.HttpClients;
+namespace DigiStore.WalletService.Contracts.HttpClients;
 
 internal sealed class WalletHttpClient : IWalletHttpClient
 {

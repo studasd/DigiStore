@@ -11,6 +11,7 @@ using System.Net;
 using DigiStore.Framework.Proxies;
 using DigiStore.Framework.Endpoints;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
+using DigiStore.WalletService.Contracts.HttpClients;
 
 
 namespace DigiStore.TgBot.Application;
@@ -26,7 +27,7 @@ public static class DependencyInjectionExtensions
 		//// Bind ServiceOptions to the DI system so it can be resolved via IOptions<ServiceOptions>
 		//services.Configure<ServiceOptions>(configuration);
 
-		services.AddHttpClient("ProxyClient")
+		services.AddHttpClient("TelegramBotProxyClient")
 			.ConfigurePrimaryHttpMessageHandler(sp =>
 			{
 				var telegramOptions = sp.GetRequiredService<IOptions<TelegramOptions>>().Value;
@@ -44,7 +45,7 @@ public static class DependencyInjectionExtensions
 			if (!String.IsNullOrWhiteSpace(telegramOptions.Proxy))
 			{
 				var clientFactory = x.GetRequiredService<IHttpClientFactory>();
-				var client = clientFactory.CreateClient("ProxyClient");
+				var client = clientFactory.CreateClient("TelegramBotProxyClient");
 				return new TelegramBotClient(token, client);
 			}
 
@@ -54,19 +55,10 @@ public static class DependencyInjectionExtensions
 		services.AddUserServiceHttp(configuration);
 		services.AddWalletServiceHttp(configuration);
 
-		//// User & Wallet Services (HTTP clients)
-		//services.AddHttpClient<ITelegramUserService, TelegramUserService>()
-		//	.ConfigureHttpClient(client =>
-		//	{
-		//		//client.Timeout = TimeSpan.FromSeconds(10);
-		//		client.Timeout = TimeSpan.FromMinutes(10);
-		//	});
-		services.AddHttpClient<IWalletService, Services.WalletService>()
-			.ConfigureHttpClient(client =>
-			{
-				//client.Timeout = TimeSpan.FromSeconds(10);
-				client.Timeout = TimeSpan.FromMinutes(10);
-			});
+
+        // WalletService depends on an IWalletHttpClient (not System.Net.Http.HttpClient),
+        // so register it as a scoped service instead of a typed HttpClient.
+        services.AddScoped<IWalletService, Services.WalletService>();
 
 		// Session & Localization
 		services.AddScoped<IProfileService, ProfileService>();

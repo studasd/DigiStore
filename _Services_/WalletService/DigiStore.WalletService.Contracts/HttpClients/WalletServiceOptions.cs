@@ -1,4 +1,4 @@
-﻿namespace DigiStore.UserService.Contracts.HttpClients;
+﻿namespace DigiStore.WalletService.Contracts.HttpClients;
 
 public record WalletServiceOptions
 {

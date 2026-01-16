@@ -3,7 +3,7 @@ using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.DTOs;
 using DigiStore.TgBot.Application.Interfaces.Services;
-using DigiStore.UserService.Contracts.HttpClients;
+using DigiStore.WalletService.Contracts.HttpClients;
 using DigiStore.WalletService.Contracts.Responses;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace DigiStore.UserService.Contracts.HttpClients;
+namespace DigiStore.WalletService.Contracts.HttpClients;
 
 
 public static class WalletServiceExtensions
