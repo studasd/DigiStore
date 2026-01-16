@@ -4,6 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DigiStore.WalletService.Infrastructure.Postgres.Data;
 
+// add-migration Init -c WalletDbContext -s DigiStore.WalletService.Web
+// update-database -Context WalletDbContext -s DigiStore.WalletService.Web
+
 public class WalletDbContext : DbContext
 {
 	public WalletDbContext(DbContextOptions<WalletDbContext> options) : base(options)

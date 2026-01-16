@@ -4,15 +4,14 @@ using System.Text;
 
 namespace DigiStore.WalletService.Contracts.Responses;
 
-public class WalletResponse
-{
-	public Guid Id { get; set; }
-	public Guid UserId { get; set; }
-	public decimal Balance { get; set; }
-	public decimal TotalDeposited { get; set; }
-	public decimal TotalWithdrawn { get; set; }
-	public string Currency { get; set; } = "RUB";
-	public bool IsFrozen { get; set; }
-	public DateTime CreatedAt { get; set; }
-	public DateTime UpdatedAt { get; set; }
-}
+public record WalletResponse(
+	Guid Id,
+	Guid UserId,
+	decimal Balance,
+	decimal TotalDeposited,
+	decimal TotalWithdrawn,
+	string Currency,
+	bool IsFrozen,
+	DateTime CreatedAt,
+	DateTime UpdatedAt
+);

@@ -15,7 +15,7 @@ public sealed class GetBalance : IEndpoint
 	//[Authorize]
 	public void MapEndpoint(IEndpointRouteBuilder app)
 	{
-		app.MapGet("getBalance/{userId}", async Task<EndpointResult<decimal>> (
+		app.MapGet("getBalance/{userId}", async Task<EndpointResult<BalanceResponse>> (
 			[FromRoute] Guid userId,
 			[FromServices] GetBalanceHandler handler,
 			CancellationToken token) => await handler.Handle(userId, token));
@@ -37,7 +37,7 @@ public sealed class GetBalanceHandler : IUserServiceHandler
 	}
 
 
-	public async Task<Result<decimal, Error>> Handle(Guid userId, CancellationToken ct)
+	public async Task<Result<BalanceResponse, Error>> Handle(Guid userId, CancellationToken ct)
 	{
 		try
 		{
@@ -53,7 +53,7 @@ public sealed class GetBalanceHandler : IUserServiceHandler
 				return WalletErrors.WalletNotFound;
 			}
 			//await _cache.SetAsync(cacheKey, wallet.Balance, TimeSpan.FromMinutes(1), ct);
-			return wallet.Balance;
+			return new BalanceResponse(wallet.Balance);
 		}
 		catch (Exception ex)
 		{

@@ -1,7 +1,3 @@
 ﻿namespace DigiStore.WalletService.Contracts.Requests;
 
-public class WithdrawRequest
-{
-	public decimal Amount { get; set; }
-	public string? Description { get; set; }
-}
+public record WithdrawRequest(decimal Amount, string? Description);

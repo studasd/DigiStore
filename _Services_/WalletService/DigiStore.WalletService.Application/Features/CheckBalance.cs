@@ -2,6 +2,7 @@
 using DigiStore.Framework.Endpoints;
 using DigiStore.SharedKernel;
 using DigiStore.WalletService.Application.Interfaces;
+using DigiStore.WalletService.Contracts.Responses;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -17,7 +18,7 @@ public sealed class CheckBalance : IEndpoint
 	//[Authorize]
 	public void MapEndpoint(IEndpointRouteBuilder app)
 	{
-		app.MapPost("checkBalance/{userId}/{amount}", async Task<EndpointResult<bool>> (
+		app.MapPost("checkBalance/{userId}/{amount}", async Task<EndpointResult<CheckBalanceResponse>> (
 			[FromRoute] Guid userId,
 			[FromRoute] decimal amount,
 			[FromServices] CheckBalanceHandler handler,
@@ -40,7 +41,7 @@ public sealed class CheckBalanceHandler : IUserServiceHandler
 	}
 
 
-	public async Task<Result<bool, Error>> Handle(Guid userId, decimal amount, CancellationToken ct)
+	public async Task<Result<CheckBalanceResponse, Error>> Handle(Guid userId, decimal amount, CancellationToken ct)
 	{
 		if (amount <= 0)
 		{
@@ -53,7 +54,7 @@ public sealed class CheckBalanceHandler : IUserServiceHandler
 			return WalletErrors.WalletNotFound;
 		}
 
-		return wallet.Balance >= amount;
+		return new CheckBalanceResponse(wallet.Balance >= amount);
 	}
 
 }

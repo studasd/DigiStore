@@ -4,9 +4,4 @@ using System.Text;
 
 namespace DigiStore.WalletService.Contracts.Requests;
 
-public class PurchaseRequest
-{
-	public decimal Amount { get; set; }
-	public string OrderId { get; set; }
-	public string Description { get; set; }
-}
+public record PurchaseRequest(decimal Amount, string OrderId, string Description);
