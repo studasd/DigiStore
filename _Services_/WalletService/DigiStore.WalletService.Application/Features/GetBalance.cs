@@ -23,7 +23,7 @@ public sealed class GetBalance : IEndpoint
 }
 
 
-public sealed class GetBalanceHandler
+public sealed class GetBalanceHandler : IUserServiceHandler
 {
 	private readonly ILogger<GetBalanceHandler> _logger;
 	private readonly IWalletRepository _walletRepository;

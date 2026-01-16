@@ -38,7 +38,7 @@ public sealed class Deposit : IEndpoint
 }
 
 
-public sealed class DepositHandler
+public sealed class DepositHandler : IUserServiceHandler
 {
 	private readonly ILogger<DepositHandler> _logger;
 	private readonly IWalletRepository _walletRepository;

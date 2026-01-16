@@ -31,7 +31,7 @@ public sealed class Refund : IEndpoint
 }
 
 
-public sealed class RefundHandler
+public sealed class RefundHandler : IUserServiceHandler
 {
 	private readonly ILogger<RefundHandler> _logger;
 	private readonly IWalletRepository _walletRepository;

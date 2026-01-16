@@ -25,7 +25,7 @@ public sealed class FreezeWallet : IEndpoint
 }
 
 
-public sealed class FreezeWalletHandler
+public sealed class FreezeWalletHandler : IUserServiceHandler
 {
 	private readonly ILogger<FreezeWalletHandler> _logger;
 	private readonly IWalletRepository _walletRepository;

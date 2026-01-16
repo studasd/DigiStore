@@ -22,7 +22,7 @@ public sealed class UnfreezeWallet : IEndpoint
 }
 
 
-public sealed class UnfreezeWalletHandler
+public sealed class UnfreezeWalletHandler : IUserServiceHandler
 {
 	private readonly ILogger<UnfreezeWalletHandler> _logger;
 	private readonly IWalletRepository _walletRepository;

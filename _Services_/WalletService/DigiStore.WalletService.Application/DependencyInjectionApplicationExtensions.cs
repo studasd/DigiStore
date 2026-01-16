@@ -1,4 +1,6 @@
-﻿using DigiStore.WalletService.Application.Features;
+﻿using DigiStore.SharedKernel.Extensions;
+using DigiStore.WalletService.Application.Features;
+using DigiStore.WalletService.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -11,16 +13,8 @@ public static class DependencyInjectionApplicationExtensions
 {
 	public static IServiceCollection AddCore(this IServiceCollection services, IConfiguration configuration)
 	{
-		services.AddScoped<CheckBalanceHandler>();
-		services.AddScoped<DepositHandler>();
-		services.AddScoped<FreezeWalletHandler>();
-		services.AddScoped<GetBalanceHandler>();
-		services.AddScoped<GetTransactionsHandler>();
-		services.AddScoped<GetWalletHandler>();
-		services.AddScoped<PurchaseHandler>();
-		services.AddScoped<RefundHandler>();
-		services.AddScoped<UnfreezeWalletHandler>();
-		services.AddScoped<WithdrawHandler>();
+		// Регистрируем хэндлеры
+		services.AddScopedFromInterface<IUserServiceHandler>(typeof(DependencyInjectionApplicationExtensions).Assembly);
 
 		return services;
 	}

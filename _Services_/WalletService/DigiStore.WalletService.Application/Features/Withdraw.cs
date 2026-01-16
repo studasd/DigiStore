@@ -36,7 +36,7 @@ public sealed class Withdraw : IEndpoint
 }
 
 
-public sealed class WithdrawHandler
+public sealed class WithdrawHandler : IUserServiceHandler
 {
 	private readonly ILogger<WithdrawHandler> _logger;
 	private readonly IWalletRepository _walletRepository;

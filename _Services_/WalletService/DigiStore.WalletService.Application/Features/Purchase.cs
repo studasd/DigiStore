@@ -36,7 +36,7 @@ public sealed class Purchase : IEndpoint
 }
 
 
-public sealed class PurchaseHandler
+public sealed class PurchaseHandler : IUserServiceHandler
 {
 	private readonly ILogger<PurchaseHandler> _logger;
 	private readonly IWalletRepository _walletRepository;
