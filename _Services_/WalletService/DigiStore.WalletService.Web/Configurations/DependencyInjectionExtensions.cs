@@ -3,6 +3,7 @@ using DigiStore.Framework.Logging;
 using DigiStore.Framework.Swagger;
 using DigiStore.WalletService.Application;
 using DigiStore.WalletService.Infrastructure.Postgres;
+using DigiStore.WalletService.Infrastructure.Yookassa;
 using System.Reflection;
 
 namespace DigiStore.WalletService.Web.Configurations;
@@ -16,6 +17,7 @@ public static class DependencyInjectionExtensions
 		services
 			.AddCore(configuration)
 			.AddInfrastructure(configuration)
+			.AddInfrastructureYookassa(configuration)
 			//.AddSerilogLogging(configuration, "WalletService")
 			.AddSerilogLogging("WalletService", Assembly.GetExecutingAssembly(), seqUrl)
 			.AddOpenApiSpec("WalletService", "v1")
