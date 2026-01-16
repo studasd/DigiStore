@@ -5,10 +5,16 @@
 /// </summary>
 public class Wallet
 {
-	/// <summary>
-	/// Wallet ID (usually same as User ID)
-	/// </summary>
-	public Guid Id { get; set; }
+
+	private Wallet(Guid userId)
+    {
+        UserId = userId;
+    }
+
+    /// <summary>
+    /// Wallet ID (usually same as User ID)
+    /// </summary>
+    public Guid Id { get; set; }
 	/// <summary>
 	/// User ID from UserService
 	/// </summary>
@@ -46,6 +52,16 @@ public class Wallet
 	/// Navigation to transactions
 	/// </summary>
 	public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
+
+
+
+
+	public static Wallet Create(Guid userId)
+	{
+		return new Wallet(userId);
+	}
+
+
 	/// <summary>
 	/// Check if wallet has sufficient balance
 	/// </summary>

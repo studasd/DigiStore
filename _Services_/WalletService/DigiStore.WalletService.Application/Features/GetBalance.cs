@@ -47,7 +47,7 @@ public sealed class GetBalanceHandler : IUserServiceHandler
 			//{
 			//	return Result<decimal>.Success(cached.Value);
 			//}
-			var wallet = await _walletRepository.GetByUserIdAsync(userId, ct);
+			var wallet = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
 			if (wallet == null)
 			{
 				return WalletErrors.WalletNotFound;

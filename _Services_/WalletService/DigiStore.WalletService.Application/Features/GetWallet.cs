@@ -53,7 +53,7 @@ public sealed class GetWalletHandler : IUserServiceHandler
 			//{
 			//	return Result<WalletResponse>.Success(cached);
 			//}
-			var wallet = await _walletRepository.GetByUserIdAsync(userId, ct);
+			var wallet = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
 			if (wallet == null)
 			{
 				_logger.LogWarning("Wallet not found for user: {UserId}", userId);

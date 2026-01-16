@@ -58,7 +58,7 @@ public sealed class WithdrawHandler : IUserServiceHandler
 			{
 				return WalletErrors.InvalidAmount;
 			}
-			var wallet = await _walletRepository.GetByUserIdAsync(command.UserId, ct);
+			var wallet = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId, ct);
 			if (wallet == null)
 			{
 				return WalletErrors.WalletNotFound;

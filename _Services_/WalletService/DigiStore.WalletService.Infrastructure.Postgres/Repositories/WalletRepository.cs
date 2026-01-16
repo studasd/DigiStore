@@ -18,11 +18,34 @@ public class WalletRepository : IWalletRepository
 	}
 
 
-	public async Task<Wallet?> GetByUserIdAsync(Guid userId, CancellationToken ct = default)
+	public async Task<Wallet?> GetOrCreateByUserIdAsync(Guid userId, CancellationToken ct = default)
 	{
-		return await _context.Wallets
-			.Include(w => w.Transactions)
-			.FirstOrDefaultAsync(w => w.UserId == userId, ct);
+		var wallet = await _context.Wallets
+				.Include(w => w.Transactions)
+				.FirstOrDefaultAsync(w => w.UserId == userId, ct);
+
+		if (wallet != null)
+			return wallet;
+
+		// Wallet not found - create one (Id usually equals UserId)
+		var newWallet = Wallet.Create(userId);
+
+		_context.Wallets.Add(newWallet);
+		try
+		{
+			await _context.SaveChangesAsync(ct);
+			_logger.LogInformation("Wallet created for user: {UserId} WalletId: {WalletId}", userId, newWallet.Id);
+		}
+		catch (DbUpdateException ex)
+		{
+			// Possible concurrent creation by another process - try to reload
+			_logger.LogWarning(ex, "Failed to create wallet for user {UserId}, reloading", userId);
+			return await _context.Wallets
+					.Include(w => w.Transactions)
+					.FirstOrDefaultAsync(w => w.UserId == userId, ct);
+		}
+
+		return newWallet;
 	}
 
 	public async Task<Wallet?> GetByIdAsync(Guid walletId, CancellationToken ct = default)

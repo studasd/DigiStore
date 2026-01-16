@@ -43,7 +43,7 @@ public sealed class FreezeWalletHandler : IUserServiceHandler
 	{
 		try
 		{
-			var wallet = await _walletRepository.GetByUserIdAsync(userId, ct);
+			var wallet = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
 			if (wallet == null)
 			{
 				return WalletErrors.WalletNotFound;

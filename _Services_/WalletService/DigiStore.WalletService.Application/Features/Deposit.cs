@@ -60,19 +60,7 @@ public sealed class DepositHandler : IUserServiceHandler
 			{
 				return WalletErrors.InvalidAmount;
 			}
-			var wallet = await _walletRepository.GetByUserIdAsync(command.UserId, ct);
-			if (wallet == null)
-			{
-				// Create new wallet for new user
-				wallet = new Wallet
-				{
-					Id = Guid.NewGuid(),
-					UserId = command.UserId,
-					Balance = 0,
-					Currency = "RUB"
-				};
-				await _walletRepository.AddAsync(wallet, ct);
-			}
+			var wallet = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId, ct);
 
 			if (wallet.IsFrozen)
 			{
