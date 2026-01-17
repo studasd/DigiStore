@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.WalletService.Application.Interfaces;
 using DigiStore.WalletService.Domain;
@@ -19,23 +20,20 @@ public class PaymentRepository : IPaymentRepository
         _logger = logger;
     }
 
-    public async Task<Result<PaymentDS, Error>> AddAsync(PaymentDS payment, CancellationToken ct = default)
+
+    public async Task<Result<PaymentDS, Error>> AddAsync(PaymentDS payment, CancellationToken ct)
     {
-        try
-        {
-            _context.Payments.Add(payment);
-            await _context.SaveChangesAsync(ct);
-            _logger.LogInformation("Payment created: {PaymentId}", payment.Id);
-            return payment;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to add payment for user {UserId}", payment.UserId);
-            return Error.Failure("payment.add_failed", ex.Message);
-        }
+        _context.Payments.Add(payment);
+
+		var saveResult = await SaveChangesAsync(ct);
+		if (saveResult.IsFailure)
+			return saveResult.Error;
+
+		_logger.LogInformation("Payment created: {PaymentId}", payment.Id);
+        return payment;
     }
 
-    public async Task<Result<PaymentDS, Error>> GetByIdAsync(Guid paymentId, CancellationToken ct = default)
+    public async Task<Result<PaymentDS, Error>> GetByIdAsync(Guid paymentId, CancellationToken ct)
     {
         var payment = await _context.Payments
             .FirstOrDefaultAsync(p => p.Id == paymentId, ct);
@@ -46,7 +44,7 @@ public class PaymentRepository : IPaymentRepository
         return payment;
     }
 
-    public async Task<Result<PaymentDS, Error>> GetByAggregatorIdAsync(string aggregatorPaymentId, CancellationToken ct = default)
+    public async Task<Result<PaymentDS, Error>> GetByAggregatorIdAsync(string aggregatorPaymentId, CancellationToken ct)
     {
         var payment = await _context.Payments
             .FirstOrDefaultAsync(p => p.AggregatorPaymentId == aggregatorPaymentId, ct);
@@ -77,19 +75,72 @@ public class PaymentRepository : IPaymentRepository
         }
     }
 
-    public async Task<Result<PaymentDS, Error>> UpdateAsync(PaymentDS payment, CancellationToken ct = default)
+    public async Task<Result<PaymentDS, Error>> UpdateAsync(PaymentDS payment, CancellationToken ct)
     {
-        try
-        {
-            _context.Payments.Update(payment);
-            await _context.SaveChangesAsync(ct);
-            _logger.LogInformation("Payment updated: {PaymentId}", payment.Id);
-            return payment;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to update payment {PaymentId}", payment.Id);
-            return Error.Failure("payment.update_failed", ex.Message);
-        }
+        _context.Payments.Update(payment);
+
+		var saveResult = await SaveChangesAsync(ct);
+		if (saveResult.IsFailure)
+			return saveResult.Error;
+
+		_logger.LogInformation("Payment updated: {PaymentId}", payment.Id);
+        return payment;
     }
+
+
+	/// <summary>
+	/// Обновить статус платежа
+	/// </summary>
+	public async Task<UnitResult<Error>> UpdatePaymentStatusAsync(Guid paymentId, PaymentStatus status, CancellationToken ct)
+	{
+		var paymentResult = await GetByIdAsync(paymentId, ct);
+
+        if(paymentResult.IsFailure)
+            return paymentResult.Error;
+
+		var payment = paymentResult.Value;
+		payment.Status = status;
+		payment.UpdatedAt = DateTime.UtcNow;
+		
+        return await UpdateAsync(payment, ct);
+	}
+
+
+	/// <summary>
+	/// Отменить платеж
+	/// </summary>
+	public async Task<UnitResult<Error>> CancelPaymentAsync(Guid paymentId, string? reason = null, CancellationToken ct = default)
+	{
+		var paymentResult = await GetByIdAsync(paymentId, ct);
+		if (paymentResult.IsFailure)
+			return paymentResult.Error;
+
+		var payment = paymentResult.Value;
+
+		payment.MarkAsCanceled(reason);
+
+		var updateResult = await UpdateAsync(payment, ct);
+        if (updateResult.IsFailure)
+            return updateResult.Error;
+
+        _logger.LogInformation($"YooKassa: Платеж отменен - PaymentId: {paymentId}");
+        return Result.Success<Error>();
+	}
+
+
+	public async Task<UnitResult<Error>> SaveChangesAsync(CancellationToken ct)
+	{
+		try
+		{
+			await _context.SaveChangesAsync(ct);
+		}
+		catch (DbUpdateException ex)
+		{
+			_logger.LogWarning(ex, "Failed save changes");
+
+			return Error.Failure("failed.db.savechange", $"Failed save changes");
+		}
+
+		return Result.Success<Error>();
+	}
 }
