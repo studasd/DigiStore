@@ -19,23 +19,20 @@ public class WithdrawalRepository : IWithdrawalRepository
         _logger = logger;
     }
 
-    public async Task<Result<WithdrawalDS, Error>> AddAsync(WithdrawalDS withdrawal, CancellationToken ct = default)
+
+    public async Task<Result<WithdrawalDS, Error>> AddAsync(WithdrawalDS withdrawal, CancellationToken ct)
     {
-        try
-        {
-            _context.Withdrawals.Add(withdrawal);
-            await _context.SaveChangesAsync(ct);
-            _logger.LogInformation("Withdrawal created: {WithdrawalId}", withdrawal.Id);
-            return withdrawal;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to add withdrawal for user {UserId}", withdrawal.UserId);
-            return Error.Failure("withdrawal.add_failed", ex.Message);
-        }
+        _context.Withdrawals.Add(withdrawal);
+
+		var saveResult = await SaveChangesAsync(ct);
+		if (saveResult.IsFailure)
+			return saveResult.Error;
+
+		_logger.LogInformation("Withdrawal created: {WithdrawalId}", withdrawal.Id);
+        return withdrawal;
     }
 
-    public async Task<Result<WithdrawalDS, Error>> GetByIdAsync(Guid withdrawalId, CancellationToken ct = default)
+    public async Task<Result<WithdrawalDS, Error>> GetByIdAsync(Guid withdrawalId, CancellationToken ct)
     {
         var w = await _context.Withdrawals
             .FirstOrDefaultAsync(p => p.Id == withdrawalId, ct);
@@ -43,10 +40,10 @@ public class WithdrawalRepository : IWithdrawalRepository
         if (w == null)
             return Error.NotFound("withdrawal.not_found", "Withdrawal not found");
 
-        return w;
+		return w;
     }
 
-    public async Task<Result<WithdrawalDS, Error>> GetByAggregatorIdAsync(string aggregatorWithdrawalId, CancellationToken ct = default)
+    public async Task<Result<WithdrawalDS, Error>> GetByAggregatorIdAsync(string aggregatorWithdrawalId, CancellationToken ct)
     {
         var w = await _context.Withdrawals
             .FirstOrDefaultAsync(p => p.AggregatorWithdrawalId == aggregatorWithdrawalId, ct);
@@ -77,19 +74,32 @@ public class WithdrawalRepository : IWithdrawalRepository
         }
     }
 
-    public async Task<Result<WithdrawalDS, Error>> UpdateAsync(WithdrawalDS withdrawal, CancellationToken ct = default)
+    public async Task<Result<WithdrawalDS, Error>> UpdateAsync(WithdrawalDS withdrawal, CancellationToken ct)
     {
-        try
-        {
-            _context.Withdrawals.Update(withdrawal);
-            await _context.SaveChangesAsync(ct);
-            _logger.LogInformation("Withdrawal updated: {WithdrawalId}", withdrawal.Id);
-            return withdrawal;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to update withdrawal {WithdrawalId}", withdrawal.Id);
-            return Error.Failure("withdrawal.update_failed", ex.Message);
-        }
+        _context.Withdrawals.Update(withdrawal);
+
+		var saveResult = await SaveChangesAsync(ct);
+		if (saveResult.IsFailure)
+			return saveResult.Error;
+
+		_logger.LogInformation("Withdrawal updated: {WithdrawalId}", withdrawal.Id);
+        return withdrawal;
     }
+
+
+	public async Task<UnitResult<Error>> SaveChangesAsync(CancellationToken ct)
+	{
+		try
+		{
+			await _context.SaveChangesAsync(ct);
+		}
+		catch (DbUpdateException ex)
+		{
+			_logger.LogWarning(ex, "Failed save changes");
+
+			return Error.Failure("failed.db.savechange", $"Failed save changes");
+		}
+
+		return Result.Success<Error>();
+	}
 }
