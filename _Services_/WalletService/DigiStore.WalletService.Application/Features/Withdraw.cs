@@ -82,9 +82,14 @@ public sealed class WithdrawHandler : IWalletServiceHandler
 			ReferenceId = command.ReferenceId
 		};
 
-		await _walletRepository.UpdateAsync(wallet, token);
-		await _walletRepository.AddTransactionAsync(transaction, token);
-			
+		var updateResult = await _walletRepository.UpdateAsync(wallet, token);
+		if (updateResult.IsFailure)
+			return updateResult.Error;
+
+		var addResult = await _walletRepository.AddTransactionAsync(transaction, token);
+		if (addResult.IsFailure)
+			return addResult.Error;
+
 		//await InvalidateWalletCacheAsync(command.UserId, ct);
 		_logger.LogInformation("Withdrawal successful for user {UserId}: {Amount}", command.UserId, command.Amount);
 			

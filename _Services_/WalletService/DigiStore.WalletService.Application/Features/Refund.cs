@@ -47,46 +47,42 @@ public sealed class RefundHandler : IWalletServiceHandler
 
 	public async Task<Result<TransactionResponse, Error>> Handle(Guid userId, string orderId, decimal amount, CancellationToken token)
 	{
-		try
+		if (amount <= 0)
+			return WalletErrors.InvalidAmount;
+
+		var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(userId, token);
+		if (walletResult.IsFailure)
+			return walletResult.Error;
+
+		var wallet = walletResult.Value;
+
+		wallet.Deposit(amount);
+		var transaction = new TransactionDS
 		{
-			if (amount <= 0)
-				return WalletErrors.InvalidAmount;
+			Id = Guid.NewGuid(),
+			WalletId = wallet.Id,
+			UserId = userId,
+			Amount = amount,
+			Type = TransactionTypes.Refund,
+			Status = TransactionStatuses.Completed,
+			Description = $"Refund for order {orderId}",
+			BalanceAfter = wallet.Balance,
+			ReferenceId = orderId,
+			ReferenceType = "Order"
+		};
+		var updateResult = await _walletRepository.UpdateAsync(wallet, token);
+		if (updateResult.IsFailure)
+			return updateResult.Error;
 
-			var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(userId, token);
-			if (walletResult.IsFailure)
-				return walletResult.Error;
+		var addResult = await _walletRepository.AddTransactionAsync(transaction, token);
+		if (addResult.IsFailure)
+			return addResult.Error;
 
-			var wallet = walletResult.Value;
+		//await InvalidateWalletCacheAsync(userId, ct);
 
-			wallet.Deposit(amount);
-			var transaction = new TransactionDS
-			{
-				Id = Guid.NewGuid(),
-				WalletId = wallet.Id,
-				UserId = userId,
-				Amount = amount,
-				Type = TransactionTypes.Refund,
-				Status = TransactionStatuses.Completed,
-				Description = $"Refund for order {orderId}",
-				BalanceAfter = wallet.Balance,
-				ReferenceId = orderId,
-				ReferenceType = "Order"
-			};
-			await _walletRepository.UpdateAsync(wallet, token);
-			await _walletRepository.AddTransactionAsync(transaction, token);
-			
-			//await InvalidateWalletCacheAsync(userId, ct);
-			
-			_logger.LogInformation(
-			"Refund successful for user {UserId}: Order {OrderId}, Amount: {Amount}", userId, orderId, amount);
-			return transaction.MapToResponse();
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error processing refund for user: {UserId}", userId);
-			return
-			Error.Internal("wallet.refund_error", "Error processing refund for user");
-		}
+		_logger.LogInformation(
+		"Refund successful for user {UserId}: Order {OrderId}, Amount: {Amount}", userId, orderId, amount);
+		return transaction.MapToResponse();
 	}
 
 }

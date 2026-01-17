@@ -64,10 +64,11 @@ public class PaymentRecurringService
 			var recurring = PaymentRecurringDS.Create(walletId, userId, amount, intervalDays, description);
 
 			// Добавить в БД
-			await _paymentRecurringRepository.AddAsync(recurring, token);
+			var addResult = await _paymentRecurringRepository.AddAsync(recurring, token);
+			if (addResult.IsFailure)
+				return addResult.Error;
 
-			_logger.LogInformation(
-				$"YooKassa: Рекуррентный платеж создан - RecurringPaymentId: {recurring.Id}");
+			_logger.LogInformation($"YooKassa: Рекуррентный платеж создан - RecurringPaymentId: {recurring.Id}");
 
 			return recurring;
 		}
@@ -82,50 +83,56 @@ public class PaymentRecurringService
 	/// <summary>
 	/// Активировать подписку
 	/// </summary>
-	public async Task ActivateRecurringPaymentAsync(Guid recurringPaymentId, CancellationToken token)
+	public async Task<UnitResult<Error>> ActivateRecurringPaymentAsync(Guid recurringPaymentId, CancellationToken token)
 	{
 		var recurringResult = await _paymentRecurringRepository.GetByIdAsync(recurringPaymentId, token);
 		if (recurringResult.IsSuccess)
 		{
 			recurringResult.Value.Activate();
-			await _paymentRecurringRepository.UpdateAsync(recurringResult.Value, token);
+			return await _paymentRecurringRepository.UpdateAsync(recurringResult.Value, token);
 		}
+
+		return Result.Success<Error>();
 	}
 
 	/// <summary>
 	/// Приостановить подписку
 	/// </summary>
-	public async Task SuspendRecurringPaymentAsync(Guid recurringPaymentId, CancellationToken token)
+	public async Task<UnitResult<Error>> SuspendRecurringPaymentAsync(Guid recurringPaymentId, CancellationToken token)
 	{
 		var recurringResult = await _paymentRecurringRepository.GetByIdAsync(recurringPaymentId, token);
 		if (recurringResult.IsSuccess)
 		{
 			recurringResult.Value.Suspend();
-			await _paymentRecurringRepository.UpdateAsync(recurringResult.Value, token);
+			return await _paymentRecurringRepository.UpdateAsync(recurringResult.Value, token);
 		}
+
+		return Result.Success<Error>();
 	}
 
 	/// <summary>
 	/// Отменить подписку
 	/// </summary>
-	public async Task CancelRecurringPaymentAsync(Guid recurringPaymentId, CancellationToken token)
+	public async Task<UnitResult<Error>> CancelRecurringPaymentAsync(Guid recurringPaymentId, CancellationToken token)
 	{
 		var recurringResult = await _paymentRecurringRepository.GetByIdAsync(recurringPaymentId, token);
 		if (recurringResult.IsSuccess)
 		{
 			recurringResult.Value.Cancel();
-			await _paymentRecurringRepository.UpdateAsync(recurringResult.Value, token);
+			return await _paymentRecurringRepository.UpdateAsync(recurringResult.Value, token);
 		}
+
+		return Result.Success<Error>();
 	}
 
 	/// <summary>
 	/// Обработать следующий платеж подписки
 	/// </summary>
-	public async Task ProcessNextRecurringPaymentAsync(Guid recurringPaymentId, CancellationToken token)
+	public async Task<UnitResult<Error>> ProcessNextRecurringPaymentAsync(Guid recurringPaymentId, CancellationToken token)
 	{
 		var recurringResult = await _paymentRecurringRepository.GetByIdAsync(recurringPaymentId, token);
 		if (recurringResult.IsFailure || recurringResult.Value.IsTimeForNextPayment == false)
-			return;
+			return recurringResult.Error;
 
 		_logger.LogInformation(
 			$"YooKassa: Обработка рекуррентного платежа - RecurringPaymentId: {recurringPaymentId}");
@@ -142,10 +149,12 @@ public class PaymentRecurringService
 		if (recurringResult.IsFailure)
 		{
 			recurring.RecordFailedPayment();
-			await _paymentRecurringRepository.UpdateAsync(recurringResult.Value, token);
+			var updateResult = await _paymentRecurringRepository.UpdateAsync(recurringResult.Value, token);
+			if (updateResult.IsFailure)
+				return updateResult.Error;
 
 			_logger.LogError($"YooKassa: Ошибка при обработке рекуррентного платежа - {recurringResult.Error.GetMessage()}");
-			return;
+			return recurringResult.Error;
 		}
 
 		var payment = paymentResult.Value;
@@ -153,12 +162,16 @@ public class PaymentRecurringService
 		payment.RecurringPaymentId = recurringPaymentId;
 		recurring.RecordSuccessfulPayment();
 
-		await _paymentRecurringRepository.UpdateAsync(recurring, token);
+		var updateResult2 = await _paymentRecurringRepository.UpdateAsync(recurring, token);
+		if (updateResult2.IsFailure)
+			return updateResult2.Error;
 
 		// Завершить платеж сразу для подписок
 		await _paymentService.CompletePaymentAsync(payment.Id, token);
 
 		_logger.LogInformation($"YooKassa: Рекуррентный платеж обработан - PaymentId: {payment.Id}");
+
+		return Result.Success<Error>();
 	}
 
 }

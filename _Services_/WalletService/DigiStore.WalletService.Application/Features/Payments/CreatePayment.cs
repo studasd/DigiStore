@@ -98,9 +98,7 @@ public sealed class CreatePaymentHandler : IWalletServiceHandler
 	{
 		var validationResult = await _validator.ValidateAsync(command, token);
 		if (!validationResult.IsValid)
-		{
 			return validationResult.ToError();
-		}
 
 		// Получить кошелек пользователя
 		var wallet = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId, token);

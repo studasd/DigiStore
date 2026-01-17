@@ -19,20 +19,17 @@ public class PaymentRecurringRepository : IPaymentRecurringRepository
         _logger = logger;
     }
 
+
     public async Task<Result<PaymentRecurringDS, Error>> AddAsync(PaymentRecurringDS recurring, CancellationToken token)
     {
-        try
-        {
-            _context.PaymentRecurrings.Add(recurring);
-            await _context.SaveChangesAsync(token);
-            _logger.LogInformation("Recurring payment created: {RecurringId}", recurring.Id);
-            return recurring;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to add recurring payment for user {UserId}", recurring.UserId);
-            return Error.Failure("recurring.add_failed", ex.Message);
-        }
+        _context.PaymentRecurrings.Add(recurring);
+
+		var saveResult = await SaveChangesAsync(token);
+		if (saveResult.IsFailure)
+			return saveResult.Error;
+
+		_logger.LogInformation("Recurring payment created: {RecurringId}", recurring.Id);
+        return recurring;
     }
 
     public async Task<Result<PaymentRecurringDS, Error>> GetByIdAsync(Guid recurringId, CancellationToken token)
@@ -84,19 +81,32 @@ public class PaymentRecurringRepository : IPaymentRecurringRepository
         }
     }
 
-    public async Task<Result<PaymentRecurringDS, Error>> UpdateAsync(PaymentRecurringDS recurring, CancellationToken token)
+    public async Task<UnitResult<Error>> UpdateAsync(PaymentRecurringDS recurring, CancellationToken token)
     {
-        try
-        {
-            _context.PaymentRecurrings.Update(recurring);
-            await _context.SaveChangesAsync(token);
-            _logger.LogInformation("Recurring payment updated: {RecurringId}", recurring.Id);
-            return recurring;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to update recurring payment {RecurringId}", recurring.Id);
-            return Error.Failure("recurring.update_failed", ex.Message);
-        }
-    }
+        _context.PaymentRecurrings.Update(recurring);
+
+        var saveResult = await SaveChangesAsync(token);
+        if (saveResult.IsFailure)
+            return saveResult.Error;
+
+        _logger.LogInformation("Recurring payment updated: {RecurringId}", recurring.Id);
+		return Result.Success<Error>();
+	}
+
+
+	public async Task<UnitResult<Error>> SaveChangesAsync(CancellationToken token)
+	{
+		try
+		{
+			await _context.SaveChangesAsync(token);
+		}
+		catch (DbUpdateException ex)
+		{
+			_logger.LogWarning(ex, "Failed save changes");
+
+			return Error.Failure("failed.db.savechange", $"Failed save changes");
+		}
+
+		return Result.Success<Error>();
+	}
 }

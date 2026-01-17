@@ -52,48 +52,43 @@ public sealed class PurchaseHandler : IWalletServiceHandler
 
 	public async Task<Result<TransactionResponse, Error>> Handle(PurchaseCommand command, CancellationToken token)
 	{
-		try
+		var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId, token);
+		if (walletResult.IsFailure)
+			return walletResult.Error;
+
+		var wallet = walletResult.Value;
+
+		if (!wallet.HasSufficientBalance(command.Amount))
+			return WalletErrors.InsufficientBalance;
+
+		wallet.Withdraw(command.Amount);
+		var transaction = new TransactionDS
 		{
-			var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId, token);
-			if (walletResult.IsFailure)
-				return walletResult.Error;
+			Id = Guid.NewGuid(),
+			WalletId = wallet.Id,
+			UserId = command.UserId,
+			Amount = command.Amount,
+			Type = TransactionTypes.Purchase,
+			Status = TransactionStatuses.Completed,
+			Description = command.Description,
+			BalanceAfter = wallet.Balance,
+			ReferenceId = command.OrderId,
+			ReferenceType = "Order"
+		};
 
-			var wallet = walletResult.Value;
+		var updateResult = await _walletRepository.UpdateAsync(wallet, token);
+		if (updateResult.IsFailure)
+			return updateResult.Error;
 
-			if (!wallet.HasSufficientBalance(command.Amount))
-			{
-				return WalletErrors.InsufficientBalance;
-			}
+		var addResult = await _walletRepository.AddTransactionAsync(transaction, token);
+		if (addResult.IsFailure)
+			return addResult.Error;
 
-			wallet.Withdraw(command.Amount);
-			var transaction = new TransactionDS
-			{
-				Id = Guid.NewGuid(),
-				WalletId = wallet.Id,
-				UserId = command.UserId,
-				Amount = command.Amount,
-				Type = TransactionTypes.Purchase,
-				Status = TransactionStatuses.Completed,
-				Description = command.Description,
-				BalanceAfter = wallet.Balance,
-				ReferenceId = command.OrderId,
-				ReferenceType = "Order"
-			};
+		//await InvalidateWalletCacheAsync(command.UserId, ct);
 
-			await _walletRepository.UpdateAsync(wallet, token);
-			await _walletRepository.AddTransactionAsync(transaction, token);
+		_logger.LogInformation("Purchase successful for user {UserId}: Order {OrderId}, Amount: {Amount}", command.UserId, command.OrderId, command.Amount);
 			
-			//await InvalidateWalletCacheAsync(command.UserId, ct);
-			
-			_logger.LogInformation("Purchase successful for user {UserId}: Order {OrderId}, Amount: {Amount}", command.UserId, command.OrderId, command.Amount);
-			
-			return transaction.MapToResponse();
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error processing purchase for user: {UserId}", command.UserId);
-			return Error.Internal("wallet.purchase_error", "Error processing purchase for user");
-		}
+		return transaction.MapToResponse();
 	}
 
 }

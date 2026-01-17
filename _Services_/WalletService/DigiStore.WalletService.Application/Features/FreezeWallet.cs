@@ -38,28 +38,20 @@ public sealed class FreezeWalletHandler : IWalletServiceHandler
 
 	public async Task<UnitResult<Error>> Handle(Guid userId, CancellationToken token)
 	{
-		try
-		{
-			var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(userId, token);
-			if (walletResult.IsFailure)
-				return walletResult.Error;
+		var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(userId, token);
+		if (walletResult.IsFailure)
+			return walletResult.Error;
 
-			var wallet = walletResult.Value;
-			wallet.Freeze();
+		var wallet = walletResult.Value;
+		wallet.Freeze();
 
-			var updateResult = await _walletRepository.UpdateAsync(wallet, token);
-			if(updateResult.IsFailure)
-				return updateResult.Error;
+		var updateResult = await _walletRepository.UpdateAsync(wallet, token);
+		if(updateResult.IsFailure)
+			return updateResult.Error;
 
-			//await InvalidateWalletCacheAsync(userId, ct);
+		//await InvalidateWalletCacheAsync(userId, ct);
 
-			_logger.LogInformation("Wallet frozen for user: {UserId}", userId);
-			return Result.Success<Error>();
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error freezing wallet for user: {UserId}", userId);
-			return Error.Internal("wallet.freeze_error", "Error freezing wallet for user");
-		}
+		_logger.LogInformation("Wallet frozen for user: {UserId}", userId);
+		return Result.Success<Error>();
 	}
 }

@@ -14,5 +14,5 @@ public interface IPaymentRecurringRepository
 
     Task<Result<List<PaymentRecurringDS>, Error>> GetUserRecurringPaymentsAsync(Guid userId, int skip = 0, int take = 10, CancellationToken token = default);
 
-    Task<Result<PaymentRecurringDS, Error>> UpdateAsync(PaymentRecurringDS recurring, CancellationToken token);
+	Task<UnitResult<Error>> UpdateAsync(PaymentRecurringDS recurring, CancellationToken token);
 }
