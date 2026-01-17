@@ -31,7 +31,7 @@ public class YookassaProvider : IYookassaProvider
 	/// <summary>
 	/// Создать платеж
 	/// </summary>
-	public async Task<Result<string, Error>> CreatePaymentAsync(Guid userId, Guid walletId, Guid paymentId, decimal amount, string description = "", CancellationToken ct = default)
+	public async Task<Result<string, Error>> CreatePaymentAsync(Guid userId, Guid walletId, Guid paymentId, decimal amount, string description = "", CancellationToken token = default)
 	{
 		try
 		{
@@ -82,7 +82,7 @@ public class YookassaProvider : IYookassaProvider
 	/// <summary>
 	/// Получить ссылку на оплату
 	/// </summary>
-	public async Task<Result<string, Error>> GetPaymentConfirmationUrlAsync(string aggregatorPaymentId, CancellationToken ct)
+	public async Task<Result<string, Error>> GetPaymentConfirmationUrlAsync(string aggregatorPaymentId, CancellationToken token)
 	{
 		try
 		{
@@ -110,7 +110,7 @@ public class YookassaProvider : IYookassaProvider
 		Guid withdrawalId,
 		decimal amount,
 		decimal actualAmount,
-		CancellationToken ct)
+		CancellationToken token)
 	{
 		try
 		{

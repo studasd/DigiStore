@@ -45,7 +45,7 @@ public sealed class YooKassaWebhookHandler : IWalletServiceHandler
 
 
 
-	public async Task<UnitResult<Error>> Handle(HttpContext context, CancellationToken ct)
+	public async Task<UnitResult<Error>> Handle(HttpContext context, CancellationToken token)
 	{
 		try
 		{
@@ -72,7 +72,7 @@ public sealed class YooKassaWebhookHandler : IWalletServiceHandler
 			}
 
 			// Обработать вебхук
-			await _yooKassaWebhookService.ProcessWebhookAsync(bodyContent, ct);
+			await _yooKassaWebhookService.ProcessWebhookAsync(bodyContent, token);
 
 			_logger.LogInformation("YooKassa: Вебхук успешно обработан");
 

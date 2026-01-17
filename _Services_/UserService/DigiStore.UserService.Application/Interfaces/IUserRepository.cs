@@ -12,14 +12,14 @@ namespace DigiStore.UserService.Application.Interfaces;
 /// </summary>
 public interface IUserRepository
 {
-	Task<UserDS?> GetByIdAsync(Guid userId, CancellationToken ct = default);
-	Task<UserDS?> GetByEmailAsync(string email, CancellationToken ct = default);
-	Task<UserDS?> GetByTelegramIdAsync(long telegramId, CancellationToken ct = default);
-	Task<bool> ExistsByEmailAsync(string email, CancellationToken ct = default);
-	Task<bool> ExistsByTelegramIdAsync(long telegramId, CancellationToken ct = default);
-	Task AddAsync(UserDS user, CancellationToken ct = default);
-	Task UpdateAsync(UserDS user, CancellationToken ct = default);
-	Task DeleteAsync(Guid userId, CancellationToken ct = default);
-	Task<IEnumerable<UserDS>> GetAllActiveAsync(CancellationToken ct = default);
-	Task<IEnumerable<UserDS>> GetBySourceAsync(UserSource source, CancellationToken ct = default);
+	Task<UserDS?> GetByIdAsync(Guid userId, CancellationToken token);
+	Task<UserDS?> GetByEmailAsync(string email, CancellationToken token);
+	Task<UserDS?> GetByTelegramIdAsync(long telegramId, CancellationToken token);
+	Task<bool> ExistsByEmailAsync(string email, CancellationToken token);
+	Task<bool> ExistsByTelegramIdAsync(long telegramId, CancellationToken token);
+	Task AddAsync(UserDS user, CancellationToken token);
+	Task UpdateAsync(UserDS user, CancellationToken token);
+	Task DeleteAsync(Guid userId, CancellationToken token);
+	Task<IEnumerable<UserDS>> GetAllActiveAsync(CancellationToken token);
+	Task<IEnumerable<UserDS>> GetBySourceAsync(UserSource source, CancellationToken token);
 }

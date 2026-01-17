@@ -14,19 +14,19 @@ public class LocalizationRepository : ILocalizationRepository
         _db = db;
     }
 
-    public async Task<Localization?> GetByKeyAsync(string key, CancellationToken ct = default)
+    public async Task<Localization?> GetByKeyAsync(string key, CancellationToken token)
     {
-        return await _db.Localizations.FirstOrDefaultAsync(l => l.Key == key, ct);
+        return await _db.Localizations.FirstOrDefaultAsync(l => l.Key == key, token);
     }
 
-    public async Task<IEnumerable<Localization>> GetAllAsync(CancellationToken ct = default)
+    public async Task<IEnumerable<Localization>> GetAllAsync(CancellationToken token)
     {
-        return await _db.Localizations.AsNoTracking().ToListAsync(ct);
+        return await _db.Localizations.AsNoTracking().ToListAsync(token);
     }
 
-    public async Task AddOrUpdateAsync(Localization entity, CancellationToken ct = default)
+    public async Task AddOrUpdateAsync(Localization entity, CancellationToken token)
     {
-        var existing = await _db.Localizations.FirstOrDefaultAsync(l => l.Key == entity.Key, ct);
+        var existing = await _db.Localizations.FirstOrDefaultAsync(l => l.Key == entity.Key, token);
         if (existing == null)
         {
             _db.Localizations.Add(entity);
@@ -38,6 +38,6 @@ public class LocalizationRepository : ILocalizationRepository
             existing.UpdatedAt = DateTime.UtcNow;
         }
 
-        await _db.SaveChangesAsync(ct);
+        await _db.SaveChangesAsync(token);
     }
 }

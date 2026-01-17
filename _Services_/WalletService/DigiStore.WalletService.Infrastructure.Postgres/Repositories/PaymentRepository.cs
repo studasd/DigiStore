@@ -21,11 +21,11 @@ public class PaymentRepository : IPaymentRepository
     }
 
 
-    public async Task<Result<PaymentDS, Error>> AddAsync(PaymentDS payment, CancellationToken ct)
+    public async Task<Result<PaymentDS, Error>> AddAsync(PaymentDS payment, CancellationToken token)
     {
         _context.Payments.Add(payment);
 
-		var saveResult = await SaveChangesAsync(ct);
+		var saveResult = await SaveChangesAsync(token);
 		if (saveResult.IsFailure)
 			return saveResult.Error;
 
@@ -33,10 +33,10 @@ public class PaymentRepository : IPaymentRepository
         return payment;
     }
 
-    public async Task<Result<PaymentDS, Error>> GetByIdAsync(Guid paymentId, CancellationToken ct)
+    public async Task<Result<PaymentDS, Error>> GetByIdAsync(Guid paymentId, CancellationToken token)
     {
         var payment = await _context.Payments
-            .FirstOrDefaultAsync(p => p.Id == paymentId, ct);
+            .FirstOrDefaultAsync(p => p.Id == paymentId, token);
 
         if (payment == null)
             return Error.NotFound("payment.not_found", "Payment not found");
@@ -44,10 +44,10 @@ public class PaymentRepository : IPaymentRepository
         return payment;
     }
 
-    public async Task<Result<PaymentDS, Error>> GetByAggregatorIdAsync(string aggregatorPaymentId, CancellationToken ct)
+    public async Task<Result<PaymentDS, Error>> GetByAggregatorIdAsync(string aggregatorPaymentId, CancellationToken token)
     {
         var payment = await _context.Payments
-            .FirstOrDefaultAsync(p => p.AggregatorPaymentId == aggregatorPaymentId, ct);
+            .FirstOrDefaultAsync(p => p.AggregatorPaymentId == aggregatorPaymentId, token);
 
         if (payment == null)
             return Error.NotFound("payment.not_found", "Payment not found");
@@ -55,7 +55,7 @@ public class PaymentRepository : IPaymentRepository
         return payment;
     }
 
-    public async Task<Result<IReadOnlyList<PaymentDS>, Error>> GetUserPaymentsAsync(Guid userId, int skip = 0, int take = 10, CancellationToken ct = default)
+    public async Task<Result<IReadOnlyList<PaymentDS>, Error>> GetUserPaymentsAsync(Guid userId, int skip = 0, int take = 10, CancellationToken token = default)
     {
         try
         {
@@ -64,7 +64,7 @@ public class PaymentRepository : IPaymentRepository
                 .OrderByDescending(p => p.CreatedAt)
                 .Skip(skip)
                 .Take(take)
-                .ToListAsync(ct);
+                .ToListAsync(token);
 
             return list;
         }
@@ -75,11 +75,11 @@ public class PaymentRepository : IPaymentRepository
         }
     }
 
-    public async Task<Result<PaymentDS, Error>> UpdateAsync(PaymentDS payment, CancellationToken ct)
+    public async Task<Result<PaymentDS, Error>> UpdateAsync(PaymentDS payment, CancellationToken token)
     {
         _context.Payments.Update(payment);
 
-		var saveResult = await SaveChangesAsync(ct);
+		var saveResult = await SaveChangesAsync(token);
 		if (saveResult.IsFailure)
 			return saveResult.Error;
 
@@ -91,9 +91,9 @@ public class PaymentRepository : IPaymentRepository
 	/// <summary>
 	/// Обновить статус платежа
 	/// </summary>
-	public async Task<UnitResult<Error>> UpdatePaymentStatusAsync(Guid paymentId, PaymentStatus status, CancellationToken ct)
+	public async Task<UnitResult<Error>> UpdatePaymentStatusAsync(Guid paymentId, PaymentStatus status, CancellationToken token)
 	{
-		var paymentResult = await GetByIdAsync(paymentId, ct);
+		var paymentResult = await GetByIdAsync(paymentId, token);
 
         if(paymentResult.IsFailure)
             return paymentResult.Error;
@@ -102,16 +102,16 @@ public class PaymentRepository : IPaymentRepository
 		payment.Status = status;
 		payment.UpdatedAt = DateTime.UtcNow;
 		
-        return await UpdateAsync(payment, ct);
+        return await UpdateAsync(payment, token);
 	}
 
 
 	/// <summary>
 	/// Отменить платеж
 	/// </summary>
-	public async Task<UnitResult<Error>> CancelPaymentAsync(Guid paymentId, string? reason = null, CancellationToken ct = default)
+	public async Task<UnitResult<Error>> CancelPaymentAsync(Guid paymentId, string? reason = null, CancellationToken token = default)
 	{
-		var paymentResult = await GetByIdAsync(paymentId, ct);
+		var paymentResult = await GetByIdAsync(paymentId, token);
 		if (paymentResult.IsFailure)
 			return paymentResult.Error;
 
@@ -119,7 +119,7 @@ public class PaymentRepository : IPaymentRepository
 
 		payment.MarkAsCanceled(reason);
 
-		var updateResult = await UpdateAsync(payment, ct);
+		var updateResult = await UpdateAsync(payment, token);
         if (updateResult.IsFailure)
             return updateResult.Error;
 
@@ -128,11 +128,11 @@ public class PaymentRepository : IPaymentRepository
 	}
 
 
-	public async Task<UnitResult<Error>> SaveChangesAsync(CancellationToken ct)
+	public async Task<UnitResult<Error>> SaveChangesAsync(CancellationToken token)
 	{
 		try
 		{
-			await _context.SaveChangesAsync(ct);
+			await _context.SaveChangesAsync(token);
 		}
 		catch (DbUpdateException ex)
 		{

@@ -24,7 +24,7 @@ namespace DigiStore.WalletService.Application.Services;
 
 
 
-//	private async Task InvalidateWalletCacheAsync(Guid userId, CancellationToken ct)
+//	private async Task InvalidateWalletCacheAsync(Guid userId, CancellationToken token)
 //	{
 //		//await _cache.RemoveAsync(string.Format(WalletCacheKeyFormat, userId), ct);
 //		//await _cache.RemoveAsync(string.Format(BalanceCacheKeyFormat, userId), ct);

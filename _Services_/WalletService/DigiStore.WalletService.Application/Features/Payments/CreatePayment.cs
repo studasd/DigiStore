@@ -94,16 +94,16 @@ public sealed class CreatePaymentHandler : IWalletServiceHandler
 	}
 
 
-	public async Task<Result<CreatePaymentResponse, Error>> Handle(CreatePaymentCommand command, CancellationToken ct)
+	public async Task<Result<CreatePaymentResponse, Error>> Handle(CreatePaymentCommand command, CancellationToken token)
 	{
-		var validationResult = await _validator.ValidateAsync(command, ct);
+		var validationResult = await _validator.ValidateAsync(command, token);
 		if (!validationResult.IsValid)
 		{
 			return validationResult.ToError();
 		}
 
 		// Получить кошелек пользователя
-		var wallet = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId, ct);
+		var wallet = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId, token);
 
 		if (wallet.IsFailure)
 			return wallet.Error;
@@ -117,7 +117,7 @@ public sealed class CreatePaymentHandler : IWalletServiceHandler
 		var payment = paymentResult.Value;
 
 		// Получить ссылку на оплату
-		var confirmationUrlResult = await _paymentService.GetPaymentConfirmationUrlAsync(payment!.Id);
+		var confirmationUrlResult = await _paymentService.GetPaymentConfirmationUrlAsync(payment!.Id, token);
 
 		if (confirmationUrlResult.IsFailure)
 			return confirmationUrlResult.Error;

@@ -11,10 +11,10 @@ public interface IWithdrawalService
 		Guid userId,
 		decimal amount,
 		string cardNumber,
-		CancellationToken ct);
+		CancellationToken token);
 
 	/// <summary>
 	/// Отменить выплату и вернуть средства
 	/// </summary>
-	Task<UnitResult<Error>> CancelWithdrawalAsync(Guid withdrawalId, string? reason = null, CancellationToken ct = default);
+	Task<UnitResult<Error>> CancelWithdrawalAsync(Guid withdrawalId, string? reason = null, CancellationToken token = default);
 }

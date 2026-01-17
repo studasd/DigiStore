@@ -45,14 +45,14 @@ public sealed class RefundHandler : IWalletServiceHandler
 	}
 
 
-	public async Task<Result<TransactionResponse, Error>> Handle(Guid userId, string orderId, decimal amount, CancellationToken ct = default)
+	public async Task<Result<TransactionResponse, Error>> Handle(Guid userId, string orderId, decimal amount, CancellationToken token)
 	{
 		try
 		{
 			if (amount <= 0)
 				return WalletErrors.InvalidAmount;
 
-			var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
+			var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(userId, token);
 			if (walletResult.IsFailure)
 				return walletResult.Error;
 
@@ -72,8 +72,8 @@ public sealed class RefundHandler : IWalletServiceHandler
 				ReferenceId = orderId,
 				ReferenceType = "Order"
 			};
-			await _walletRepository.UpdateAsync(wallet, ct);
-			await _walletRepository.AddTransactionAsync(transaction, ct);
+			await _walletRepository.UpdateAsync(wallet, token);
+			await _walletRepository.AddTransactionAsync(transaction, token);
 			
 			//await InvalidateWalletCacheAsync(userId, ct);
 			

@@ -27,10 +27,10 @@ public class ProfileService : IProfileService
 		_logger = logger;
 	}
 
-	public async Task<Result<ProfileDisplayDto, Error>> GetFullProfileAsync(Guid userId, long telegramId, CancellationToken ct = default)
+	public async Task<Result<ProfileDisplayDto, Error>> GetFullProfileAsync(Guid userId, long telegramId, CancellationToken token)
 	{
 		// Get user profile
-		var userResult = await _userService.GetUserProfileAsync(userId, ct);
+		var userResult = await _userService.GetUserProfileAsync(userId, token);
 		if (!userResult.IsSuccess)
 		{
 			_logger.LogWarning("Failed to get user profile for user ID: {UserId}", userId);
@@ -39,7 +39,7 @@ public class ProfileService : IProfileService
 		var user = userResult.Value!;
 			
 		// Get wallet/balance
-		var walletResult = await _walletService.GetBalanceAsync(userId, ct);
+		var walletResult = await _walletService.GetBalanceAsync(userId, token);
 		decimal balance = 0;
 		string currency = "RUB";
 		if (walletResult.IsSuccess)
@@ -108,9 +108,9 @@ public class ProfileService : IProfileService
 	public async Task<UnitResult<Error>> UpdateUserLanguageAsync(
 		Guid userId,
 		LanguageCodes langCode,
-		CancellationToken ct = default)
+		CancellationToken token)
 	{
-		var result = await _userService.UpdateLanguageAsync(userId, langCode, ct);
+		var result = await _userService.UpdateLanguageAsync(userId, langCode, token);
 		if (result.IsFailure)
 		{
 			_logger.LogWarning("Failed to update language for user ID: {UserId}", userId);

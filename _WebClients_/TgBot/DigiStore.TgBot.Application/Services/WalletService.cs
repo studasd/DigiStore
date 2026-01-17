@@ -27,13 +27,13 @@ public class WalletService : IWalletService
 	}
 
 
-	public async Task<Result<BalanceDto, Error>> GetBalanceAsync(Guid userId, CancellationToken ct = default)
+	public async Task<Result<BalanceDto, Error>> GetBalanceAsync(Guid userId, CancellationToken token)
 	{
 		try
 		{
 			// Заглушка
 
-			var result = await _walletHttpClient.GetBalanceAsync(userId, ct);
+			var result = await _walletHttpClient.GetBalanceAsync(userId, token);
 			if(result.IsFailure)
 				return result.Error;
 
@@ -70,11 +70,11 @@ public class WalletService : IWalletService
 	public async Task<Result<IEnumerable<TransactionResponse>, Error>> GetTransactionsAsync(
 		Guid userId,
 		int take = 10,
-		CancellationToken ct = default)
+		CancellationToken token = default)
 	{
 		//try
 		//{
-			var result = await _walletHttpClient.GetTransactionsAsync(userId, 0, take, ct);
+			var result = await _walletHttpClient.GetTransactionsAsync(userId, 0, take, token);
 
 			return result;
 
@@ -103,7 +103,7 @@ public class WalletService : IWalletService
 	public async Task<Result<bool, Error>> InitiateWithdrawalAsync(
 		Guid userId,
 		decimal amount,
-		CancellationToken ct = default)
+		CancellationToken token)
 	{
 		//try
 		//{

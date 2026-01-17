@@ -52,7 +52,7 @@ public sealed class DepositHandler : IWalletServiceHandler
 	}
 
 
-	public async Task<Result<TransactionResponse, Error>> Handle(DepositCommand command, CancellationToken ct)
+	public async Task<Result<TransactionResponse, Error>> Handle(DepositCommand command, CancellationToken token)
 	{
 		try
 		{
@@ -61,7 +61,7 @@ public sealed class DepositHandler : IWalletServiceHandler
 				return WalletErrors.InvalidAmount;
 			}
 			
-			var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId, ct);
+			var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId, token);
 			if (walletResult.IsFailure)
 			{
 				return walletResult.Error;
@@ -88,8 +88,8 @@ public sealed class DepositHandler : IWalletServiceHandler
 				PaymentMethod = command.PaymentMethod,
 				ReferenceId = command.ReferenceId
 			};
-			await _walletRepository.UpdateAsync(wallet, ct);
-			await _walletRepository.AddTransactionAsync(transaction, ct);
+			await _walletRepository.UpdateAsync(wallet, token);
+			await _walletRepository.AddTransactionAsync(transaction, token);
 
 			//await InvalidateWalletCacheAsync(command.UserId, ct);
 			

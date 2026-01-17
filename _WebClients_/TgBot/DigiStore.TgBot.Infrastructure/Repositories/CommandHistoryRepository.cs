@@ -13,9 +13,9 @@ public class CommandHistoryRepository : ICommandHistoryRepository
         _db = db;
     }
 
-    public async Task AddAsync(CommandHistory history, CancellationToken ct = default)
+    public async Task AddAsync(CommandHistory history, CancellationToken token)
     {
         _db.CommandHistories.Add(history);
-        await _db.SaveChangesAsync(ct);
+        await _db.SaveChangesAsync(token);
     }
 }

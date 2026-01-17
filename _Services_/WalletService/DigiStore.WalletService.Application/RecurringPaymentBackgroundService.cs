@@ -23,11 +23,11 @@ public class RecurringPaymentBackgroundService : BackgroundService
 		_logger = logger;
 	}
 
-	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+	protected override async Task ExecuteAsync(CancellationToken token)
 	{
 		_logger.LogInformation("RecurringPaymentBackgroundService запущен");
 
-		while (!stoppingToken.IsCancellationRequested)
+		while (!token.IsCancellationRequested)
 		{
 			try
 			{
@@ -39,7 +39,7 @@ public class RecurringPaymentBackgroundService : BackgroundService
 					.GetRequiredService<IPaymentRecurringRepository>();
 
 				// Получить подписки готовые к обработке
-				var duePaymentsResult = await recurringRopository.GetDueAsync();
+				var duePaymentsResult = await recurringRopository.GetDueAsync(token);
 				
 				if (duePaymentsResult.IsSuccess)
 				{
@@ -53,7 +53,7 @@ public class RecurringPaymentBackgroundService : BackgroundService
 					{
 						try
 						{
-							await recurringService.ProcessNextRecurringPaymentAsync(recurring.Id, stoppingToken);
+							await recurringService.ProcessNextRecurringPaymentAsync(recurring.Id, token);
 						}
 						catch (Exception ex)
 						{
@@ -64,7 +64,7 @@ public class RecurringPaymentBackgroundService : BackgroundService
 				}
 
 				// Ждать перед следующей проверкой
-				await Task.Delay(_checkInterval, stoppingToken);
+				await Task.Delay(_checkInterval, token);
 			}
 			catch (OperationCanceledException)
 			{

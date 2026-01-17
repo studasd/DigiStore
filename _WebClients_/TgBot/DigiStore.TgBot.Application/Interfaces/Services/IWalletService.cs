@@ -14,15 +14,15 @@ public interface IWalletService
 	/// <summary>
 	/// Get user balance
 	/// </summary>
-	Task<Result<BalanceDto, Error>> GetBalanceAsync(Guid userId, CancellationToken ct = default);
+	Task<Result<BalanceDto, Error>> GetBalanceAsync(Guid userId, CancellationToken token);
 
 	/// <summary>
 	/// Get transactions
 	/// </summary>
-	Task<Result<IEnumerable<TransactionResponse>, Error>> GetTransactionsAsync(Guid userId, int take = 10, CancellationToken ct = default);
+	Task<Result<IEnumerable<TransactionResponse>, Error>> GetTransactionsAsync(Guid userId, int take = 10, CancellationToken token = default);
 
 	/// <summary>
 	/// Initiate withdrawal
 	/// </summary>
-	Task<Result<bool, Error>> InitiateWithdrawalAsync(Guid userId, decimal amount, CancellationToken ct = default);
+	Task<Result<bool, Error>> InitiateWithdrawalAsync(Guid userId, decimal amount, CancellationToken token);
 }

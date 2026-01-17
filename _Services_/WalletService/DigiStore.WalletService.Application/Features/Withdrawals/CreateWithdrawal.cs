@@ -47,7 +47,7 @@ public sealed class CreateWithdrawalHandler : IWalletServiceHandler
 
 
 
-	public async Task<Result<CreateWithdrawalResponse, Error>> Handle(Guid userId, Guid walletId, decimal amount, string cardNumber, CancellationToken ct)
+	public async Task<Result<CreateWithdrawalResponse, Error>> Handle(Guid userId, Guid walletId, decimal amount, string cardNumber, CancellationToken token)
 	{
 		if (amount <= 0)
 			return Error.Validation("amount.bad", "Сумма должна быть больше 0");
@@ -55,7 +55,7 @@ public sealed class CreateWithdrawalHandler : IWalletServiceHandler
 		if (string.IsNullOrEmpty(cardNumber))
 			return Error.NotFound("cardnumber.emty", "Номер карты не может быть пустым");
 
-		var withdrawalResult = await _withdrawalService.CreateWithdrawalAsync(walletId, userId, amount, cardNumber, ct);
+		var withdrawalResult = await _withdrawalService.CreateWithdrawalAsync(walletId, userId, amount, cardNumber, token);
 		if(withdrawalResult.IsFailure)
 			return withdrawalResult.Error;
 

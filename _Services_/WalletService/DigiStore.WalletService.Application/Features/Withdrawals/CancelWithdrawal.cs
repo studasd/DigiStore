@@ -49,9 +49,9 @@ public sealed class CancelWithdrawalHandler : IWalletServiceHandler
 
 
 
-	public async Task<Result<string, Error>> Handle(Guid withdrawalId, CancellationToken ct)
+	public async Task<Result<string, Error>> Handle(Guid withdrawalId, CancellationToken token)
 	{
-		var withdrawalResult = await _withdrawalRepository.GetByIdAsync(withdrawalId, ct);
+		var withdrawalResult = await _withdrawalRepository.GetByIdAsync(withdrawalId, token);
 
 		if(withdrawalResult.IsFailure)
 			return withdrawalResult.Error;
@@ -60,7 +60,7 @@ public sealed class CancelWithdrawalHandler : IWalletServiceHandler
 		if (withdrawal.Status != WithdrawalStatus.Pending && withdrawal.Status != WithdrawalStatus.Processing)
 			return Error.Conflict("cancel.bad", "Выплату нельзя отменить в этом статусе");
 
-		await _withdrawalService.CancelWithdrawalAsync(withdrawalId, "Отменено пользователем", ct);
+		await _withdrawalService.CancelWithdrawalAsync(withdrawalId, "Отменено пользователем", token);
 
 		return "Выплата отменена";
 	}

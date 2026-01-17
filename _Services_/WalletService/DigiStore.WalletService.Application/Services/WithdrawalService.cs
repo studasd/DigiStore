@@ -45,12 +45,12 @@ public class WithdrawalService : IWithdrawalService
 		Guid userId,
 		decimal amount,
 		string cardNumber,
-		CancellationToken ct)
+		CancellationToken token)
 	{
 		_logger.LogInformation($"YooKassa: Создание выплаты - WalletId: {walletId}, Amount: {amount}");
 
 		// Проверить кошелек
-		var walletResult = await _walletRepository.GetByIdAsync(walletId, ct);
+		var walletResult = await _walletRepository.GetByIdAsync(walletId, token);
 		if (walletResult.IsFailure)
 			return walletResult.Error;
 
@@ -69,7 +69,7 @@ public class WithdrawalService : IWithdrawalService
 		withdrawal.CardMask = MaskCardNumber(cardNumber);
 
 		// Создать выплату в YooKassa
-		var createWithdrawalResult = await _yookassaProvider.CreateWithdrawalAsync(walletId, withdrawal.Id, amount, withdrawal.ActualAmount, ct);
+		var createWithdrawalResult = await _yookassaProvider.CreateWithdrawalAsync(walletId, withdrawal.Id, amount, withdrawal.ActualAmount, token);
 		if (createWithdrawalResult.IsFailure)
 			return createWithdrawalResult.Error;
 
@@ -82,7 +82,7 @@ public class WithdrawalService : IWithdrawalService
 		withdrawal.MarkAsProcessing();
 
 		// Добавить в БД
-		var withdrawalAddResult = await _withdrawalRepository.AddAsync(withdrawal, ct);
+		var withdrawalAddResult = await _withdrawalRepository.AddAsync(withdrawal, token);
 
 		if (withdrawalAddResult.IsFailure)
 			return withdrawalAddResult.Error;
@@ -95,9 +95,9 @@ public class WithdrawalService : IWithdrawalService
 	/// <summary>
 	/// Отменить выплату и вернуть средства
 	/// </summary>
-	public async Task<UnitResult<Error>> CancelWithdrawalAsync(Guid withdrawalId, string? reason = null, CancellationToken ct = default)
+	public async Task<UnitResult<Error>> CancelWithdrawalAsync(Guid withdrawalId, string? reason = null, CancellationToken token = default)
 	{
-		var withdrawalResult = await _withdrawalRepository.GetByIdAsync(withdrawalId, ct);
+		var withdrawalResult = await _withdrawalRepository.GetByIdAsync(withdrawalId, token);
 		if (withdrawalResult.IsFailure)
 			return withdrawalResult.Error;
 
@@ -107,7 +107,7 @@ public class WithdrawalService : IWithdrawalService
 			return Error.Failure("cancel.withdrawal.status.bad", "Only withdrawals in processing status can be canceled.");
 
 
-		var walletResult = await _walletRepository.GetByIdAsync(withdrawal.WalletId, ct);
+		var walletResult = await _walletRepository.GetByIdAsync(withdrawal.WalletId, token);
 
 		if(walletResult.IsFailure)
 			return walletResult.Error;
@@ -117,11 +117,11 @@ public class WithdrawalService : IWithdrawalService
 		wallet.Balance += withdrawal.RequestedAmount;
 
 		withdrawal.MarkAsCanceled(reason);
-		var updateResult = await _withdrawalRepository.UpdateAsync(withdrawal, ct);
+		var updateResult = await _withdrawalRepository.UpdateAsync(withdrawal, token);
 		if(updateResult.IsFailure)
 			return updateResult.Error;
 
-		var updateWalletResult = await _walletRepository.UpdateAsync(wallet, ct);
+		var updateWalletResult = await _walletRepository.UpdateAsync(wallet, token);
 		if (updateWalletResult.IsFailure)
 			return updateWalletResult.Error;
 

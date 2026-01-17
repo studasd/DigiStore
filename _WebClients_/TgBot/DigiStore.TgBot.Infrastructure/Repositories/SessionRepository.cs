@@ -14,14 +14,14 @@ public class SessionRepository : ISessionRepository
         _db = db;
     }
 
-    public async Task<TgUserSession?> GetByTelegramIdAsync(long telegramId, CancellationToken ct = default)
+    public async Task<TgUserSession?> GetByTelegramIdAsync(long telegramId, CancellationToken token)
     {
-        return await _db.TelegramSessions.FirstOrDefaultAsync(s => s.TelegramId == telegramId, ct);
+        return await _db.TelegramSessions.FirstOrDefaultAsync(s => s.TelegramId == telegramId, token);
     }
 
-    public async Task AddOrUpdateAsync(TgUserSession session, CancellationToken ct = default)
+    public async Task AddOrUpdateAsync(TgUserSession session, CancellationToken token)
     {
-        var existing = await _db.TelegramSessions.FirstOrDefaultAsync(s => s.TelegramId == session.TelegramId, ct);
+        var existing = await _db.TelegramSessions.FirstOrDefaultAsync(s => s.TelegramId == session.TelegramId, token);
         if (existing == null)
         {
             _db.TelegramSessions.Add(session);
@@ -35,16 +35,16 @@ public class SessionRepository : ISessionRepository
             existing.LastActivity = DateTime.UtcNow;
         }
 
-        await _db.SaveChangesAsync(ct);
+        await _db.SaveChangesAsync(token);
     }
 
-    public async Task DeleteByTelegramIdAsync(long telegramId, CancellationToken ct = default)
+    public async Task DeleteByTelegramIdAsync(long telegramId, CancellationToken token)
     {
-        var existing = await _db.TelegramSessions.FirstOrDefaultAsync(s => s.TelegramId == telegramId, ct);
+        var existing = await _db.TelegramSessions.FirstOrDefaultAsync(s => s.TelegramId == telegramId, token);
         if (existing != null)
         {
             _db.TelegramSessions.Remove(existing);
-            await _db.SaveChangesAsync(ct);
+            await _db.SaveChangesAsync(token);
         }
     }
 }

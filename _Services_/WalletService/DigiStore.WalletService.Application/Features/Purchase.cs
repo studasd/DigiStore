@@ -50,11 +50,11 @@ public sealed class PurchaseHandler : IWalletServiceHandler
 	}
 
 
-	public async Task<Result<TransactionResponse, Error>> Handle(PurchaseCommand command, CancellationToken ct)
+	public async Task<Result<TransactionResponse, Error>> Handle(PurchaseCommand command, CancellationToken token)
 	{
 		try
 		{
-			var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId, ct);
+			var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId, token);
 			if (walletResult.IsFailure)
 				return walletResult.Error;
 
@@ -80,8 +80,8 @@ public sealed class PurchaseHandler : IWalletServiceHandler
 				ReferenceType = "Order"
 			};
 
-			await _walletRepository.UpdateAsync(wallet, ct);
-			await _walletRepository.AddTransactionAsync(transaction, ct);
+			await _walletRepository.UpdateAsync(wallet, token);
+			await _walletRepository.AddTransactionAsync(transaction, token);
 			
 			//await InvalidateWalletCacheAsync(command.UserId, ct);
 			

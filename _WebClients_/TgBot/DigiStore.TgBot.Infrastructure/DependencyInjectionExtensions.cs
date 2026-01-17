@@ -37,7 +37,7 @@ public static class DependencyInjectionExtensions
 				.UseAsyncSeeding(async (context, result, token) =>
 				{
 					var seeder = ActivatorUtilities.CreateInstance<DataSeeder>(sp);
-					await seeder.SeedAsync((TgBotDbContext)context, sp);
+					await seeder.SeedAsync((TgBotDbContext)context, sp, CancellationToken.None);
 				});
 
 			if (hostEnvironment.IsDevelopment())

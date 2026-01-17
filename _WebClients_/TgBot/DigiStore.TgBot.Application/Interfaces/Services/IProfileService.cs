@@ -14,7 +14,7 @@ public interface IProfileService
 	/// <summary>
 	/// Get full profile with balance (для /profile и /start)
 	/// </summary>
-	Task<Result<ProfileDisplayDto, Error>> GetFullProfileAsync(Guid userId, long telegramId, CancellationToken ct = default);
+	Task<Result<ProfileDisplayDto, Error>> GetFullProfileAsync(Guid userId, long telegramId, CancellationToken token);
 
 	/// <summary>
 	/// Format profile to readable text for Telegram
@@ -24,7 +24,7 @@ public interface IProfileService
 	/// <summary>
 	/// Update user language and session
 	/// </summary>
-	Task<UnitResult<Error>> UpdateUserLanguageAsync(Guid userId, LanguageCodes langCode, CancellationToken ct = default);
+	Task<UnitResult<Error>> UpdateUserLanguageAsync(Guid userId, LanguageCodes langCode, CancellationToken token);
 
 	/// <summary>
 	/// Build profile message with keyboard

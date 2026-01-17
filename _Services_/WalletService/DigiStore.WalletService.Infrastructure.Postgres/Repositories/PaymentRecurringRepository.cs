@@ -19,12 +19,12 @@ public class PaymentRecurringRepository : IPaymentRecurringRepository
         _logger = logger;
     }
 
-    public async Task<Result<PaymentRecurringDS, Error>> AddAsync(PaymentRecurringDS recurring, CancellationToken ct = default)
+    public async Task<Result<PaymentRecurringDS, Error>> AddAsync(PaymentRecurringDS recurring, CancellationToken token)
     {
         try
         {
             _context.PaymentRecurrings.Add(recurring);
-            await _context.SaveChangesAsync(ct);
+            await _context.SaveChangesAsync(token);
             _logger.LogInformation("Recurring payment created: {RecurringId}", recurring.Id);
             return recurring;
         }
@@ -35,11 +35,11 @@ public class PaymentRecurringRepository : IPaymentRecurringRepository
         }
     }
 
-    public async Task<Result<PaymentRecurringDS, Error>> GetByIdAsync(Guid recurringId, CancellationToken ct = default)
+    public async Task<Result<PaymentRecurringDS, Error>> GetByIdAsync(Guid recurringId, CancellationToken token)
     {
         var r = await _context.PaymentRecurrings
             .Include(rp => rp.Payments)
-            .FirstOrDefaultAsync(p => p.Id == recurringId, ct);
+            .FirstOrDefaultAsync(p => p.Id == recurringId, token);
 
         if (r == null)
             return Error.NotFound("recurring.not_found", "Recurring payment not found");
@@ -47,13 +47,13 @@ public class PaymentRecurringRepository : IPaymentRecurringRepository
         return r;
     }
 
-    public async Task<Result<List<PaymentRecurringDS>, Error>> GetDueAsync(CancellationToken ct = default)
+    public async Task<Result<List<PaymentRecurringDS>, Error>> GetDueAsync(CancellationToken token)
     {
         try
         {
             var list = await _context.PaymentRecurrings
                 .Where(r => r.IsActive && r.NextPaymentDate <= DateTime.UtcNow)
-                .ToListAsync(ct);
+                .ToListAsync(token);
 
 			return list;
         }
@@ -64,7 +64,7 @@ public class PaymentRecurringRepository : IPaymentRecurringRepository
         }
     }
 
-    public async Task<Result<List<PaymentRecurringDS>, Error>> GetUserRecurringPaymentsAsync(Guid userId, int skip = 0, int take = 10, CancellationToken ct = default)
+    public async Task<Result<List<PaymentRecurringDS>, Error>> GetUserRecurringPaymentsAsync(Guid userId, int skip = 0, int take = 10, CancellationToken token = default)
     {
         try
         {
@@ -73,7 +73,7 @@ public class PaymentRecurringRepository : IPaymentRecurringRepository
                 .OrderByDescending(r => r.CreatedAt)
                 .Skip(skip)
                 .Take(take)
-                .ToListAsync(ct);
+                .ToListAsync(token);
 
             return list;
         }
@@ -84,12 +84,12 @@ public class PaymentRecurringRepository : IPaymentRecurringRepository
         }
     }
 
-    public async Task<Result<PaymentRecurringDS, Error>> UpdateAsync(PaymentRecurringDS recurring, CancellationToken ct = default)
+    public async Task<Result<PaymentRecurringDS, Error>> UpdateAsync(PaymentRecurringDS recurring, CancellationToken token)
     {
         try
         {
             _context.PaymentRecurrings.Update(recurring);
-            await _context.SaveChangesAsync(ct);
+            await _context.SaveChangesAsync(token);
             _logger.LogInformation("Recurring payment updated: {RecurringId}", recurring.Id);
             return recurring;
         }

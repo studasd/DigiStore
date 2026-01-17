@@ -47,7 +47,7 @@ public class LocalizationService : ILocalizationService
 	private Dictionary<LanguageCodes, Dictionary<string, string>> InitializeLocalizations()
 	{
 		// Load from database. This method blocks on async repository calls because constructor cannot be async.
-		var entries = _localizationRepository.GetAllAsync().GetAwaiter().GetResult();
+		var entries = _localizationRepository.GetAllAsync(CancellationToken.None).GetAwaiter().GetResult();
 
 		if(entries == null)
 			throw new Exception("Failed to load localization entries from the database.");

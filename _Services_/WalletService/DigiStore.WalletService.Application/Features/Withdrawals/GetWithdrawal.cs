@@ -50,9 +50,9 @@ public sealed class GetWithdrawalHandler : IWalletServiceHandler
 
 
 
-	public async Task<Result<WithdrawalResponse, Error>> Handle(Guid withdrawalId, CancellationToken ct)
+	public async Task<Result<WithdrawalResponse, Error>> Handle(Guid withdrawalId, CancellationToken token)
 	{
-		var withdrawalResult = await _withdrawalRepository.GetByIdAsync(withdrawalId, ct);
+		var withdrawalResult = await _withdrawalRepository.GetByIdAsync(withdrawalId, token);
 		if (withdrawalResult.IsFailure)
 			return withdrawalResult.Error;
 

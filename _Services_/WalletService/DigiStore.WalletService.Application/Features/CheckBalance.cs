@@ -38,12 +38,12 @@ public sealed class CheckBalanceHandler : IWalletServiceHandler
 	}
 
 
-	public async Task<Result<CheckBalanceResponse, Error>> Handle(Guid userId, decimal amount, CancellationToken ct)
+	public async Task<Result<CheckBalanceResponse, Error>> Handle(Guid userId, decimal amount, CancellationToken token)
 	{
 		if (amount <= 0)
 			return WalletErrors.InvalidAmount;
 
-		var wallet = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
+		var wallet = await _walletRepository.GetOrCreateByUserIdAsync(userId, token);
 		if (wallet.IsFailure)
 			return wallet.Error;
 

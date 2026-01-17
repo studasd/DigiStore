@@ -13,7 +13,7 @@ public interface ICacheService
 	/// <summary>
 	/// Get cached value
 	/// </summary>
-	Task<T?> GetAsync<T>(string key, CancellationToken ct = default);
+	Task<T?> GetAsync<T>(string key, CancellationToken token);
 
 	/// <summary>
 	/// Set value in cache
@@ -22,20 +22,20 @@ public interface ICacheService
 		string key,
 		T value,
 		TimeSpan? expiration = null,
-		CancellationToken ct = default);
+		CancellationToken token	= default);
 
 	/// <summary>
 	/// Remove from cache
 	/// </summary>
-	Task RemoveAsync(string key, CancellationToken ct = default);
+	Task RemoveAsync(string key, CancellationToken token);
 
 	/// <summary>
 	/// Remove by pattern (wildcard)
 	/// </summary>
-	Task RemoveByPatternAsync(string pattern, CancellationToken ct = default);
+	Task RemoveByPatternAsync(string pattern, CancellationToken token);
 
 	/// <summary>
 	/// Check if key exists
 	/// </summary>
-	Task<bool> ExistsAsync(string key, CancellationToken ct = default);
+	Task<bool> ExistsAsync(string key, CancellationToken token);
 }

@@ -14,19 +14,19 @@ public class TgUserRepository : ITgUserRepository
         _db = db;
     }
 
-    public async Task<TgUser?> GetByTelegramIdAsync(long telegramId, CancellationToken ct = default)
+    public async Task<TgUser?> GetByTelegramIdAsync(long telegramId, CancellationToken token)
     {
-        return await _db.TelegramUsers.FirstOrDefaultAsync(u => u.TelegramId == telegramId, ct);
+        return await _db.TelegramUsers.FirstOrDefaultAsync(u => u.TelegramId == telegramId, token);
     }
 
-    public async Task<TgUser?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<TgUser?> GetByIdAsync(Guid id, CancellationToken token)
     {
-        return await _db.TelegramUsers.FirstOrDefaultAsync(u => u.Id == id, ct);
+        return await _db.TelegramUsers.FirstOrDefaultAsync(u => u.Id == id, token);
     }
 
-    public async Task AddOrUpdateAsync(TgUser user, CancellationToken ct = default)
+    public async Task AddOrUpdateAsync(TgUser user, CancellationToken token)
     {
-        var existing = await _db.TelegramUsers.FirstOrDefaultAsync(u => u.TelegramId == user.TelegramId, ct);
+        var existing = await _db.TelegramUsers.FirstOrDefaultAsync(u => u.TelegramId == user.TelegramId, token);
         if (existing == null)
         {
             _db.TelegramUsers.Add(user);
@@ -40,6 +40,6 @@ public class TgUserRepository : ITgUserRepository
             existing.UpdatedAt = DateTime.UtcNow;
         }
 
-        await _db.SaveChangesAsync(ct);
+        await _db.SaveChangesAsync(token);
     }
 }

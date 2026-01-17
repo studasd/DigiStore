@@ -43,7 +43,7 @@ public sealed class GetWalletHandler : IWalletServiceHandler
 	}
 
 
-	public async Task<Result<WalletResponse, Error>> Handle(Guid userId, CancellationToken ct)
+	public async Task<Result<WalletResponse, Error>> Handle(Guid userId, CancellationToken token)
 	{
 		//var cacheKey = string.Format(WalletCacheKeyFormat, userId);
 		//var cached = await _cache.GetAsync<WalletResponse>(cacheKey, ct);
@@ -51,7 +51,7 @@ public sealed class GetWalletHandler : IWalletServiceHandler
 		//{
 		//	return Result<WalletResponse>.Success(cached);
 		//}
-		var wallet = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
+		var wallet = await _walletRepository.GetOrCreateByUserIdAsync(userId, token);
 		if (wallet.IsFailure)
 		{
 			_logger.LogWarning("Wallet not found for user: {UserId}", userId);

@@ -11,20 +11,20 @@ namespace DigiStore.TgBot.Infrastructure.Data.Seeders;
 
 public interface IDataSeeder
 {
-	Task SeedAsync(TgBotDbContext context, IServiceProvider serviceProvider);
+	Task SeedAsync(TgBotDbContext context, IServiceProvider serviceProvider, CancellationToken token);
 }
 
 
 
 public class DataSeeder : IDataSeeder
 {
-	public async Task SeedAsync(TgBotDbContext context, IServiceProvider serviceProvider)
+	public async Task SeedAsync(TgBotDbContext context, IServiceProvider serviceProvider, CancellationToken token)
 	{
-		await SeedLocalizationAsync(context, serviceProvider);
+		await SeedLocalizationAsync(context, serviceProvider, token);
 	}
 
 
-	private static async Task SeedLocalizationAsync(TgBotDbContext context, IServiceProvider serviceProvider)
+	private static async Task SeedLocalizationAsync(TgBotDbContext context, IServiceProvider serviceProvider, CancellationToken token)
 	{
 		if (await context.Localizations.AnyAsync())
 			return;
@@ -33,7 +33,7 @@ public class DataSeeder : IDataSeeder
 		var localRepository = scope.ServiceProvider.GetRequiredService<ILocalizationRepository>();
 
 		// Load from database. This method blocks on async repository calls because constructor cannot be async.
-		var entries = await localRepository.GetAllAsync();
+		var entries = await localRepository.GetAllAsync(token);
 
 		// If DB is empty, seed it from embedded hard-coded values
 		if (entries == null || !entries.Any())
@@ -145,7 +145,7 @@ public class DataSeeder : IDataSeeder
 
 			foreach (var loc in toSeed)
 			{
-				await localRepository.AddOrUpdateAsync(loc);
+				await localRepository.AddOrUpdateAsync(loc, token);
 			}
 		}
 

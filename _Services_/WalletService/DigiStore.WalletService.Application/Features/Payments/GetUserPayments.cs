@@ -53,9 +53,9 @@ public sealed class GetUserPaymentsHandler : IWalletServiceHandler
 
 
 
-	public async Task<Result<IReadOnlyList<PaymentResponse>, Error>> Handle(Guid userId, int skip, int take, CancellationToken ct)
+	public async Task<Result<IReadOnlyList<PaymentResponse>, Error>> Handle(Guid userId, int skip, int take, CancellationToken token)
 	{
-		var paymentsResult = await _paymentRepository.GetUserPaymentsAsync(userId, skip, take, ct);
+		var paymentsResult = await _paymentRepository.GetUserPaymentsAsync(userId, skip, take, token);
 
 		if (paymentsResult.IsFailure)
 		{

@@ -20,20 +20,20 @@ public interface ITgUserService
 		string? firstName,
 		string? lastName,
 		LanguageCodes langCode,
-		CancellationToken ct = default);
+		CancellationToken token);
 
 	/// <summary>
 	/// Get user profile
 	/// </summary>
-	Task<Result<TgUserDto, Error>> GetUserProfileAsync(Guid userId, CancellationToken ct = default);
+	Task<Result<TgUserDto, Error>> GetUserProfileAsync(Guid userId, CancellationToken token);
 
 	/// <summary>
 	/// Update language preference
 	/// </summary>
-	Task<UnitResult<Error>> UpdateLanguageAsync(Guid userId, LanguageCodes langCode, CancellationToken ct = default);
+	Task<UnitResult<Error>> UpdateLanguageAsync(Guid userId, LanguageCodes langCode, CancellationToken token);
 
 	/// <summary>
 	/// Update user activity
 	/// </summary>
-	Task<UnitResult<Error>> UpdateActivityAsync(Guid userId, CancellationToken ct = default);
+	Task<UnitResult<Error>> UpdateActivityAsync(Guid userId, CancellationToken token);
 }

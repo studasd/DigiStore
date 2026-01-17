@@ -21,11 +21,11 @@ public class WithdrawalRepository : IWithdrawalRepository
     }
 
 
-    public async Task<Result<WithdrawalDS, Error>> AddAsync(WithdrawalDS withdrawal, CancellationToken ct)
+    public async Task<Result<WithdrawalDS, Error>> AddAsync(WithdrawalDS withdrawal, CancellationToken token)
     {
         _context.Withdrawals.Add(withdrawal);
 
-		var saveResult = await SaveChangesAsync(ct);
+		var saveResult = await SaveChangesAsync(token);
 		if (saveResult.IsFailure)
 			return saveResult.Error;
 
@@ -33,10 +33,10 @@ public class WithdrawalRepository : IWithdrawalRepository
         return withdrawal;
     }
 
-    public async Task<Result<WithdrawalDS, Error>> GetByIdAsync(Guid withdrawalId, CancellationToken ct)
+    public async Task<Result<WithdrawalDS, Error>> GetByIdAsync(Guid withdrawalId, CancellationToken token)
     {
         var w = await _context.Withdrawals
-            .FirstOrDefaultAsync(p => p.Id == withdrawalId, ct);
+            .FirstOrDefaultAsync(p => p.Id == withdrawalId, token);
 
         if (w == null)
             return Error.NotFound("withdrawal.not_found", "Withdrawal not found");
@@ -44,10 +44,10 @@ public class WithdrawalRepository : IWithdrawalRepository
 		return w;
     }
 
-    public async Task<Result<WithdrawalDS, Error>> GetByAggregatorIdAsync(string aggregatorWithdrawalId, CancellationToken ct)
+    public async Task<Result<WithdrawalDS, Error>> GetByAggregatorIdAsync(string aggregatorWithdrawalId, CancellationToken token)
     {
         var w = await _context.Withdrawals
-            .FirstOrDefaultAsync(p => p.AggregatorWithdrawalId == aggregatorWithdrawalId, ct);
+            .FirstOrDefaultAsync(p => p.AggregatorWithdrawalId == aggregatorWithdrawalId, token);
 
         if (w == null)
             return Error.NotFound("withdrawal.not_found", "Withdrawal not found");
@@ -55,7 +55,7 @@ public class WithdrawalRepository : IWithdrawalRepository
         return w;
     }
 
-    public async Task<Result<List<WithdrawalDS>, Error>> GetUserWithdrawalsAsync(Guid userId, int skip = 0, int take = 10, CancellationToken ct = default)
+    public async Task<Result<List<WithdrawalDS>, Error>> GetUserWithdrawalsAsync(Guid userId, int skip = 0, int take = 10, CancellationToken token = default)
     {
         try
         {
@@ -64,7 +64,7 @@ public class WithdrawalRepository : IWithdrawalRepository
                 .OrderByDescending(p => p.CreatedAt)
                 .Skip(skip)
                 .Take(take)
-                .ToListAsync(ct);
+                .ToListAsync(token);
 
 			return list;
         }
@@ -75,11 +75,11 @@ public class WithdrawalRepository : IWithdrawalRepository
         }
     }
 
-    public async Task<UnitResult<Error>> UpdateAsync(WithdrawalDS withdrawal, CancellationToken ct)
+    public async Task<UnitResult<Error>> UpdateAsync(WithdrawalDS withdrawal, CancellationToken token)
     {
         _context.Withdrawals.Update(withdrawal);
 
-		var saveResult = await SaveChangesAsync(ct);
+		var saveResult = await SaveChangesAsync(token);
 		if (saveResult.IsFailure)
 			return saveResult.Error;
 
@@ -93,9 +93,9 @@ public class WithdrawalRepository : IWithdrawalRepository
 	/// <summary>
 	/// Обновить статус выплаты
 	/// </summary>
-	public async Task<UnitResult<Error>> UpdateWithdrawalStatusAsync(Guid withdrawalId, WithdrawalStatus status, CancellationToken ct)
+	public async Task<UnitResult<Error>> UpdateWithdrawalStatusAsync(Guid withdrawalId, WithdrawalStatus status, CancellationToken token)
 	{
-		var withdrawalResult = await GetByIdAsync(withdrawalId, ct);
+		var withdrawalResult = await GetByIdAsync(withdrawalId, token);
 		if (withdrawalResult.IsFailure)
             return withdrawalResult.Error;
 
@@ -108,23 +108,23 @@ public class WithdrawalRepository : IWithdrawalRepository
 			withdrawal.MarkAsSucceeded();
 		}
 
-		return await UpdateAsync(withdrawal, ct);
+		return await UpdateAsync(withdrawal, token);
 	}
 
 
 	/// <summary>
 	/// Завершить выплату
 	/// </summary>
-	public async Task<UnitResult<Error>> CompleteWithdrawalAsync(Guid withdrawalId, CancellationToken ct)
+	public async Task<UnitResult<Error>> CompleteWithdrawalAsync(Guid withdrawalId, CancellationToken token)
 	{
-		var withdrawalResult = await GetByIdAsync(withdrawalId, ct);
+		var withdrawalResult = await GetByIdAsync(withdrawalId, token);
 		if (withdrawalResult.IsFailure)
 			return withdrawalResult.Error;
 
 		var withdrawal = withdrawalResult.Value;
 		withdrawal.MarkAsSucceeded();
 		
-		return await UpdateAsync(withdrawal, ct);
+		return await UpdateAsync(withdrawal, token);
 
 		_logger.LogInformation(
 			$"YooKassa: Выплата завершена - WithdrawalId: {withdrawalId}, " +
@@ -132,11 +132,11 @@ public class WithdrawalRepository : IWithdrawalRepository
 	}
 
 
-	public async Task<UnitResult<Error>> SaveChangesAsync(CancellationToken ct)
+	public async Task<UnitResult<Error>> SaveChangesAsync(CancellationToken token)
 	{
 		try
 		{
-			await _context.SaveChangesAsync(ct);
+			await _context.SaveChangesAsync(token);
 		}
 		catch (DbUpdateException ex)
 		{

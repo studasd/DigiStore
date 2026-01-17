@@ -25,78 +25,78 @@ public class UserRepository : IUserRepository
 		_logger = logger;
 	}
 
-	public async Task<UserDS?> GetByIdAsync(Guid userId, CancellationToken ct = default)
+	public async Task<UserDS?> GetByIdAsync(Guid userId, CancellationToken token)
 	{
 		return await _context.Users
 			.AsNoTracking()
-			.FirstOrDefaultAsync(u => u.Id == userId, ct);
+			.FirstOrDefaultAsync(u => u.Id == userId, token);
 	}
 
-	public async Task<UserDS?> GetByEmailAsync(string email, CancellationToken ct = default)
+	public async Task<UserDS?> GetByEmailAsync(string email, CancellationToken token)
 	{
 		return await _context.Users
 			.AsNoTracking()
-			.FirstOrDefaultAsync(u => u.Email == email, ct);
+			.FirstOrDefaultAsync(u => u.Email == email, token);
 	}
 
-	public async Task<UserDS?> GetByTelegramIdAsync(long telegramId, CancellationToken ct = default)
+	public async Task<UserDS?> GetByTelegramIdAsync(long telegramId, CancellationToken token)
 	{
 		return await _context.Users
 			.AsNoTracking()
-			.FirstOrDefaultAsync(u => u.TelegramId == telegramId, ct);
+			.FirstOrDefaultAsync(u => u.TelegramId == telegramId, token);
 	}
 
-	public async Task<bool> ExistsByEmailAsync(string email, CancellationToken ct = default)
+	public async Task<bool> ExistsByEmailAsync(string email, CancellationToken token)
 	{
 		return await _context.Users
-			.AnyAsync(u => u.Email == email, ct);
+			.AnyAsync(u => u.Email == email, token);
 	}
 
-	public async Task<bool> ExistsByTelegramIdAsync(long telegramId, CancellationToken ct = default)
+	public async Task<bool> ExistsByTelegramIdAsync(long telegramId, CancellationToken token)
 	{
 		return await _context.Users
-			.AnyAsync(u => u.TelegramId == telegramId, ct);
+			.AnyAsync(u => u.TelegramId == telegramId, token);
 	}
 
-	public async Task AddAsync(UserDS user, CancellationToken ct = default)
+	public async Task AddAsync(UserDS user, CancellationToken token)
 	{
 		_context.Users.Add(user);
-		await _context.SaveChangesAsync(ct);
+		await _context.SaveChangesAsync(token);
 		_logger.LogInformation("User added: {UserId}", user.Id);
 	}
 
-	public async Task UpdateAsync(UserDS user, CancellationToken ct = default)
+	public async Task UpdateAsync(UserDS user, CancellationToken token)
 	{
 		_context.Users.Update(user);
-		await _context.SaveChangesAsync(ct);
+		await _context.SaveChangesAsync(token);
 		_logger.LogInformation("User updated: {UserId}", user.Id);
 	}
 
-	public async Task DeleteAsync(Guid userId, CancellationToken ct = default)
+	public async Task DeleteAsync(Guid userId, CancellationToken token)
 	{
-		var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId, ct);
+		var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId, token);
 		if (user != null)
 		{
 			user.IsDeleted = true;
 			_context.Users.Update(user);
-			await _context.SaveChangesAsync(ct);
+			await _context.SaveChangesAsync(token);
 			_logger.LogInformation("User soft deleted: {UserId}", userId);
 		}
 	}
 
-	public async Task<IEnumerable<UserDS>> GetAllActiveAsync(CancellationToken ct = default)
+	public async Task<IEnumerable<UserDS>> GetAllActiveAsync(CancellationToken token)
 	{
 		return await _context.Users
 			.AsNoTracking()
 			.Where(u => u.IsActive && !u.IsDeleted)
-			.ToListAsync(ct);
+			.ToListAsync(token);
 	}
 
-	public async Task<IEnumerable<UserDS>> GetBySourceAsync(UserSource source, CancellationToken ct = default)
+	public async Task<IEnumerable<UserDS>> GetBySourceAsync(UserSource source, CancellationToken token)
 	{
 		return await _context.Users
 			.AsNoTracking()
 			.Where(u => u.Source == source)
-			.ToListAsync(ct);
+			.ToListAsync(token);
 	}
 }

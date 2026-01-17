@@ -33,9 +33,9 @@ public class TgUserService : ITgUserService
 		string? firstName,
 		string? lastName,
 		LanguageCodes langCode,
-		CancellationToken ct = default)
+		CancellationToken token)
 	{
-		var responseResult = await _userClient.GetUserByTelegramId(telegramId, ct);
+		var responseResult = await _userClient.GetUserByTelegramId(telegramId, token);
 
 		if (responseResult.IsFailure && responseResult.Error.Type == ErrorType.NOT_FOUND)
 		{
@@ -49,7 +49,7 @@ public class TgUserService : ITgUserService
 				Source = "Telegram"
 			};
 
-			var createResponse = await _userClient.RegisterUser(createRequest, ct);
+			var createResponse = await _userClient.RegisterUser(createRequest, token);
 
 			if (createResponse.IsFailure)
 			{
@@ -97,9 +97,9 @@ public class TgUserService : ITgUserService
 	}
 
 
-	public async Task<Result<TgUserDto, Error>> GetUserProfileAsync(Guid userId, CancellationToken ct = default)
+	public async Task<Result<TgUserDto, Error>> GetUserProfileAsync(Guid userId, CancellationToken token)
 	{
-		var responseResult = await _userClient.GetUserById(userId, ct);
+		var responseResult = await _userClient.GetUserById(userId, token);
 
 		if (responseResult.IsFailure)
 		{
@@ -127,9 +127,9 @@ public class TgUserService : ITgUserService
 	}
 
 
-	public async Task<UnitResult<Error>> UpdateLanguageAsync(Guid userId, LanguageCodes langCode, CancellationToken ct = default)
+	public async Task<UnitResult<Error>> UpdateLanguageAsync(Guid userId, LanguageCodes langCode, CancellationToken token)
 	{
-		var responseResult = await _userClient.UpdateLanguage(userId, langCode, ct);
+		var responseResult = await _userClient.UpdateLanguage(userId, langCode, token);
 
 		if (responseResult.IsFailure)
 		{
@@ -143,9 +143,9 @@ public class TgUserService : ITgUserService
 	}
 
 
-	public async Task<UnitResult<Error>> UpdateActivityAsync(Guid userId, CancellationToken ct = default)
+	public async Task<UnitResult<Error>> UpdateActivityAsync(Guid userId, CancellationToken token)
 	{
-		var responseResult = await _userClient.UpdateActivity(userId, ct);
+		var responseResult = await _userClient.UpdateActivity(userId, token);
 
 		if (responseResult.IsFailure)
 		{

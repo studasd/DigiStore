@@ -49,9 +49,9 @@ public sealed class GetPaymentHandler : IWalletServiceHandler
 
 
 
-	public async Task<Result<PaymentResponse, Error>> Handle(Guid paymentId, CancellationToken ct)
+	public async Task<Result<PaymentResponse, Error>> Handle(Guid paymentId, CancellationToken token)
 	{
-		var paymentResult = await _paymentRepository.GetByIdAsync(paymentId, ct);
+		var paymentResult = await _paymentRepository.GetByIdAsync(paymentId, token);
 		if (paymentResult.IsFailure)
 			return paymentResult.Error;
 

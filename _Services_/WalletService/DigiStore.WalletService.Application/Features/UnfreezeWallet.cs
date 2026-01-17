@@ -36,11 +36,11 @@ public sealed class UnfreezeWalletHandler : IWalletServiceHandler
 	}
 
 
-	public async Task<UnitResult<Error>> Handle(Guid userId, CancellationToken ct = default)
+	public async Task<UnitResult<Error>> Handle(Guid userId, CancellationToken token)
 	{
 		try
 		{
-			var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
+			var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(userId, token);
 			if (walletResult.IsFailure)
 				return walletResult.Error;
 
@@ -48,7 +48,7 @@ public sealed class UnfreezeWalletHandler : IWalletServiceHandler
 
 			wallet.Unfreeze();
 
-			await _walletRepository.UpdateAsync(wallet, ct);
+			await _walletRepository.UpdateAsync(wallet, token);
 
 			//await InvalidateWalletCacheAsync(userId, ct);
 

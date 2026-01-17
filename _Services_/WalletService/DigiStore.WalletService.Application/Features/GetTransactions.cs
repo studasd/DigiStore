@@ -43,13 +43,13 @@ public sealed class GetTransactionsHandler : IWalletServiceHandler
 	}
 
 
-	public async Task<Result<IEnumerable<TransactionResponse>, Error>> Handle(Guid userId, int skip = 0, int take = 20, CancellationToken ct = default)
+	public async Task<Result<IEnumerable<TransactionResponse>, Error>> Handle(Guid userId, int skip = 0, int take = 20, CancellationToken token = default)
 	{
-		var wallet = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
+		var wallet = await _walletRepository.GetOrCreateByUserIdAsync(userId, token);
 		if (wallet.IsFailure)
 			return wallet.Error;
 			
-		var transactions = await _walletRepository.GetTransactionsByWalletIdAsync(wallet.Value.Id, skip, take, ct);
+		var transactions = await _walletRepository.GetTransactionsByWalletIdAsync(wallet.Value.Id, skip, take, token);
 		if(transactions.IsFailure)
 			return transactions.Error;
 

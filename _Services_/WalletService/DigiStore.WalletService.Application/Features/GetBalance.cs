@@ -37,7 +37,7 @@ public sealed class GetBalanceHandler : IWalletServiceHandler
 	}
 
 
-	public async Task<Result<BalanceResponse, Error>> Handle(Guid userId, CancellationToken ct)
+	public async Task<Result<BalanceResponse, Error>> Handle(Guid userId, CancellationToken token)
 	{
 		//var cacheKey = string.Format(BalanceCacheKeyFormat, userId);
 		//var cached = await _cache.GetAsync<decimal?>(cacheKey, ct);
@@ -45,7 +45,7 @@ public sealed class GetBalanceHandler : IWalletServiceHandler
 		//{
 		//	return Result<decimal>.Success(cached.Value);
 		//}
-		var wallet = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
+		var wallet = await _walletRepository.GetOrCreateByUserIdAsync(userId, token);
 		if (wallet.IsFailure)
 		{
 			return wallet.Error;
