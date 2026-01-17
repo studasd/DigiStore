@@ -60,12 +60,19 @@ public sealed class DepositHandler : IWalletServiceHandler
 			{
 				return WalletErrors.InvalidAmount;
 			}
-			var wallet = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId, ct);
+			
+			var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId, ct);
+			if (walletResult.IsFailure)
+			{
+				return walletResult.Error;
+			}
 
+			var wallet = walletResult.Value;
 			if (wallet.IsFrozen)
 			{
 				return WalletErrors.WalletFrozen;
 			}
+
 			wallet.Deposit(command.Amount);
 
 			var transaction = new TransactionDS

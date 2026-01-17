@@ -7,9 +7,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DigiStore.WalletService.Application.Features;
 
@@ -44,17 +41,13 @@ public sealed class CheckBalanceHandler : IWalletServiceHandler
 	public async Task<Result<CheckBalanceResponse, Error>> Handle(Guid userId, decimal amount, CancellationToken ct)
 	{
 		if (amount <= 0)
-		{
 			return WalletErrors.InvalidAmount;
-		}
 
 		var wallet = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
-		if (wallet == null)
-		{
-			return WalletErrors.WalletNotFound;
-		}
+		if (wallet.IsFailure)
+			return wallet.Error;
 
-		return new CheckBalanceResponse(wallet.Balance >= amount);
+		return new CheckBalanceResponse(wallet.Value.Balance >= amount);
 	}
 
 }

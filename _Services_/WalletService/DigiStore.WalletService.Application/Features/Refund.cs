@@ -50,14 +50,14 @@ public sealed class RefundHandler : IWalletServiceHandler
 		try
 		{
 			if (amount <= 0)
-			{
 				return WalletErrors.InvalidAmount;
-			}
-			var wallet = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
-			if (wallet == null)
-			{
-				return WalletErrors.WalletNotFound;
-			}
+
+			var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
+			if (walletResult.IsFailure)
+				return walletResult.Error;
+
+			var wallet = walletResult.Value;
+
 			wallet.Deposit(amount);
 			var transaction = new TransactionDS
 			{

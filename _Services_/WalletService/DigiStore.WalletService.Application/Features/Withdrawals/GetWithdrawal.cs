@@ -35,24 +35,28 @@ public sealed class GetWithdrawal : IEndpoint
 public sealed class GetWithdrawalHandler : IWalletServiceHandler
 {
 	private readonly ILogger<GetWithdrawalHandler> _logger;
-	private readonly IWalletRepository _walletRepository;
+    private readonly IWithdrawalRepository _withdrawalRepository;
+    private readonly IWalletRepository _walletRepository;
 
 	public GetWithdrawalHandler(
 		ILogger<GetWithdrawalHandler> logger,
+		IWithdrawalRepository withdrawalRepository,
 		IWalletRepository walletRepository)
 	{
 		_logger = logger;
-		_walletRepository = walletRepository;
+        _withdrawalRepository = withdrawalRepository;
+        _walletRepository = walletRepository;
 	}
 
 
 
 	public async Task<Result<WithdrawalResponse, Error>> Handle(Guid withdrawalId, CancellationToken ct)
 	{
-		var withdrawal = await _withdrawalService.GetWithdrawalAsync(withdrawalId);
-		if (withdrawal == null)
-			return NotFound(new { error = "Выплата не найдена" });
+		var withdrawalResult = await _withdrawalRepository.GetByIdAsync(withdrawalId, ct);
+		if (withdrawalResult.IsFailure)
+			return withdrawalResult.Error;
 
+		var withdrawal = withdrawalResult.Value;
 
 		return new WithdrawalResponse
 		(
@@ -62,7 +66,7 @@ public sealed class GetWithdrawalHandler : IWalletServiceHandler
 			withdrawal.ActualAmount,
 			withdrawal.CardMask,
 			withdrawal.Status,
-			withdrawal.Crea,
+			withdrawal.CreatedAt,
 			withdrawal.CompletedAt
 		);
 	}

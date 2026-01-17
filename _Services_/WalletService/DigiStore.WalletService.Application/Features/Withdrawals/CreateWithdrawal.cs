@@ -32,39 +32,36 @@ public sealed class CreateWithdrawal : IEndpoint
 public sealed class CreateWithdrawalHandler : IWalletServiceHandler
 {
 	private readonly ILogger<CreateWithdrawalHandler> _logger;
-	private readonly IWalletRepository _walletRepository;
+    private readonly IWithdrawalService _withdrawalService;
+    private readonly IWalletRepository _walletRepository;
 
 	public CreateWithdrawalHandler(
 		ILogger<CreateWithdrawalHandler> logger,
+		IWithdrawalService withdrawalService,
 		IWalletRepository walletRepository)
 	{
 		_logger = logger;
-		_walletRepository = walletRepository;
+        _withdrawalService = withdrawalService;
+        _walletRepository = walletRepository;
 	}
 
 
 
-	public async Task<Result<CreateWithdrawalResponse, Error>> Handle(Guid UserId, Guid WalletId, decimal Amount, string CardNumber, CancellationToken ct)
+	public async Task<Result<CreateWithdrawalResponse, Error>> Handle(Guid userId, Guid walletId, decimal amount, string cardNumber, CancellationToken ct)
 	{
-		if (string.IsNullOrEmpty(request.WalletId) || !Guid.TryParse(request.WalletId, out var walletId))
-			return BadRequest(new { error = "Некорректный WalletId" });
+		if (amount <= 0)
+			return Error.Validation("amount.bad", "Сумма должна быть больше 0");
 
-		if (request.Amount <= 0)
-			return BadRequest(new { error = "Сумма должна быть больше 0" });
+		if (string.IsNullOrEmpty(cardNumber))
+			return Error.NotFound("cardnumber.emty", "Номер карты не может быть пустым");
 
-		if (string.IsNullOrEmpty(request.CardNumber))
-			return BadRequest(new { error = "Номер карты не может быть пустым" });
+		var withdrawalResult = await _withdrawalService.CreateWithdrawalAsync(walletId, userId, amount, cardNumber, ct);
+		if(withdrawalResult.IsFailure)
+			return withdrawalResult.Error;
 
-		var (success, withdrawal, error) = await _withdrawalService.CreateWithdrawalAsync(
-			walletId,
-			userId,
-			request.Amount,
-			request.CardNumber);
+		var withdrawal = withdrawalResult.Value;
 
-		if (!success)
-			return BadRequest(new { error });
-
-		return Ok(new CreateWithdrawalResponse
+		return new CreateWithdrawalResponse
 		(
 			withdrawal!.Id,
 			withdrawal.RequestedAmount,
@@ -72,7 +69,7 @@ public sealed class CreateWithdrawalHandler : IWalletServiceHandler
 			withdrawal.ActualAmount,
 			withdrawal.CardMask,
 			withdrawal.Status
-		));
+		);
 	}
 
 }

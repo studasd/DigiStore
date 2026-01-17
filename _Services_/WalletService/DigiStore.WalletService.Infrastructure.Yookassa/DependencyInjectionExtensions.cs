@@ -1,7 +1,7 @@
 ﻿using DigiStore.WalletService.Application;
 using DigiStore.WalletService.Application.Configurations;
+using DigiStore.WalletService.Application.Validators;
 using DigiStore.WalletService.Infrastructure.Yookassa.Services;
-using DigiStore.WalletService.Infrastructure.Yookassa.Validators;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Yandex.Checkout.V3;
@@ -36,10 +36,10 @@ public static class DependencyInjectionExtensions
 		});
 
 		// Регистрировать сервисы
-		services.AddScoped<YooKassaPaymentService>();
-		services.AddScoped<YooKassaWithdrawalService>();
+		services.AddScoped<YookassaProvider>();
+		//services.AddScoped<YooKassaWithdrawalService>();
 		services.AddScoped<YooKassaWebhookService>();
-		services.AddScoped<YooKassaRecurringService>();
+		//services.AddScoped<YooKassaRecurringService>();
 
 		return services;
 	}
@@ -80,9 +80,9 @@ public static class DependencyInjectionExtensions
 		});
 
 		// Регистрировать сервисы
-		services.AddScoped<YooKassaPaymentService>();
-		services.AddScoped<YooKassaWithdrawalService>();
-		services.AddScoped<YooKassaRecurringService>();
+		services.AddScoped<YookassaProvider>();
+		//services.AddScoped<YooKassaWithdrawalService>();
+		//services.AddScoped<YooKassaRecurringService>();
 		services.AddScoped<YooKassaWebhookService>();
 
 		return services;

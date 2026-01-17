@@ -2,6 +2,7 @@ using CSharpFunctionalExtensions;
 using DigiStore.SharedKernel;
 using DigiStore.WalletService.Application.Interfaces;
 using DigiStore.WalletService.Domain;
+using DigiStore.WalletService.Domain.Enums;
 using DigiStore.WalletService.Infrastructure.Postgres.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -74,7 +75,7 @@ public class WithdrawalRepository : IWithdrawalRepository
         }
     }
 
-    public async Task<Result<WithdrawalDS, Error>> UpdateAsync(WithdrawalDS withdrawal, CancellationToken ct)
+    public async Task<UnitResult<Error>> UpdateAsync(WithdrawalDS withdrawal, CancellationToken ct)
     {
         _context.Withdrawals.Update(withdrawal);
 
@@ -83,8 +84,52 @@ public class WithdrawalRepository : IWithdrawalRepository
 			return saveResult.Error;
 
 		_logger.LogInformation("Withdrawal updated: {WithdrawalId}", withdrawal.Id);
-        return withdrawal;
+        
+        return Result.Success<Error>() ;
     }
+
+
+
+	/// <summary>
+	/// Обновить статус выплаты
+	/// </summary>
+	public async Task<UnitResult<Error>> UpdateWithdrawalStatusAsync(Guid withdrawalId, WithdrawalStatus status, CancellationToken ct)
+	{
+		var withdrawalResult = await GetByIdAsync(withdrawalId, ct);
+		if (withdrawalResult.IsFailure)
+            return withdrawalResult.Error;
+
+		var withdrawal = withdrawalResult.Value;
+		withdrawal.Status = status;
+		withdrawal.UpdatedAt = DateTime.UtcNow;
+
+		if (status == WithdrawalStatus.Succeeded)
+		{
+			withdrawal.MarkAsSucceeded();
+		}
+
+		return await UpdateAsync(withdrawal, ct);
+	}
+
+
+	/// <summary>
+	/// Завершить выплату
+	/// </summary>
+	public async Task<UnitResult<Error>> CompleteWithdrawalAsync(Guid withdrawalId, CancellationToken ct)
+	{
+		var withdrawalResult = await GetByIdAsync(withdrawalId, ct);
+		if (withdrawalResult.IsFailure)
+			return withdrawalResult.Error;
+
+		var withdrawal = withdrawalResult.Value;
+		withdrawal.MarkAsSucceeded();
+		
+		return await UpdateAsync(withdrawal, ct);
+
+		_logger.LogInformation(
+			$"YooKassa: Выплата завершена - WithdrawalId: {withdrawalId}, " +
+			$"Amount: {withdrawal.ActualAmount}");
+	}
 
 
 	public async Task<UnitResult<Error>> SaveChangesAsync(CancellationToken ct)

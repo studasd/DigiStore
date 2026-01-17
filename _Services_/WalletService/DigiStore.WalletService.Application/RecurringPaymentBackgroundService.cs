@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using DigiStore.WalletService.Application.Interfaces;
+using DigiStore.WalletService.Application.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -31,26 +33,34 @@ public class RecurringPaymentBackgroundService : BackgroundService
 			{
 				using var scope = _serviceProvider.CreateScope();
 				var recurringService = scope.ServiceProvider
-					.GetRequiredService<YooKassaRecurringService>();
+					.GetRequiredService<PaymentRecurringService>();
+
+				var recurringRopository = scope.ServiceProvider
+					.GetRequiredService<IPaymentRecurringRepository>();
 
 				// Получить подписки готовые к обработке
-				var duePayments = await recurringService.GetDueRecurringPaymentsAsync();
+				var duePaymentsResult = await recurringRopository.GetDueAsync();
+				
+				if (duePaymentsResult.IsSuccess)
+				{
+					var duePayments = duePaymentsResult.Value;
 
-				_logger.LogInformation(
+					_logger.LogInformation(
 					$"Найдено {duePayments.Count} рекуррентных платежей для обработки");
 
-				// Обработать каждый платеж
-				foreach (var recurring in duePayments)
-				{
-					try
+					// Обработать каждый платеж
+					foreach (var recurring in duePayments)
 					{
-						await recurringService.ProcessNextRecurringPaymentAsync(recurring.Id);
+						try
+						{
+							await recurringService.ProcessNextRecurringPaymentAsync(recurring.Id, stoppingToken);
+						}
+						catch (Exception ex)
+						{
+							_logger.LogError(ex, $"Ошибка при обработке рекуррентного платежа {recurring.Id}");
+						}
 					}
-					catch (Exception ex)
-					{
-						_logger.LogError(ex,
-							$"Ошибка при обработке рекуррентного платежа {recurring.Id}");
-					}
+
 				}
 
 				// Ждать перед следующей проверкой

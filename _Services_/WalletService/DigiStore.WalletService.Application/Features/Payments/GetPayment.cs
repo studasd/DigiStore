@@ -32,15 +32,18 @@ public sealed class GetPaymentHandler : IWalletServiceHandler
 {
 	private readonly ILogger<GetPaymentHandler> _logger;
     private readonly IPaymentService _paymentService;
+    private readonly IPaymentRepository _paymentRepository;
     private readonly IWalletRepository _walletRepository;
 
 	public GetPaymentHandler(
 		ILogger<GetPaymentHandler> logger,
 		IPaymentService paymentService,
+		IPaymentRepository paymentRepository,
 		IWalletRepository walletRepository)
 	{
 		_logger = logger;
         _paymentService = paymentService;
+        _paymentRepository = paymentRepository;
         _walletRepository = walletRepository;
 	}
 
@@ -48,7 +51,7 @@ public sealed class GetPaymentHandler : IWalletServiceHandler
 
 	public async Task<Result<PaymentResponse, Error>> Handle(Guid paymentId, CancellationToken ct)
 	{
-		var paymentResult = await _paymentService.GetPaymentAsync(paymentId);
+		var paymentResult = await _paymentRepository.GetByIdAsync(paymentId, ct);
 		if (paymentResult.IsFailure)
 			return paymentResult.Error;
 

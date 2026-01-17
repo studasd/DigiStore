@@ -40,11 +40,11 @@ public sealed class UnfreezeWalletHandler : IWalletServiceHandler
 	{
 		try
 		{
-			var wallet = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
-			if (wallet == null)
-			{
-				return WalletErrors.WalletNotFound;
-			}
+			var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
+			if (walletResult.IsFailure)
+				return walletResult.Error;
+
+			var wallet = walletResult.Value;
 
 			wallet.Unfreeze();
 

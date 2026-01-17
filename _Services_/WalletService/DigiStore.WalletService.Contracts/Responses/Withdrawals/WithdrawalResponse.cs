@@ -11,5 +11,5 @@ public record WithdrawalResponse
 	string CardMask,
 	WithdrawalStatus Status,
 	DateTime CreatedAt,
-	DateTime CompletedAt
+	DateTime? CompletedAt
 	);

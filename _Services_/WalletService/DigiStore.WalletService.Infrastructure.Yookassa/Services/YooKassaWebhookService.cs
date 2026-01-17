@@ -1,7 +1,6 @@
 ﻿using DigiStore.WalletService.Application.Configurations;
+using DigiStore.WalletService.Application.Interfaces;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using Yandex.Checkout.V3;
@@ -11,23 +10,32 @@ namespace DigiStore.WalletService.Infrastructure.Yookassa.Services;
 /// <summary>
 /// Сервис обработки вебхуков от YooKassa
 /// </summary>
-public class YooKassaWebhookService
+public class YooKassaWebhookServiceOLD : IYooKassaWebhookService
 {
 	private readonly YooKassaSettings _settings;
-	private readonly YooKassaPaymentService _paymentService;
-	private readonly YooKassaWithdrawalService _withdrawalService;
-	private readonly ILogger<YooKassaWebhookService> _logger;
+	private readonly IYookassaProvider _yookassaProvider;
+	private readonly IWithdrawalService _withdrawalService;
+    private readonly IWithdrawalRepository _withdrawalRepository;
+    private readonly IPaymentService _paymentService;
+    private readonly IPaymentRepository _paymentRepository;
+    private readonly ILogger<YooKassaWebhookServiceOLD> _logger;
 
-	public YooKassaWebhookService(
+	public YooKassaWebhookServiceOLD(
 		YooKassaSettings settings,
-		YooKassaPaymentService paymentService,
-		YooKassaWithdrawalService withdrawalService,
-		ILogger<YooKassaWebhookService> logger)
+		IYookassaProvider yookassaProvider,
+		IWithdrawalService withdrawalService,
+		IWithdrawalRepository withdrawalRepository,
+		IPaymentService paymentService,
+		IPaymentRepository paymentRepository,
+		ILogger<YooKassaWebhookServiceOLD> logger)
 	{
 		_settings = settings;
-		_paymentService = paymentService;
+		_yookassaProvider = yookassaProvider;
 		_withdrawalService = withdrawalService;
-		_logger = logger;
+        _withdrawalRepository = withdrawalRepository;
+        _paymentService = paymentService;
+        _paymentRepository = paymentRepository;
+        _logger = logger;
 	}
 
 	/// <summary>
@@ -53,7 +61,7 @@ public class YooKassaWebhookService
 
 			// Вычислить сигнатуру
 			var data = Encoding.UTF8.GetBytes(jsonBody + _settings.WebhookSecret);
-			using (var hmac = new System.Security.Cryptography.HMACSHA256(
+			using (var hmac = new HMACSHA256(
 				Encoding.UTF8.GetBytes(_settings.WebhookSecret)))
 			{
 				var hash = hmac.ComputeHash(data);
@@ -69,6 +77,7 @@ public class YooKassaWebhookService
 		}
 	}
 
+
 	/// <summary>
 	/// Обработать вебхук от YooKassa
 	/// </summary>
@@ -80,11 +89,11 @@ public class YooKassaWebhookService
 			var notification = Client.ParseMessage(
 				"POST",
 				"application/json",
-				new System.IO.MemoryStream(Encoding.UTF8.GetBytes(jsonBody)));
+				new MemoryStream(Encoding.UTF8.GetBytes(jsonBody)));
 
 			if (notification is PaymentSucceededNotification paymentNotification)
 			{
-				await ProcessPaymentSucceededAsync(paymentNotification.Object);
+				await ProcessPaymentSucceededAsync(paymentNotification.Object, ct);
 			}
 			else if (notification is PaymentWaitingForCaptureNotification captureNotification)
 			{
@@ -92,7 +101,7 @@ public class YooKassaWebhookService
 			}
 			else if (notification is PaymentCanceledNotification cancelNotification)
 			{
-				await ProcessPaymentCanceledAsync(cancelNotification.Object);
+				await ProcessPaymentCanceledAsync(cancelNotification.Object, ct);
 			}
 			else if (notification is RefundSucceededNotification refundNotification)
 			{
@@ -104,7 +113,7 @@ public class YooKassaWebhookService
 			}
 			else if (notification is PayoutCanceledNotification payoutCancelNotification)
 			{
-				await ProcessPayoutCanceledAsync(payoutCancelNotification.Object);
+				await ProcessPayoutCanceledAsync(payoutCancelNotification.Object, ct);
 			}
 			else
 			{
@@ -117,11 +126,11 @@ public class YooKassaWebhookService
 		}
 	}
 
-	private async Task ProcessPaymentSucceededAsync(Payment payment)
+	private async Task ProcessPaymentSucceededAsync(Payment payment, CancellationToken ct)
 	{
 		_logger.LogInformation($"YooKassa: Платеж успешен - PaymentId: {payment.Id}");
 
-		var dbPayment = await _paymentService.GetPaymentByYooKassaIdAsync(payment.Id);
+		var dbPayment = await _paymentRepository.GetByAggregatorIdAsync(payment.Id, ct);
 		if (dbPayment.IsSuccess)
 		{
 			await _paymentService.CompletePaymentAsync(dbPayment.Value.Id);
@@ -135,14 +144,14 @@ public class YooKassaWebhookService
 		// Подтвердить платеж
 	}
 
-	private async Task ProcessPaymentCanceledAsync(Payment payment)
+	private async Task ProcessPaymentCanceledAsync(Payment payment, CancellationToken ct)
 	{
 		_logger.LogInformation($"YooKassa: Платеж отменен - PaymentId: {payment.Id}");
 
-		var dbPayment = await _paymentService.GetPaymentByYooKassaIdAsync(payment.Id);
+		var dbPayment = await _paymentRepository.GetByAggregatorIdAsync(payment.Id, ct);
 		if (dbPayment.IsSuccess)
 		{
-			await _paymentService.CancelPaymentAsync(dbPayment.Value.Id, "Отменен YooKassa");
+			await _paymentRepository.CancelPaymentAsync(dbPayment.Value.Id, "Отменен YooKassa");
 		}
 	}
 
@@ -156,18 +165,18 @@ public class YooKassaWebhookService
 	{
 		_logger.LogInformation($"YooKassa: Выплата успешна - PayoutId: {payout.Id}");
 
-		var dbWithdrawal = await _withdrawalService.GetWithdrawalByYooKassaIdAsync(payout.Id);
+		var dbWithdrawal = await _withdrawalRepository.GetByAggregatorIdAsync(payout.Id, ct);
 		if (dbWithdrawal.IsSuccess)
 		{
-			await _withdrawalService.CompleteWithdrawalAsync(dbWithdrawal.Value.Id, ct);
+			await _withdrawalRepository.CompleteWithdrawalAsync(dbWithdrawal.Value.Id, ct);
 		}
 	}
 
-	private async Task ProcessPayoutCanceledAsync(Payout payout)
+	private async Task ProcessPayoutCanceledAsync(Payout payout, CancellationToken ct)
 	{
 		_logger.LogInformation($"YooKassa: Выплата отменена - PayoutId: {payout.Id}");
 
-		var dbWithdrawal = await _withdrawalService.GetWithdrawalByYooKassaIdAsync(payout.Id);
+		var dbWithdrawal = await _withdrawalRepository.GetByAggregatorIdAsync(payout.Id, ct);
 		if (dbWithdrawal.IsSuccess)
 		{
 			await _withdrawalService.CancelWithdrawalAsync(dbWithdrawal.Value.Id, "Отменена YooKassa");
@@ -181,22 +190,17 @@ public class YooKassaWebhookService
 /// <summary>
 /// Сервис обработки вебхуков YooKassa v4.3.1
 /// </summary>
-public class YooKassaWebhookServiceNEW
+public class YooKassaWebhookService : IYooKassaWebhookService
 {
 	private readonly YooKassaSettings _settings;
-	private readonly YooKassaPaymentService _paymentService;
-	private readonly YooKassaWithdrawalService _withdrawalService;
 	private readonly ILogger<YooKassaWebhookService> _logger;
 
-	public YooKassaWebhookServiceNEW(
+	public YooKassaWebhookService(
 		YooKassaSettings settings,
-		YooKassaPaymentService paymentService,
-		YooKassaWithdrawalService withdrawalService,
+		YookassaProvider paymentService,
 		ILogger<YooKassaWebhookService> logger)
 	{
 		_settings = settings;
-		_paymentService = paymentService;
-		_withdrawalService = withdrawalService;
 		_logger = logger;
 	}
 
@@ -230,10 +234,11 @@ public class YooKassaWebhookServiceNEW
 		}
 	}
 
+
 	/// <summary>
 	/// Обработать вебхук
 	/// </summary>
-	public async Task ProcessWebhookAsync(string bodyContent)
+	public async Task ProcessWebhookAsync(string bodyContent, CancellationToken ct)
 	{
 		try
 		{

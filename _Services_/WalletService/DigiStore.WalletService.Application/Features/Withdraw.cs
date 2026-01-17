@@ -52,51 +52,43 @@ public sealed class WithdrawHandler : IWalletServiceHandler
 
 	public async Task<Result<TransactionResponse, Error>> Handle(WithdrawCommand command, CancellationToken ct)
 	{
-		try
+		if (command.Amount <= 0)
 		{
-			if (command.Amount <= 0)
-			{
-				return WalletErrors.InvalidAmount;
-			}
-			var wallet = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId, ct);
-			if (wallet == null)
-			{
-				return WalletErrors.WalletNotFound;
-			}
-			if (wallet.IsFrozen)
-			{
-				return WalletErrors.WalletFrozen;
-			}
-			if (!wallet.HasSufficientBalance(command.Amount))
-			{
-				return WalletErrors.InsufficientBalance;
-			}
-			wallet.Withdraw(command.Amount);
-			var transaction = new TransactionDS
-			{
-				Id = Guid.NewGuid(),
-				WalletId = wallet.Id,
-				UserId = command.UserId,
-				Amount = command.Amount,
-				Type = TransactionTypes.Withdrawal,
-				Status = TransactionStatuses.Completed,
-				Description = command.Description,
-				BalanceAfter = wallet.Balance,
-				ReferenceId = command.ReferenceId
-			};
-			await _walletRepository.UpdateAsync(wallet, ct);
-			await _walletRepository.AddTransactionAsync(transaction, ct);
-			
-			//await InvalidateWalletCacheAsync(command.UserId, ct);
-			_logger.LogInformation("Withdrawal successful for user {UserId}: {Amount}", command.UserId, command.Amount);
-			
-			return transaction.MapToResponse();
+			return WalletErrors.InvalidAmount;
 		}
-		catch (Exception ex)
+		var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId, ct);
+		if (walletResult.IsFailure)
+			return walletResult.Error;
+
+		var wallet = walletResult.Value;
+
+		if (wallet.IsFrozen)
+			return WalletErrors.WalletFrozen;
+
+		if (!wallet.HasSufficientBalance(command.Amount))
+			return WalletErrors.InsufficientBalance;
+
+		wallet.Withdraw(command.Amount);
+		var transaction = new TransactionDS
 		{
-			_logger.LogError(ex, "Error withdrawing for user: {UserId}", command.UserId);
-			return Error.Internal("wallet.withdrawal_error", "Error withdrawing for user");
-		}
+			Id = Guid.NewGuid(),
+			WalletId = wallet.Id,
+			UserId = command.UserId,
+			Amount = command.Amount,
+			Type = TransactionTypes.Withdrawal,
+			Status = TransactionStatuses.Completed,
+			Description = command.Description,
+			BalanceAfter = wallet.Balance,
+			ReferenceId = command.ReferenceId
+		};
+
+		await _walletRepository.UpdateAsync(wallet, ct);
+		await _walletRepository.AddTransactionAsync(transaction, ct);
+			
+		//await InvalidateWalletCacheAsync(command.UserId, ct);
+		_logger.LogInformation("Withdrawal successful for user {UserId}: {Amount}", command.UserId, command.Amount);
+			
+		return transaction.MapToResponse();
 	}
 
 }

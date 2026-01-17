@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DigiStore.WalletService.Application.Features.Webhooks;
 
-/// Отменить выплату
+/// 
 public sealed class YooKassaWebhook : IEndpoint
 {
 	//[Authorize]
@@ -30,19 +30,22 @@ public sealed class YooKassaWebhook : IEndpoint
 public sealed class YooKassaWebhookHandler : IWalletServiceHandler
 {
 	private readonly ILogger<YooKassaWebhookHandler> _logger;
-	private readonly IWalletRepository _walletRepository;
+    private readonly IYooKassaWebhookService _yooKassaWebhookService;
+    private readonly IWalletRepository _walletRepository;
 
 	public YooKassaWebhookHandler(
 		ILogger<YooKassaWebhookHandler> logger,
+		IYooKassaWebhookService yooKassaWebhookService,
 		IWalletRepository walletRepository)
 	{
 		_logger = logger;
-		_walletRepository = walletRepository;
+        _yooKassaWebhookService = yooKassaWebhookService;
+        _walletRepository = walletRepository;
 	}
 
 
 
-	public async Task<Result<Error>> Handle(HttpContext context, CancellationToken ct)
+	public async Task<UnitResult<Error>> Handle(HttpContext context, CancellationToken ct)
 	{
 		try
 		{
@@ -55,30 +58,30 @@ public sealed class YooKassaWebhookHandler : IWalletServiceHandler
 			if (string.IsNullOrEmpty(bodyContent))
 			{
 				_logger.LogWarning("YooKassa: Пустое тело вебхука");
-				return BadRequest();
+				return Error.Failure();
 			}
 
 			// Получить подпись
 			var signature = Request.Headers["Signature"].ToString();
 
 			// Проверить подпись
-			if (!_webhookService.VerifyWebhookSignature(bodyContent, signature))
+			if (!_yooKassaWebhookService.VerifyWebhookSignature(bodyContent, signature))
 			{
 				_logger.LogWarning("YooKassa: Неверная подпись вебхука");
-				return Unauthorized();
+				return Error.Authorization();
 			}
 
 			// Обработать вебхук
-			await _webhookService.ProcessWebhookAsync(bodyContent);
+			await _yooKassaWebhookService.ProcessWebhookAsync(bodyContent, ct);
 
 			_logger.LogInformation("YooKassa: Вебхук успешно обработан");
 
-			return Ok();
+			return Result.Success<Error>();
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "YooKassa: Ошибка при обработке вебхука");
-			return StatusCode(500);
+			return Error.Internal();
 		}
 	}
 

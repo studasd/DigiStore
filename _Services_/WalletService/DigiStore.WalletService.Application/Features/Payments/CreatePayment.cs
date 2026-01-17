@@ -3,8 +3,8 @@ using DigiStore.Core.Validation;
 using DigiStore.Enums;
 using DigiStore.Framework.Endpoints;
 using DigiStore.SharedKernel;
-using DigiStore.WalletService.Application.Configurations;
 using DigiStore.WalletService.Application.Interfaces;
+using DigiStore.WalletService.Application.Validators;
 using DigiStore.WalletService.Contracts.Requests.Payments;
 using DigiStore.WalletService.Contracts.Responses.Payments;
 using FluentValidation;
@@ -103,7 +103,7 @@ public sealed class CreatePaymentHandler : IWalletServiceHandler
 		}
 
 		// Получить кошелек пользователя
-		var wallet = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId);
+		var wallet = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId, ct);
 
 		if (wallet.IsFailure)
 			return wallet.Error;
@@ -117,8 +117,11 @@ public sealed class CreatePaymentHandler : IWalletServiceHandler
 		var payment = paymentResult.Value;
 
 		// Получить ссылку на оплату
-		var confirmationUrl = await _paymentService.GetPaymentConfirmationUrlAsync(payment!.Id);
+		var confirmationUrlResult = await _paymentService.GetPaymentConfirmationUrlAsync(payment!.Id);
 
-		return new CreatePaymentResponse(payment.Id, confirmationUrl, payment.Amount, payment.Status);
+		if (confirmationUrlResult.IsFailure)
+			return confirmationUrlResult.Error;
+
+		return new CreatePaymentResponse(payment.Id, confirmationUrlResult.Value, payment.Amount, payment.Status);
 	}
 }

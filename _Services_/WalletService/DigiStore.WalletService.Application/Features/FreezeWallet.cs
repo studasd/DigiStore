@@ -40,14 +40,16 @@ public sealed class FreezeWalletHandler : IWalletServiceHandler
 	{
 		try
 		{
-			var wallet = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
-			if (wallet == null)
-			{
-				return WalletErrors.WalletNotFound;
-			}
+			var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
+			if (walletResult.IsFailure)
+				return walletResult.Error;
+
+			var wallet = walletResult.Value;
 			wallet.Freeze();
 
-			await _walletRepository.UpdateAsync(wallet, ct);
+			var updateResult = await _walletRepository.UpdateAsync(wallet, ct);
+			if(updateResult.IsFailure)
+				return updateResult.Error;
 
 			//await InvalidateWalletCacheAsync(userId, ct);
 

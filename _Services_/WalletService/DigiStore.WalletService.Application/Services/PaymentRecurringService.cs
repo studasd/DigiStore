@@ -1,39 +1,37 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.SharedKernel;
-using DigiStore.WalletService.Application.Configurations;
 using DigiStore.WalletService.Application.Interfaces;
+using DigiStore.WalletService.Application.Validators;
 using DigiStore.WalletService.Domain;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace DigiStore.WalletService.Infrastructure.Yookassa.Services;
+namespace DigiStore.WalletService.Application.Services;
 
 /// <summary>
 /// Сервис управления рекуррентными платежами (подписки)
 /// </summary>
-public class YooKassaRecurringService
+public class PaymentRecurringService
 {
-	private readonly YooKassaPaymentService _paymentService;
-	private readonly PaymentValidator _validator;
+    private readonly IPaymentService _paymentService;
     private readonly IWalletRepository _walletRepository;
-    private readonly IPaymentRecurringRepository _paymentRecurringRepository;
-    private readonly ILogger<YooKassaRecurringService> _logger;
+	private readonly IPaymentRecurringRepository _paymentRecurringRepository;
+    private readonly PaymentValidator _paymentValidator;
+    private readonly ILogger<PaymentRecurringService> _logger;
 
-	public YooKassaRecurringService(
-		YooKassaPaymentService paymentService,
-		PaymentValidator validator,
+	public PaymentRecurringService(
+		IPaymentService paymentService,
 		IWalletRepository walletRepository,
 		IPaymentRecurringRepository paymentRecurringRepository,
-		ILogger<YooKassaRecurringService> logger)
+		PaymentValidator paymentValidator,
+		ILogger<PaymentRecurringService> logger)
 	{
-		_paymentService = paymentService;
-		_validator = validator;
+        _paymentService = paymentService;
         _walletRepository = walletRepository;
-        _paymentRecurringRepository = paymentRecurringRepository;
+		_paymentRecurringRepository = paymentRecurringRepository;
+        _paymentValidator = paymentValidator;
         _logger = logger;
 	}
+
 
 	/// <summary>
 	/// Создать новую подписку
@@ -53,9 +51,9 @@ public class YooKassaRecurringService
 				$"WalletId: {walletId}, Amount: {amount}, Interval: {intervalDays}");
 
 			// Валидировать сумму
-			var validation = _validator.ValidateDepositAmountOLD(amount);
-			if (!validation.IsValid)
-				return (false, null, validation.ErrorMessage);
+			var validationResult = _paymentValidator.ValidateDepositAmount(amount);
+			if (validationResult.IsFailure)
+				return validationResult.Error;
 
 			// Проверить кошелек
 			var wallet = _walletRepository.GetByIdAsync(walletId, ct);
@@ -80,20 +78,13 @@ public class YooKassaRecurringService
 		}
 	}
 
-	/// <summary>
-	/// Получить подписку по ID
-	/// </summary>
-	public async Task<Result<PaymentRecurringDS, Error>> GetRecurringPaymentAsync(Guid recurringPaymentId, CancellationToken ct)
-	{
-		return await _paymentRecurringRepository.GetByIdAsync(recurringPaymentId, ct);
-	}
 
 	/// <summary>
 	/// Активировать подписку
 	/// </summary>
 	public async Task ActivateRecurringPaymentAsync(Guid recurringPaymentId, CancellationToken ct)
 	{
-		var recurringResult = await GetRecurringPaymentAsync(recurringPaymentId, ct);
+		var recurringResult = await _paymentRecurringRepository.GetByIdAsync(recurringPaymentId, ct);
 		if (recurringResult.IsSuccess)
 		{
 			recurringResult.Value.Activate();
@@ -106,7 +97,7 @@ public class YooKassaRecurringService
 	/// </summary>
 	public async Task SuspendRecurringPaymentAsync(Guid recurringPaymentId, CancellationToken ct)
 	{
-		var recurringResult = await GetRecurringPaymentAsync(recurringPaymentId, ct	);
+		var recurringResult = await _paymentRecurringRepository.GetByIdAsync(recurringPaymentId, ct);
 		if (recurringResult.IsSuccess)
 		{
 			recurringResult.Value.Suspend();
@@ -119,7 +110,7 @@ public class YooKassaRecurringService
 	/// </summary>
 	public async Task CancelRecurringPaymentAsync(Guid recurringPaymentId, CancellationToken ct)
 	{
-		var recurringResult = await GetRecurringPaymentAsync(recurringPaymentId, ct);
+		var recurringResult = await _paymentRecurringRepository.GetByIdAsync(recurringPaymentId, ct);
 		if (recurringResult.IsSuccess)
 		{
 			recurringResult.Value.Cancel();
@@ -132,7 +123,7 @@ public class YooKassaRecurringService
 	/// </summary>
 	public async Task ProcessNextRecurringPaymentAsync(Guid recurringPaymentId, CancellationToken ct)
 	{
-		var recurringResult = await GetRecurringPaymentAsync(recurringPaymentId, ct);
+		var recurringResult = await _paymentRecurringRepository.GetByIdAsync(recurringPaymentId, ct);
 		if (recurringResult.IsFailure || recurringResult.Value.IsTimeForNextPayment == false)
 			return;
 
@@ -170,23 +161,4 @@ public class YooKassaRecurringService
 		_logger.LogInformation($"YooKassa: Рекуррентный платеж обработан - PaymentId: {payment.Id}");
 	}
 
-	/// <summary>
-	/// Получить подписки, готовые к обработке
-	/// </summary>
-	public async Task<Result<List<PaymentRecurringDS>, Error>> GetDueRecurringPaymentsAsync(CancellationToken ct)
-	{
-		return await _paymentRecurringRepository.GetDueAsync(ct);
-	}
-
-	/// <summary>
-	/// Получить подписки пользователя
-	/// </summary>
-	public async Task<Result<List<PaymentRecurringDS>, Error>> GetUserRecurringPaymentsAsync(
-		Guid userId,
-		int skip = 0,
-		int take = 10,
-		CancellationToken ct = default)
-	{
-		return await _paymentRecurringRepository.GetUserRecurringPaymentsAsync(userId, skip, take, ct);
-	}
 }

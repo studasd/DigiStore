@@ -45,24 +45,16 @@ public sealed class GetTransactionsHandler : IWalletServiceHandler
 
 	public async Task<Result<IEnumerable<TransactionResponse>, Error>> Handle(Guid userId, int skip = 0, int take = 20, CancellationToken ct = default)
 	{
-		try
-		{
-			var wallet = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
-			if (wallet == null)
-			{
-				return WalletErrors.WalletNotFound;
-			}
-			var transactions = await _walletRepository.GetTransactionsByWalletIdAsync(
-			wallet.Id, skip, take, ct);
+		var wallet = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
+		if (wallet.IsFailure)
+			return wallet.Error;
+			
+		var transactions = await _walletRepository.GetTransactionsByWalletIdAsync(wallet.Value.Id, skip, take, ct);
+		if(transactions.IsFailure)
+			return transactions.Error;
 
-			var response = transactions.Select(x => x.MapToResponse()).ToList();
-			return response;
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error getting transactions for user: {UserId}", userId);
-			return Error.Internal("wallet.transactions_error", "Error getting transactions for user");
-		}
+		var response = transactions.Value.Select(x => x.MapToResponse()).ToList();
+		return response;
 	}
 
 }

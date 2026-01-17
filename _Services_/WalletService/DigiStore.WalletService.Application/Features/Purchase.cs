@@ -54,11 +54,11 @@ public sealed class PurchaseHandler : IWalletServiceHandler
 	{
 		try
 		{
-			var wallet = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId, ct);
-			if (wallet == null)
-			{
-				return WalletErrors.WalletNotFound;
-			}
+			var walletResult = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId, ct);
+			if (walletResult.IsFailure)
+				return walletResult.Error;
+
+			var wallet = walletResult.Value;
 
 			if (!wallet.HasSufficientBalance(command.Amount))
 			{

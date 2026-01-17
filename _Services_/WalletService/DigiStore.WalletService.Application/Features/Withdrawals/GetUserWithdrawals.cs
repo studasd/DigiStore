@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.Framework.Endpoints;
+using DigiStore.SharedKernel;
 using DigiStore.WalletService.Application.Interfaces;
 using DigiStore.WalletService.Contracts.Responses.Payments;
 using DigiStore.WalletService.Contracts.Responses.Withdrawals;
@@ -32,36 +33,36 @@ public sealed class GetUserWithdrawals : IEndpoint
 public sealed class GetUserWithdrawalsHandler : IWalletServiceHandler
 {
 	private readonly ILogger<GetUserWithdrawalsHandler> _logger;
-	private readonly IWalletRepository _walletRepository;
+    private readonly IWithdrawalRepository _withdrawalRepository;
 
 	public GetUserWithdrawalsHandler(
 		ILogger<GetUserWithdrawalsHandler> logger,
-		IWalletRepository walletRepository)
+		IWithdrawalRepository withdrawalRepository)
 	{
 		_logger = logger;
-		_walletRepository = walletRepository;
+        _withdrawalRepository = withdrawalRepository;
 	}
 
 
 
-	public async Task<Result<IEnumerable<WithdrawalResponse>, Error>> Handle(Guid UserId, int skip, int take, CancellationToken ct)
+	public async Task<Result<IEnumerable<WithdrawalResponse>, Error>> Handle(Guid userId, int skip, int take, CancellationToken ct)
 	{
-		var withdrawals = await _withdrawalService.GetUserWithdrawalsAsync(userId, skip, take);
+		var withdrawals = await _withdrawalRepository.GetUserWithdrawalsAsync(userId, skip, take, ct);
 
-		return Ok(new
-		{
-			withdrawals = withdrawals.Select(w => new
-			{
-				withdrawalId = w.Id,
-				requestedAmount = w.RequestedAmount,
-				commission = w.Commission,
-				actualAmount = w.ActualAmount,
-				cardMask = w.CardMask,
-				status = w.Status.ToString(),
-				createdAt = w.CreatedAt
-			}).ToList(),
-			total = withdrawals.Count
-		});
+		if (withdrawals.IsFailure)
+			return withdrawals.Error;
+
+		return withdrawals.Value.Select(w => new WithdrawalResponse
+		(
+			w.Id,
+			w.RequestedAmount,
+			w.Commission,
+			w.ActualAmount,
+			w.CardMask,
+			w.Status,
+			w.CreatedAt,
+			w.CompletedAt
+		)).ToList();
 	}
 
 }

@@ -1,12 +1,8 @@
 ﻿using CSharpFunctionalExtensions;
-using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.WalletService.Application.Interfaces;
 using DigiStore.WalletService.Domain;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DigiStore.WalletService.Application.Services;
 
@@ -18,16 +14,19 @@ public class PaymentService : IPaymentService
 {
 	private readonly IPaymentRepository _paymentRepository;
 	private readonly IWalletRepository _walletRepository;
-	private readonly ILogger<PaymentService> _logger;
+    private readonly IYookassaProvider _yookassaProvider;
+    private readonly ILogger<PaymentService> _logger;
 
 	public PaymentService(
 		IPaymentRepository paymentRepository,
 		IWalletRepository walletRepository,
+		IYookassaProvider yookassaProvider,
 		ILogger<PaymentService> logger)
 	{
 		_paymentRepository = paymentRepository;
 		_walletRepository = walletRepository;
-		_logger = logger;
+        _yookassaProvider = yookassaProvider;
+        _logger = logger;
 	}
 
 
@@ -44,33 +43,17 @@ public class PaymentService : IPaymentService
 			// Создать локальный платеж
 			var payment = PaymentDS.Create(walletId, userId, amount, description);
 
-			// Создать платеж в YooKassa (версия 4.3.1)
-			var newPayment = new NewPayment
-			{
-				Amount = new Amount
-				{
-					Value = amount,
-					Currency = CurrencyCodes.RUB.ToString()
-				},
-				Confirmation = new Confirmation
-				{
-					Type = ConfirmationType.Redirect,
-					ReturnUrl = _settings.SuccessReturnUrl
-				},
-				Description = description,
-				Metadata = new Dictionary<string, string>
-				{
-					{ "wallet_id", walletId.ToString() },
-					{ "user_id", userId.ToString() },
-					{ "payment_id", payment.Id.ToString() }
-				}
-			};
-
-			// Вызвать API YooKassa
 			
+			// Создать платеж в YooKassa (версия 4.3.1)
+			var yooKassaPaymentResult = await _yookassaProvider.CreatePaymentAsync(userId, walletId, payment.Id, amount, description, ct);
 
-			// Сохранить ID платежа
-			payment.AggregatorPaymentId = yooKassaPayment.Id;
+            if (yooKassaPaymentResult.IsFailure)
+            {
+				return yooKassaPaymentResult.Error;
+			}
+
+            payment.AggregatorPaymentId = yooKassaPaymentResult.Value;
+
 
 			// Добавить в БД
 			var addResult = await _paymentRepository.AddAsync(payment, ct);
@@ -80,10 +63,6 @@ public class PaymentService : IPaymentService
 				_logger.LogError("YooKassa: Ошибка при сохранении платежа в БД");
 				return Error.Internal("error.save.payment", "Внутренняя ошибка сервера");
 			}
-
-			_logger.LogInformation(
-				$"YooKassa: Платеж создан - PaymentId: {payment.Id}, " +
-				$"YooKassaPaymentId: {yooKassaPayment.Id}, Status: {yooKassaPayment.Status}");
 
 			return payment;
 		}
@@ -96,92 +75,49 @@ public class PaymentService : IPaymentService
 
 
 	/// <summary>
-	/// Получить платеж по ID YooKassa
-	/// </summary>
-	public async Task<Result<PaymentDS, Error>> GetPaymentByYooKassaIdAsync(string yooKassaPaymentId, CancellationToken ct = default)
-	{
-		return await _paymentRepository.GetByAggregatorIdAsync(yooKassaPaymentId, ct);
-	}
-
-
-	/// <summary>
-	/// Обновить статус платежа
-	/// </summary>
-	public async Task UpdatePaymentStatusAsync(Guid paymentId, PaymentStatus status, CancellationToken ct = default)
-	{
-		var paymentResult = await _paymentRepository.GetByIdAsync(paymentId, ct);
-		if (paymentResult.IsSuccess)
-		{
-			var payment = paymentResult.Value;
-			payment.Status = status;
-			payment.UpdatedAt = DateTime.UtcNow;
-			await _paymentRepository.UpdateAsync(payment);
-		}
-	}
-
-
-	/// <summary>
 	/// Завершить платеж
 	/// </summary>
-	public async Task CompletePaymentAsync(Guid paymentId, CancellationToken ct = default)
+	public async Task<UnitResult<Error>> CompletePaymentAsync(Guid paymentId, CancellationToken ct = default)
 	{
 		var paymentResult = await _paymentRepository.GetByIdAsync(paymentId, ct);
 		if (paymentResult.IsFailure)
-			return;
+			return paymentResult.Error;
 
 		var payment = paymentResult.Value;
 
 		payment.MarkAsSucceeded();
 
-		var wallet = await _walletRepository.GetByIdAsync(payment.WalletId, ct);
-		if (wallet != null)
-		{
-			wallet.Balance += payment.Amount;
-			await _walletRepository.UpdateAsync(wallet, ct);
-		}
+		var walletResult = await _walletRepository.GetByIdAsync(payment.WalletId, ct);
+		if (walletResult.IsFailure)
+			return walletResult.Error;
 
-		_logger.LogInformation($"YooKassa: Платеж завершен - PaymentId: {paymentId}, Amount: {payment.Amount}");
+		var wallet = walletResult.Value;
+
+		wallet.Balance += payment.Amount;
+		var updateResult = await _walletRepository.UpdateAsync(wallet, ct);
+        if(updateResult.IsFailure)
+			return updateResult.Error;
+
+        _logger.LogInformation($"YooKassa: Платеж завершен - PaymentId: {paymentId}, Amount: {payment.Amount}");
+		return Result.Success<Error>();
 	}
 
 
-	/// <summary>
-	/// Отменить платеж
-	/// </summary>
-	public async Task CancelPaymentAsync(Guid paymentId, string? reason = null, CancellationToken ct = default)
-	{
-		var paymentResult = await _paymentRepository.GetByIdAsync(paymentId, ct);
-		if (paymentResult.IsFailure)
-			return;
-
-		var payment = paymentResult.Value;
-
-		payment.MarkAsCanceled(reason);
-		await _paymentRepository.UpdateAsync(payment);
-
-		_logger.LogInformation($"YooKassa: Платеж отменен - PaymentId: {paymentId}");
-	}
-
-
-	
 
 	/// <summary>
 	/// Получить ссылку на оплату
 	/// </summary>
-	public async Task<string?> GetPaymentConfirmationUrlAsync(Guid paymentId, CancellationToken ct = default)
+	public async Task<Result<string, Error>> GetPaymentConfirmationUrlAsync(Guid paymentId, CancellationToken ct = default)
 	{
 		var paymentResult = await _paymentRepository.GetByIdAsync(paymentId, ct);
 		if (paymentResult.IsFailure || string.IsNullOrEmpty(paymentResult.Value.AggregatorPaymentId))
-			return null;
+			return paymentResult.Error;
 
-		try
-		{
-			var yooKassaPayment = _client.GetPayment(paymentResult.Value.AggregatorPaymentId);
-			return yooKassaPayment?.Confirmation?.ConfirmationUrl;
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "YooKassa: Ошибка при получении ссылки на оплату");
-			return null;
-		}
+		var confirmUrlResult = await _yookassaProvider.GetPaymentConfirmationUrlAsync(paymentResult.Value.AggregatorPaymentId, ct);
+
+		if (confirmUrlResult.IsFailure)
+			return confirmUrlResult.Error;
+
+		return confirmUrlResult.Value;
 	}
 }

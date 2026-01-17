@@ -2,6 +2,7 @@
 using DigiStore.Framework.Endpoints;
 using DigiStore.SharedKernel;
 using DigiStore.WalletService.Application.Interfaces;
+using DigiStore.WalletService.Domain.Enums;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -16,7 +17,7 @@ public sealed class CancelWithdrawal : IEndpoint
 	//[Authorize]
 	public void MapEndpoint(IEndpointRouteBuilder app)
 	{
-		app.MapPost("cancel/{withdrawalId}", async Task<EndpointResult<CancelWithdrawalResponse>> (
+		app.MapPost("cancel/{withdrawalId}", async Task<EndpointResult<string>> (
 			[FromRoute] Guid withdrawalId,
 			[FromServices] CancelWithdrawalHandler handler,
 			CancellationToken token) =>
@@ -31,32 +32,37 @@ public sealed class CancelWithdrawalHandler : IWalletServiceHandler
 {
 	private readonly ILogger<CancelWithdrawalHandler> _logger;
     private readonly IWithdrawalService _withdrawalService;
+    private readonly IWithdrawalRepository _withdrawalRepository;
     private readonly IWalletRepository _walletRepository;
 
 	public CancelWithdrawalHandler(
 		ILogger<CancelWithdrawalHandler> logger,
 		IWithdrawalService _withdrawalService,
+		IWithdrawalRepository withdrawalRepository,
 		IWalletRepository walletRepository)
 	{
 		_logger = logger;
         this._withdrawalService = _withdrawalService;
+        _withdrawalRepository = withdrawalRepository;
         _walletRepository = walletRepository;
 	}
 
 
 
-	public async Task<Result<CancelWithdrawalResponse, Error>> Handle(Guid withdrawalId, CancellationToken ct)
+	public async Task<Result<string, Error>> Handle(Guid withdrawalId, CancellationToken ct)
 	{
-		var withdrawal = await _withdrawalService.GetWithdrawalAsync(withdrawalId);
-		if (withdrawal == null)
-			return NotFound(new { error = "Выплата не найдена" });
+		var withdrawalResult = await _withdrawalRepository.GetByIdAsync(withdrawalId, ct);
 
-		if (withdrawal.Status.ToString() != "Pending" && withdrawal.Status.ToString() != "Processing")
-			return BadRequest(new { error = "Выплату нельзя отменить в этом статусе" });
+		if(withdrawalResult.IsFailure)
+			return withdrawalResult.Error;
 
-		await _withdrawalService.CancelWithdrawalAsync(withdrawalId, "Отменено пользователем");
+		var withdrawal = withdrawalResult.Value;
+		if (withdrawal.Status != WithdrawalStatus.Pending && withdrawal.Status != WithdrawalStatus.Processing)
+			return Error.Conflict("cancel.bad", "Выплату нельзя отменить в этом статусе");
 
-		return Ok(new { message = "Выплата отменена" });
+		await _withdrawalService.CancelWithdrawalAsync(withdrawalId, "Отменено пользователем", ct);
+
+		return "Выплата отменена";
 	}
 
 }

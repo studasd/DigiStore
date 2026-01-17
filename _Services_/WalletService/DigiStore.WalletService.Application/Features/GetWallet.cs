@@ -45,29 +45,21 @@ public sealed class GetWalletHandler : IWalletServiceHandler
 
 	public async Task<Result<WalletResponse, Error>> Handle(Guid userId, CancellationToken ct)
 	{
-		try
+		//var cacheKey = string.Format(WalletCacheKeyFormat, userId);
+		//var cached = await _cache.GetAsync<WalletResponse>(cacheKey, ct);
+		//if (cached != null)
+		//{
+		//	return Result<WalletResponse>.Success(cached);
+		//}
+		var wallet = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
+		if (wallet.IsFailure)
 		{
-			//var cacheKey = string.Format(WalletCacheKeyFormat, userId);
-			//var cached = await _cache.GetAsync<WalletResponse>(cacheKey, ct);
-			//if (cached != null)
-			//{
-			//	return Result<WalletResponse>.Success(cached);
-			//}
-			var wallet = await _walletRepository.GetOrCreateByUserIdAsync(userId, ct);
-			if (wallet == null)
-			{
-				_logger.LogWarning("Wallet not found for user: {UserId}", userId);
-				return WalletErrors.WalletNotFound;
-			}
-			var response = wallet.MapToResponse();
-			//await _cache.SetAsync(cacheKey, response, _walletCacheExpiration, ct);
-			return response;
+			_logger.LogWarning("Wallet not found for user: {UserId}", userId);
+			return wallet.Error;
 		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error getting wallet for user: {UserId}", userId);
-			return Error.Internal("wallet.retrieval_error", "Error getting wallet");
-		}
+		var response = wallet.Value.MapToResponse();
+		//await _cache.SetAsync(cacheKey, response, _walletCacheExpiration, ct);
+		return response;
 	}
 
 }
