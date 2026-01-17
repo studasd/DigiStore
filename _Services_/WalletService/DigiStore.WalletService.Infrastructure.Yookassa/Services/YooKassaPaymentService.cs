@@ -6,6 +6,7 @@ using DigiStore.WalletService.Domain;
 using Microsoft.Extensions.Logging;
 using Yandex.Checkout.V3;
 using Error = DigiStore.SharedKernel.Error;
+using PaymentStatus = DigiStore.Enums.PaymentStatus;
 
 namespace DigiStore.WalletService.Infrastructure.Yookassa.Services;
 
@@ -36,7 +37,7 @@ public class YooKassaPaymentService : IPaymentService
 	/// <summary>
 	/// Создать платеж
 	/// </summary>
-	public async Task<Result<PaymentDS, Error>> CreatePaymentAsync(Guid userId, Guid walletId, decimal amount, string description = "")
+	public async Task<Result<PaymentDS, Error>> CreatePaymentAsync(Guid userId, Guid walletId, decimal amount, string description = "", CancellationToken ct = default)
 	{
 		try
 		{
@@ -78,7 +79,7 @@ public class YooKassaPaymentService : IPaymentService
 			payment.AggregatorPaymentId = yooKassaPayment.Id;
 
 			// Добавить в БД
-			var addResult = await _paymentRepository.AddAsync(payment);
+			var addResult = await _paymentRepository.AddAsync(payment, ct);
 
 			if(addResult.IsFailure)
 			{
@@ -103,18 +104,18 @@ public class YooKassaPaymentService : IPaymentService
 	/// <summary>
 	/// Получить платеж по ID
 	/// </summary>
-	public async Task<Result<PaymentDS, Error>> GetPaymentAsync(Guid paymentId)
+	public async Task<Result<PaymentDS, Error>> GetPaymentAsync(Guid paymentId, CancellationToken ct = default)
 	{
-		return await _paymentRepository.GetByIdAsync(paymentId);
+		return await _paymentRepository.GetByIdAsync(paymentId, ct);
 	}
 
 
 	/// <summary>
 	/// Получить платеж по ID YooKassa
 	/// </summary>
-	public async Task<Result<PaymentDS, Error>> GetPaymentByYooKassaIdAsync(string yooKassaPaymentId)
+	public async Task<Result<PaymentDS, Error>> GetPaymentByYooKassaIdAsync(string yooKassaPaymentId, CancellationToken ct = default)
 	{
-		return await _dbContext.Set<PaymentDS>()
+		return await _paymentRepository. _dbContext.Set<PaymentDS>()
 			.FirstOrDefaultAsync(p => p.YooKassaPaymentId == yooKassaPaymentId);
 	}
 
@@ -122,9 +123,9 @@ public class YooKassaPaymentService : IPaymentService
 	/// <summary>
 	/// Обновить статус платежа
 	/// </summary>
-	public async Task UpdatePaymentStatusAsync(Guid paymentId, PaymentStatus status)
+	public async Task UpdatePaymentStatusAsync(Guid paymentId, PaymentStatus status, CancellationToken ct = default)
 	{
-		var payment = await GetPaymentAsync(paymentId);
+		var payment = await GetPaymentAsync(paymentId, ct);
 		if (payment != null)
 		{
 			payment.Status = status;
@@ -137,9 +138,9 @@ public class YooKassaPaymentService : IPaymentService
 	/// <summary>
 	/// Завершить платеж
 	/// </summary>
-	public async Task CompletePaymentAsync(Guid paymentId)
+	public async Task CompletePaymentAsync(Guid paymentId, CancellationToken ct = default)
 	{
-		var payment = await GetPaymentAsync(paymentId);
+		var payment = await GetPaymentAsync(paymentId, ct);
 		if (payment == null)
 			return;
 
@@ -162,9 +163,9 @@ public class YooKassaPaymentService : IPaymentService
 	/// <summary>
 	/// Отменить платеж
 	/// </summary>
-	public async Task CancelPaymentAsync(Guid paymentId, string? reason = null)
+	public async Task CancelPaymentAsync(Guid paymentId, string? reason = null, CancellationToken ct = default)
 	{
-		var payment = await GetPaymentAsync(paymentId);
+		var payment = await GetPaymentAsync(paymentId, ct);
 		if (payment == null)
 			return;
 
@@ -178,26 +179,18 @@ public class YooKassaPaymentService : IPaymentService
 	/// <summary>
 	/// Получить платежи пользователя
 	/// </summary>
-	public async Task<List<PaymentDS>> GetUserPaymentsAsync(
-		Guid userId,
-		int skip = 0,
-		int take = 10)
+	public async Task<Result<IReadOnlyList<PaymentDS>, Error>> GetUserPaymentsAsync(Guid userId, int skip = 0, int take = 10, CancellationToken ct = default)
 	{
-		return await _dbContext.Set<PaymentDS>()
-			.Where(p => p.UserId == userId)
-			.OrderByDescending(p => p.CreatedAt)
-			.Skip(skip)
-			.Take(take)
-			.ToListAsync();
+		return await _paymentRepository.GetUserPaymentsAsync(userId, skip, take, ct);
 	}
 
 
 	/// <summary>
 	/// Получить ссылку на оплату
 	/// </summary>
-	public async Task<string?> GetPaymentConfirmationUrlAsync(Guid paymentId)
+	public async Task<string?> GetPaymentConfirmationUrlAsync(Guid paymentId, CancellationToken ct = default)
 	{
-		var payment = await GetPaymentAsync(paymentId);
+		var payment = await GetPaymentAsync(paymentId, ct);
 		if (payment == null || string.IsNullOrEmpty(payment.AggregatorPaymentId))
 			return null;
 

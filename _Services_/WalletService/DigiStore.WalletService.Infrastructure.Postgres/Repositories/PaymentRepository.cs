@@ -57,11 +57,11 @@ public class PaymentRepository : IPaymentRepository
         return payment;
     }
 
-    public async Task<Result<List<PaymentDS>, Error>> GetUserPaymentsAsync(Guid userId, int skip = 0, int take = 10, CancellationToken ct = default)
+    public async Task<Result<IReadOnlyList<PaymentDS>, Error>> GetUserPaymentsAsync(Guid userId, int skip = 0, int take = 10, CancellationToken ct = default)
     {
         try
         {
-            var list = await _context.Payments
+			var list = await _context.Payments
                 .Where(p => p.UserId == userId)
                 .OrderByDescending(p => p.CreatedAt)
                 .Skip(skip)

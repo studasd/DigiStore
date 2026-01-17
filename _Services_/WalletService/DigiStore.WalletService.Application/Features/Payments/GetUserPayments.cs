@@ -19,7 +19,7 @@ public sealed class GetUserPayments : IEndpoint
 	//[Authorize]
 	public void MapEndpoint(IEndpointRouteBuilder app)
 	{
-		app.MapGet("getUserPayments/{userId}", async Task<EndpointResult<IEnumerable<PaymentResponse>>> (
+		app.MapGet("getUserPayments/{userId}", async Task<EndpointResult<IReadOnlyList<PaymentResponse>>> (
 			[FromRoute] Guid userId,
 			[FromServices] GetUserPaymentsHandler handler,
 			CancellationToken token,
@@ -35,34 +35,34 @@ public sealed class GetUserPayments : IEndpoint
 public sealed class GetUserPaymentsHandler : IWalletServiceHandler
 {
 	private readonly ILogger<GetUserPaymentsHandler> _logger;
-	private readonly IWalletRepository _walletRepository;
+    private readonly IPaymentService _paymentService;
+    private readonly IWalletRepository _walletRepository;
 
 	public GetUserPaymentsHandler(
 		ILogger<GetUserPaymentsHandler> logger,
+		IPaymentService paymentService,
 		IWalletRepository walletRepository)
 	{
 		_logger = logger;
-		_walletRepository = walletRepository;
+        _paymentService = paymentService;
+        _walletRepository = walletRepository;
 	}
 
 
 
-	public async Task<Result<IEnumerable<PaymentResponse>, Error>> Handle(Guid UserId, int skip, int take, CancellationToken ct)
+	public async Task<Result<IReadOnlyList<PaymentResponse>, Error>> Handle(Guid userId, int skip, int take, CancellationToken ct)
 	{
-		var payments = await _paymentService.GetUserPaymentsAsync(userId, skip, take);
+		var paymentsResult = await _paymentService.GetUserPaymentsAsync(userId, skip, take);
 
-		return Ok(new
+		if(paymentsResult.IsFailure)
 		{
-			payments = payments.Select(p => new
-			{
-				paymentId = p.Id,
-				amount = p.Amount,
-				status = p.Status.ToString(),
-				description = p.Description,
-				createdAt = p.CreatedAt
-			}).ToList(),
-			total = payments.Count
-		});
+			_logger.LogError("Error getting payments for user {UserId}: {Error}", userId, paymentsResult.Error);
+			return paymentsResult.Error;
+		}
+		
+		var payments = paymentsResult.Value.Select(p => new PaymentResponse(p.Id, p.Amount, p.Status, p.Description, p.CreatedAt, p.ConfirmedAt));
+
+		return payments.ToList();
 	}
 
 }
