@@ -20,7 +20,7 @@ public class WalletRepository : IWalletRepository
 	}
 
 
-	public async Task<Result<WalletDS, Error>> GetOrCreateByUserIdAsync(Guid userId, CancellationToken ct = default)
+	public async Task<Result<WalletDS, Error>> GetOrCreateByUserIdAsync(Guid userId, CancellationToken ct)
 	{
 		var wallet = await _context.Wallets
 				.Include(w => w.Transactions)
@@ -33,75 +33,113 @@ public class WalletRepository : IWalletRepository
 		var newWallet = WalletDS.Create(userId);
 
 		_context.Wallets.Add(newWallet);
-		try
-		{
-			await _context.SaveChangesAsync(ct);
-			_logger.LogInformation("Wallet created for user: {UserId} WalletId: {WalletId}", userId, newWallet.Id);
-		}
-		catch (DbUpdateException ex)
-		{
-			// Possible concurrent creation by another process - try to reload
-			_logger.LogWarning(ex, "Failed to create wallet for user {UserId}, reloading", userId);
-			//return await _context.Wallets
-			//		.Include(w => w.Transactions)
-			//		.FirstOrDefaultAsync(w => w.UserId == userId, ct);
+		
+		var saveResult = await SaveChangesAsync(ct);
+		if (saveResult.IsFailure)
+			return saveResult.Error;
 
-			return Error.Failure("failed.create.wallet", $"Failed to create wallet for user {userId}, reloading");
-		}
-
+		_logger.LogInformation("Wallet created for user: {UserId} WalletId: {WalletId}", userId, newWallet.Id);
+		
 		return newWallet;
 	}
 
-	public async Task<WalletDS?> GetByIdAsync(Guid walletId, CancellationToken ct = default)
+	public async Task<Result<WalletDS, Error>> GetByIdAsync(Guid walletId, CancellationToken ct)
 	{
-		return await _context.Wallets
+		var wallet = await _context.Wallets
 			.FirstOrDefaultAsync(w => w.Id == walletId, ct);
+
+		if(wallet == null) 
+			return Error.NotFound("wallet.not", "Кошелек не найден") ;
+
+		return wallet;
 	}
 
-	public async Task AddAsync(WalletDS wallet, CancellationToken ct = default)
+	public async Task<UnitResult<Error>> AddAsync(WalletDS wallet, CancellationToken ct)
 	{
 		_context.Wallets.Add(wallet);
-		await _context.SaveChangesAsync(ct);
+
+		var saveResult = await SaveChangesAsync(ct);
+		if (saveResult.IsFailure)
+			return saveResult.Error;
+
 		_logger.LogInformation("Wallet created: {WalletId}", wallet.Id);
+
+		return Result.Success<Error>();
 	}
 
-	public async Task UpdateAsync(WalletDS wallet, CancellationToken ct = default)
+	public async Task<UnitResult<Error>> UpdateAsync(WalletDS wallet, CancellationToken ct)
 	{
 		_context.Wallets.Update(wallet);
-		await _context.SaveChangesAsync(ct);
+
+		var saveResult = await SaveChangesAsync(ct);
+		if (saveResult.IsFailure)
+			return saveResult.Error;
+
 		_logger.LogInformation("Wallet updated: {WalletId}", wallet.Id);
+	
+		return Result.Success<Error>();
 	}
 
-	public async Task<TransactionDS?> GetTransactionByIdAsync(Guid transactionId, CancellationToken ct = default)
+	public async Task<Result<TransactionDS, Error>> GetTransactionByIdAsync(Guid transactionId, CancellationToken ct)
 	{
-		return await _context.Transactions
+		var transaction = await _context.Transactions
 			.FirstOrDefaultAsync(t => t.Id == transactionId, ct);
+
+		if(transaction == null)
+			return Error.NotFound("transaction.not", "Транзакция не найдена");
+
+		return transaction;
 	}
 
-	public async Task AddTransactionAsync(TransactionDS transaction, CancellationToken ct = default)
+	public async Task<UnitResult<Error>> AddTransactionAsync(TransactionDS transaction, CancellationToken ct)
 	{
 		_context.Transactions.Add(transaction);
-		await _context.SaveChangesAsync(ct);
+
+		var saveResult = await SaveChangesAsync(ct);
+		if (saveResult.IsFailure)
+			return saveResult.Error;
+
 		_logger.LogInformation("Transaction created: {TransactionId}", transaction.Id);
+	
+		return Result.Success<Error>();
 	}
 
-	public async Task<IEnumerable<TransactionDS>> GetTransactionsByWalletIdAsync(
+	public async Task<Result<IEnumerable<TransactionDS>, Error>> GetTransactionsByWalletIdAsync(
 		Guid walletId,
 		int skip = 0,
 		int take = 20,
 		CancellationToken ct = default)
 	{
-		return await _context.Transactions
+		var transactions = await _context.Transactions
 			.Where(t => t.WalletId == walletId)
 			.OrderByDescending(t => t.CreatedAt)
 			.Skip(skip)
 			.Take(take)
 			.ToListAsync(ct);
+
+		return transactions;
 	}
 
-	public async Task<int> GetTransactionCountAsync(Guid walletId, CancellationToken ct = default)
+	public async Task<Result<int, Error>> GetTransactionCountAsync(Guid walletId, CancellationToken ct)
 	{
 		return await _context.Transactions
 			.CountAsync(t => t.WalletId == walletId, ct);
+	}
+
+
+	public async Task<UnitResult<Error>> SaveChangesAsync(CancellationToken ct)
+	{
+		try
+		{
+			await _context.SaveChangesAsync(ct);
+		}
+		catch (DbUpdateException ex)
+		{
+			_logger.LogWarning(ex, "Failed save changes");
+
+			return Error.Failure("failed.db.savechange", $"Failed save changes");
+		}
+
+		return Result.Success<Error>();
 	}
 }
