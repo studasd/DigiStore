@@ -17,3 +17,4 @@ public static class WalletErrors
 	public static readonly Error TransactionFailed = Error.Internal("wallet.transaction_failed", "Ошибка при выполнении операции");
 	public static readonly Error TransactionNotFound = Error.NotFound("transaction.not_found", "Транзакция не найдена");
 }
+

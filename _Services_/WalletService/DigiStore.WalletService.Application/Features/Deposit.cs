@@ -38,7 +38,7 @@ public sealed class Deposit : IEndpoint
 }
 
 
-public sealed class DepositHandler : IUserServiceHandler
+public sealed class DepositHandler : IWalletServiceHandler
 {
 	private readonly ILogger<DepositHandler> _logger;
 	private readonly IWalletRepository _walletRepository;
@@ -68,7 +68,7 @@ public sealed class DepositHandler : IUserServiceHandler
 			}
 			wallet.Deposit(command.Amount);
 
-			var transaction = new Transaction
+			var transaction = new TransactionDS
 			{
 				Id = Guid.NewGuid(),
 				WalletId = wallet.Id,
@@ -86,7 +86,7 @@ public sealed class DepositHandler : IUserServiceHandler
 
 			//await InvalidateWalletCacheAsync(command.UserId, ct);
 			
-			_logger.LogInformation("Deposit successful for user {UserId}: {Amount} {Currency}", command.UserId, command.Amount, wallet.Currency);
+			_logger.LogInformation("Deposit successful for user {UserId}: {Amount} {Currency}", command.UserId, command.Amount, wallet.Currency.ToString());
 			
 			return transaction.MapToResponse();
 		}

@@ -14,6 +14,9 @@ public static class DependencyInjectionExtensions
 	{
 		var seqUrl = configuration.GetValue<string>("SeqUrl");
 
+		// Добавить Background Service
+		services.AddHostedService<RecurringPaymentBackgroundService>();
+
 		services
 			.AddCore(configuration)
 			.AddInfrastructure(configuration)

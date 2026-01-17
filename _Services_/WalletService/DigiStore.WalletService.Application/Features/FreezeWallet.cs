@@ -6,9 +6,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DigiStore.WalletService.Application.Features;
 
@@ -25,7 +22,7 @@ public sealed class FreezeWallet : IEndpoint
 }
 
 
-public sealed class FreezeWalletHandler : IUserServiceHandler
+public sealed class FreezeWalletHandler : IWalletServiceHandler
 {
 	private readonly ILogger<FreezeWalletHandler> _logger;
 	private readonly IWalletRepository _walletRepository;

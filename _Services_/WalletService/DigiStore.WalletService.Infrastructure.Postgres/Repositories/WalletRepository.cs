@@ -1,4 +1,6 @@
-﻿using DigiStore.WalletService.Application.Interfaces;
+﻿using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
+using DigiStore.WalletService.Application.Interfaces;
 using DigiStore.WalletService.Domain;
 using DigiStore.WalletService.Infrastructure.Postgres.Data;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +20,7 @@ public class WalletRepository : IWalletRepository
 	}
 
 
-	public async Task<Wallet?> GetOrCreateByUserIdAsync(Guid userId, CancellationToken ct = default)
+	public async Task<Result<WalletDS, Error>> GetOrCreateByUserIdAsync(Guid userId, CancellationToken ct = default)
 	{
 		var wallet = await _context.Wallets
 				.Include(w => w.Transactions)
@@ -28,7 +30,7 @@ public class WalletRepository : IWalletRepository
 			return wallet;
 
 		// Wallet not found - create one (Id usually equals UserId)
-		var newWallet = Wallet.Create(userId);
+		var newWallet = WalletDS.Create(userId);
 
 		_context.Wallets.Add(newWallet);
 		try
@@ -40,48 +42,50 @@ public class WalletRepository : IWalletRepository
 		{
 			// Possible concurrent creation by another process - try to reload
 			_logger.LogWarning(ex, "Failed to create wallet for user {UserId}, reloading", userId);
-			return await _context.Wallets
-					.Include(w => w.Transactions)
-					.FirstOrDefaultAsync(w => w.UserId == userId, ct);
+			//return await _context.Wallets
+			//		.Include(w => w.Transactions)
+			//		.FirstOrDefaultAsync(w => w.UserId == userId, ct);
+
+			return Error.Failure("failed.create.wallet", $"Failed to create wallet for user {userId}, reloading");
 		}
 
 		return newWallet;
 	}
 
-	public async Task<Wallet?> GetByIdAsync(Guid walletId, CancellationToken ct = default)
+	public async Task<WalletDS?> GetByIdAsync(Guid walletId, CancellationToken ct = default)
 	{
 		return await _context.Wallets
 			.FirstOrDefaultAsync(w => w.Id == walletId, ct);
 	}
 
-	public async Task AddAsync(Wallet wallet, CancellationToken ct = default)
+	public async Task AddAsync(WalletDS wallet, CancellationToken ct = default)
 	{
 		_context.Wallets.Add(wallet);
 		await _context.SaveChangesAsync(ct);
 		_logger.LogInformation("Wallet created: {WalletId}", wallet.Id);
 	}
 
-	public async Task UpdateAsync(Wallet wallet, CancellationToken ct = default)
+	public async Task UpdateAsync(WalletDS wallet, CancellationToken ct = default)
 	{
 		_context.Wallets.Update(wallet);
 		await _context.SaveChangesAsync(ct);
 		_logger.LogInformation("Wallet updated: {WalletId}", wallet.Id);
 	}
 
-	public async Task<Transaction?> GetTransactionByIdAsync(Guid transactionId, CancellationToken ct = default)
+	public async Task<TransactionDS?> GetTransactionByIdAsync(Guid transactionId, CancellationToken ct = default)
 	{
 		return await _context.Transactions
 			.FirstOrDefaultAsync(t => t.Id == transactionId, ct);
 	}
 
-	public async Task AddTransactionAsync(Transaction transaction, CancellationToken ct = default)
+	public async Task AddTransactionAsync(TransactionDS transaction, CancellationToken ct = default)
 	{
 		_context.Transactions.Add(transaction);
 		await _context.SaveChangesAsync(ct);
 		_logger.LogInformation("Transaction created: {TransactionId}", transaction.Id);
 	}
 
-	public async Task<IEnumerable<Transaction>> GetTransactionsByWalletIdAsync(
+	public async Task<IEnumerable<TransactionDS>> GetTransactionsByWalletIdAsync(
 		Guid walletId,
 		int skip = 0,
 		int take = 20,

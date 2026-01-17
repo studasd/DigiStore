@@ -31,7 +31,7 @@ public sealed class Refund : IEndpoint
 }
 
 
-public sealed class RefundHandler : IUserServiceHandler
+public sealed class RefundHandler : IWalletServiceHandler
 {
 	private readonly ILogger<RefundHandler> _logger;
 	private readonly IWalletRepository _walletRepository;
@@ -59,7 +59,7 @@ public sealed class RefundHandler : IUserServiceHandler
 				return WalletErrors.WalletNotFound;
 			}
 			wallet.Deposit(amount);
-			var transaction = new Transaction
+			var transaction = new TransactionDS
 			{
 				Id = Guid.NewGuid(),
 				WalletId = wallet.Id,

@@ -13,9 +13,16 @@ public class WalletDbContext : DbContext
 	{
 	}
 
-	public DbSet<Wallet> Wallets => Set<Wallet>();
-	public DbSet<Transaction> Transactions => Set<Transaction>();
-	
+	public DbSet<WalletDS> Wallets => Set<WalletDS>();
+	public DbSet<TransactionDS> Transactions => Set<TransactionDS>();
+
+
+	public DbSet<PaymentDS> YooKassaPayments => Set<PaymentDS>();
+	public DbSet<WithdrawalDS> YooKassaWithdrawals => Set<WithdrawalDS>();
+	public DbSet<PaymentRecurringDS> YooKassaRecurringPayments => Set<PaymentRecurringDS>();
+
+
+
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		base.OnModelCreating(modelBuilder);
@@ -23,7 +30,7 @@ public class WalletDbContext : DbContext
 		modelBuilder.HasDefaultSchema("WalletService");
 
 		// Wallet configuration
-		modelBuilder.Entity<Wallet>(entity =>
+		modelBuilder.Entity<WalletDS>(entity =>
 		{
 			entity.ToTable("Wallets");
 			entity.HasKey(w => w.Id);
@@ -31,7 +38,7 @@ public class WalletDbContext : DbContext
 			entity.Property(w => w.Balance).HasPrecision(18, 2).IsRequired();
 			entity.Property(w => w.TotalDeposited).HasPrecision(18, 2).IsRequired();
 			entity.Property(w => w.TotalWithdrawn).HasPrecision(18, 2).IsRequired();
-			entity.Property(w => w.Currency).HasMaxLength(3).IsRequired();
+			entity.Property(w => w.Currency).HasConversion<string>().IsRequired();
 			entity.Property(w => w.IsFrozen).IsRequired().HasDefaultValue(false);
 			entity.Property(w => w.CreatedAt).IsRequired();
 			entity.Property(w => w.UpdatedAt).IsRequired();
@@ -45,7 +52,7 @@ public class WalletDbContext : DbContext
 		});
 
 		// Transaction configuration
-		modelBuilder.Entity<Transaction>(entity =>
+		modelBuilder.Entity<TransactionDS>(entity =>
 		{
 			entity.ToTable("Transactions");
 			entity.HasKey(t => t.Id);

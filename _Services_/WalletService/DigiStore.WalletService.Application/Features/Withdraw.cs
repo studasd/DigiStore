@@ -36,7 +36,7 @@ public sealed class Withdraw : IEndpoint
 }
 
 
-public sealed class WithdrawHandler : IUserServiceHandler
+public sealed class WithdrawHandler : IWalletServiceHandler
 {
 	private readonly ILogger<WithdrawHandler> _logger;
 	private readonly IWalletRepository _walletRepository;
@@ -72,7 +72,7 @@ public sealed class WithdrawHandler : IUserServiceHandler
 				return WalletErrors.InsufficientBalance;
 			}
 			wallet.Withdraw(command.Amount);
-			var transaction = new Transaction
+			var transaction = new TransactionDS
 			{
 				Id = Guid.NewGuid(),
 				WalletId = wallet.Id,

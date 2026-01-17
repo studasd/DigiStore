@@ -22,6 +22,11 @@ public static class AppExtensions
 
 		app.MapEndpoints();
 
+
+		app.UseRouting();
+
+		app.MapControllers();
+
 		return app;
 	}
 }

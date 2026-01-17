@@ -36,7 +36,7 @@ public sealed class Purchase : IEndpoint
 }
 
 
-public sealed class PurchaseHandler : IUserServiceHandler
+public sealed class PurchaseHandler : IWalletServiceHandler
 {
 	private readonly ILogger<PurchaseHandler> _logger;
 	private readonly IWalletRepository _walletRepository;
@@ -66,7 +66,7 @@ public sealed class PurchaseHandler : IUserServiceHandler
 			}
 
 			wallet.Withdraw(command.Amount);
-			var transaction = new Transaction
+			var transaction = new TransactionDS
 			{
 				Id = Guid.NewGuid(),
 				WalletId = wallet.Id,

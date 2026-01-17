@@ -1,12 +1,15 @@
-﻿namespace DigiStore.WalletService.Domain;
+﻿using DigiStore.Enums;
+using DigiStore.WalletService.Domain.Enums;
+
+namespace DigiStore.WalletService.Domain;
 
 /// <summary>
 /// Wallet entity - баланс пользователя
 /// </summary>
-public class Wallet
+public class WalletDS
 {
 
-	private Wallet(Guid userId)
+	private WalletDS(Guid userId)
     {
         UserId = userId;
     }
@@ -15,26 +18,32 @@ public class Wallet
     /// Wallet ID (usually same as User ID)
     /// </summary>
     public Guid Id { get; set; }
+
 	/// <summary>
 	/// User ID from UserService
 	/// </summary>
 	public Guid UserId { get; set; }
+
 	/// <summary>
 	/// Current balance in default currency (e.g., rubles)
 	/// </summary>
 	public decimal Balance { get; set; }
+
 	/// <summary>
 	/// Total amount deposited (for statistics)
 	/// </summary>
 	public decimal TotalDeposited { get; set; }
+
 	/// <summary>
 	/// Total amount withdrawn
 	/// </summary>
 	public decimal TotalWithdrawn { get; set; }
+
 	/// <summary>
 	/// Currency code (RUB, USD, etc.)
 	/// </summary>
-	public string Currency { get; set; } = "RUB";
+	public CurrencyCodes Currency { get; set; }
+
 	/// <summary>
 	/// Is wallet frozen (cannot withdraw or spend)
 	/// </summary>
@@ -48,17 +57,19 @@ public class Wallet
 	/// Last update timestamp
 	/// </summary>
 	public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+
 	/// <summary>
 	/// Navigation to transactions
 	/// </summary>
-	public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
+	public ICollection<TransactionDS> Transactions { get; set; } = new List<TransactionDS>();
 
 
 
 
-	public static Wallet Create(Guid userId)
+	public static WalletDS Create(Guid userId)
 	{
-		return new Wallet(userId);
+		return new WalletDS(userId);
 	}
 
 

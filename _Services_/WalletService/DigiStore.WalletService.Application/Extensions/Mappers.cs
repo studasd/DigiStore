@@ -5,7 +5,7 @@ namespace DigiStore.WalletService.Application.Extensions;
 
 public static class Mappers
 {
-	public static TransactionResponse MapToResponse(this Transaction transaction)
+	public static TransactionResponse MapToResponse(this TransactionDS transaction)
 	{
 		return new TransactionResponse
 		(
@@ -20,7 +20,7 @@ public static class Mappers
 		);
 	}
 
-	public static WalletResponse MapToResponse(this Wallet wallet)
+	public static WalletResponse MapToResponse(this WalletDS wallet)
 	{
 		return new WalletResponse
 		(

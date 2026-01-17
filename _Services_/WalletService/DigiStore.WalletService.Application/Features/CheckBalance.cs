@@ -27,7 +27,7 @@ public sealed class CheckBalance : IEndpoint
 }
 
 
-public sealed class CheckBalanceHandler : IUserServiceHandler
+public sealed class CheckBalanceHandler : IWalletServiceHandler
 {
 	private readonly ILogger<CheckBalanceHandler> _logger;
 	private readonly IWalletRepository _walletRepository;

@@ -29,7 +29,7 @@ public sealed class GetTransactions : IEndpoint
 }
 
 
-public sealed class GetTransactionsHandler : IUserServiceHandler
+public sealed class GetTransactionsHandler : IWalletServiceHandler
 {
 	private readonly ILogger<GetTransactionsHandler> _logger;
 	private readonly IWalletRepository _walletRepository;

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using DigiStore.Enums;
 
 namespace DigiStore.WalletService.Contracts.Responses;
 
@@ -10,7 +8,7 @@ public record WalletResponse(
 	decimal Balance,
 	decimal TotalDeposited,
 	decimal TotalWithdrawn,
-	string Currency,
+	CurrencyCodes Currency,
 	bool IsFrozen,
 	DateTime CreatedAt,
 	DateTime UpdatedAt

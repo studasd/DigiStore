@@ -22,6 +22,10 @@ builder.Services.AddConfiguration(builder.Configuration);
 
 builder.Services.AddCors();
 
+// Добавить контроллеры
+builder.Services.AddControllers();
+
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

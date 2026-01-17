@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Yandex.Checkout.V3" Version="4.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\DigiStore.WalletService.Application\DigiStore.WalletService.Application.csproj" />
   </ItemGroup>
 

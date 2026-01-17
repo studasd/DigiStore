@@ -4,4 +4,4 @@ using System.Text;
 
 namespace DigiStore.WalletService.Application.Interfaces;
 
-public interface IUserServiceHandler { }
+public interface IWalletServiceHandler { }

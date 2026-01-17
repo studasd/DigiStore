@@ -14,3 +14,6 @@ dotnet_diagnostic.SA1507.severity = none
 
 # SA1516: Elements should be separated by blank line
 dotnet_diagnostic.SA1516.severity = none
+
+# SA1313: 
+dotnet_diagnostic.SA1313.severity = none

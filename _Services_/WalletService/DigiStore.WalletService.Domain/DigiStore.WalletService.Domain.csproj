@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\_Shared_\DigiStore.Enums\DigiStore.Enums.csproj" />
+  </ItemGroup>
+
 </Project>
