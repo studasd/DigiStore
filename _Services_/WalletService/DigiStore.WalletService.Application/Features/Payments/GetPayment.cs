@@ -31,33 +31,30 @@ public sealed class GetPayment : IEndpoint
 public sealed class GetPaymentHandler : IWalletServiceHandler
 {
 	private readonly ILogger<GetPaymentHandler> _logger;
-	private readonly IWalletRepository _walletRepository;
+    private readonly IPaymentService _paymentService;
+    private readonly IWalletRepository _walletRepository;
 
 	public GetPaymentHandler(
 		ILogger<GetPaymentHandler> logger,
+		IPaymentService paymentService,
 		IWalletRepository walletRepository)
 	{
 		_logger = logger;
-		_walletRepository = walletRepository;
+        _paymentService = paymentService;
+        _walletRepository = walletRepository;
 	}
 
 
 
 	public async Task<Result<PaymentResponse, Error>> Handle(Guid paymentId, CancellationToken ct)
 	{
-		var payment = await _paymentService.GetPaymentAsync(paymentId);
-		if (payment == null)
-			return NotFound(new { error = "Платеж не найден" });
+		var paymentResult = await _paymentService.GetPaymentAsync(paymentId);
+		if (paymentResult.IsFailure)
+			return paymentResult.Error;
 
-		return Ok(new
-		{
-			paymentId = payment.Id,
-			amount = payment.Amount,
-			status = payment.Status.ToString(),
-			description = payment.Description,
-			createdAt = payment.CreatedAt,
-			confirmedAt = payment.ConfirmedAt
-		});
+		var payment = paymentResult.Value;
+
+		return new PaymentResponse(payment.Id, payment.Amount, payment.Status, payment.Description, payment.CreatedAt, payment.ConfirmedAt);
 	}
 
 }

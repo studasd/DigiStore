@@ -23,7 +23,7 @@ public class PaymentRepository : IPaymentRepository
     {
         try
         {
-            _context.YooKassaPayments.Add(payment);
+            _context.Payments.Add(payment);
             await _context.SaveChangesAsync(ct);
             _logger.LogInformation("Payment created: {PaymentId}", payment.Id);
             return payment;
@@ -37,7 +37,7 @@ public class PaymentRepository : IPaymentRepository
 
     public async Task<Result<PaymentDS, Error>> GetByIdAsync(Guid paymentId, CancellationToken ct = default)
     {
-        var payment = await _context.YooKassaPayments
+        var payment = await _context.Payments
             .FirstOrDefaultAsync(p => p.Id == paymentId, ct);
 
         if (payment == null)
@@ -48,7 +48,7 @@ public class PaymentRepository : IPaymentRepository
 
     public async Task<Result<PaymentDS, Error>> GetByAggregatorIdAsync(string aggregatorPaymentId, CancellationToken ct = default)
     {
-        var payment = await _context.YooKassaPayments
+        var payment = await _context.Payments
             .FirstOrDefaultAsync(p => p.AggregatorPaymentId == aggregatorPaymentId, ct);
 
         if (payment == null)
@@ -61,7 +61,7 @@ public class PaymentRepository : IPaymentRepository
     {
         try
         {
-            var list = await _context.YooKassaPayments
+            var list = await _context.Payments
                 .Where(p => p.UserId == userId)
                 .OrderByDescending(p => p.CreatedAt)
                 .Skip(skip)
@@ -81,7 +81,7 @@ public class PaymentRepository : IPaymentRepository
     {
         try
         {
-            _context.YooKassaPayments.Update(payment);
+            _context.Payments.Update(payment);
             await _context.SaveChangesAsync(ct);
             _logger.LogInformation("Payment updated: {PaymentId}", payment.Id);
             return payment;

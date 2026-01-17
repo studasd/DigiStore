@@ -103,17 +103,16 @@ public class YooKassaPaymentService : IPaymentService
 	/// <summary>
 	/// Получить платеж по ID
 	/// </summary>
-	public async Task<PaymentDS?> GetPaymentAsync(Guid paymentId)
+	public async Task<Result<PaymentDS, Error>> GetPaymentAsync(Guid paymentId)
 	{
-		return await _dbContext.Set<PaymentDS>()
-			.FirstOrDefaultAsync(p => p.Id == paymentId);
+		return await _paymentRepository.GetByIdAsync(paymentId);
 	}
 
 
 	/// <summary>
 	/// Получить платеж по ID YooKassa
 	/// </summary>
-	public async Task<PaymentDS?> GetPaymentByYooKassaIdAsync(string yooKassaPaymentId)
+	public async Task<Result<PaymentDS, Error>> GetPaymentByYooKassaIdAsync(string yooKassaPaymentId)
 	{
 		return await _dbContext.Set<PaymentDS>()
 			.FirstOrDefaultAsync(p => p.YooKassaPaymentId == yooKassaPaymentId);

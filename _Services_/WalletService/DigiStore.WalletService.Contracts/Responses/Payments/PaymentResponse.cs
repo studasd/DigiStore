@@ -8,5 +8,5 @@ public record PaymentResponse(
 	PaymentStatus Status, 
 	string Description, 
 	DateTime CreatedAt, 
-	DateTime ConfirmedAt
+	DateTime? ConfirmedAt
 	);

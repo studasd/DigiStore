@@ -17,9 +17,9 @@ public class WalletDbContext : DbContext
 	public DbSet<TransactionDS> Transactions => Set<TransactionDS>();
 
 
-	public DbSet<PaymentDS> YooKassaPayments => Set<PaymentDS>();
-	public DbSet<WithdrawalDS> YooKassaWithdrawals => Set<WithdrawalDS>();
-	public DbSet<PaymentRecurringDS> YooKassaRecurringPayments => Set<PaymentRecurringDS>();
+	public DbSet<PaymentDS> Payments => Set<PaymentDS>();
+	public DbSet<WithdrawalDS> Withdrawals => Set<WithdrawalDS>();
+	public DbSet<PaymentRecurringDS> PaymentRecurrings => Set<PaymentRecurringDS>();
 
 
 
