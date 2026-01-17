@@ -9,6 +9,7 @@ public static class CallbackData
 	public const string LanguageChangePrefix =	"lang_change_";
 	public const string ProfileView =			"profile_view";
 	public const string BalanceView =			"balance_view";
+	public const string BalanceTopPrefix =		"balance_top_";
 	public const string MenuMain =				"menu_main";
 	public const string MenuBack =				"menu_back";
 	public const string CatalogView =			"catalog_view";

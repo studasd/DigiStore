@@ -1,4 +1,5 @@
 using CSharpFunctionalExtensions;
+using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Interfaces.Services;
@@ -184,8 +185,16 @@ public abstract class BaseHandler
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localService.GetMessage(LocalKeys.Buttons.Back, langCode),
-					CallbackData.MenuMain)
+					_localService.GetMessage(LocalKeys.Buttons.BalanceUpYookassa, langCode), CallbackData.BalanceTopPrefix + PaymentAggregators.YooKassa),
+				
+				InlineKeyboardButton.WithCallbackData(
+					_localService.GetMessage(LocalKeys.Buttons.BalanceUpFreekassa, langCode), CallbackData.BalanceTopPrefix + PaymentAggregators.FreeKassa)
+			},
+
+			new[]
+			{
+				InlineKeyboardButton.WithCallbackData(
+					_localService.GetMessage(LocalKeys.Buttons.Back, langCode), CallbackData.MenuMain)
 			},
 		});
 	}

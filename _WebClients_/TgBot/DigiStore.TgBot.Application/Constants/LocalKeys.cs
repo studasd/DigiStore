@@ -51,6 +51,7 @@ public static class LocalKeys
 		public const string TotalWithdrawn =	"balance_total_withdrawn";
 		public const string LinkedAccounts =	"balance_linked_accounts";
 		public const string InsufficientBalance = "balance_insufficient_balance";
+		public const string TopUpBalance =		"balance_topup";
 	}
 
 
@@ -61,6 +62,8 @@ public static class LocalKeys
 		public const string Ok =        "button_ok";
 		public const string Yes =       "button_yes";
 		public const string No =        "button_no";
+		public const string BalanceUpYookassa = "button_balance_up_yookassa";
+		public const string BalanceUpFreekassa = "button_balance_up_freekassa";
 	}
 
 	public static class Errors

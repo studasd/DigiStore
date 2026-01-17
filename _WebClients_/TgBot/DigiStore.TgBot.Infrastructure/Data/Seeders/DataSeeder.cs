@@ -73,12 +73,15 @@ public class DataSeeder : IDataSeeder
 				{ LocalKeys.Balances.TotalWithdrawn, "Total Withdrawn" },
 				{ LocalKeys.Balances.LinkedAccounts, "Linked Accounts" },
 				{ LocalKeys.Balances.InsufficientBalance, "❌ Insufficient balance" },
+				{ LocalKeys.Balances.TopUpBalance, "Top up balance" },
 				// Buttons
 				{ LocalKeys.Buttons.Back, "← Back" },
 				{ LocalKeys.Buttons.Cancel, "❌ Cancel" },
 				{ LocalKeys.Buttons.Ok, "✅ OK" },
 				{ LocalKeys.Buttons.Yes, "Yes" },
 				{ LocalKeys.Buttons.No, "No" },
+				{ LocalKeys.Buttons.BalanceUpYookassa, "YooKassa" },
+				{ LocalKeys.Buttons.BalanceUpFreekassa, "FreeKassa" },
 				// Errors
 				{ LocalKeys.Errors.Occurred, "❌ An error occurred" },
 				{ LocalKeys.Errors.SessionExpired, "⏰ Session expired. Please use /start" },
@@ -120,12 +123,15 @@ public class DataSeeder : IDataSeeder
 				{ LocalKeys.Balances.TotalWithdrawn, "Всего снято" },
 				{ LocalKeys.Balances.LinkedAccounts, "Привязанные аккаунты" },
 				{ LocalKeys.Balances.InsufficientBalance, "❌ Недостаточно средств" },
+				{ LocalKeys.Balances.TopUpBalance,	 "Пополнить баланс" },
 				// Buttons
 				{ LocalKeys.Buttons.Back, "← Назад" },
 				{ LocalKeys.Buttons.Cancel, "❌ Отмена" },
 				{ LocalKeys.Buttons.Ok, "✅ ОК" },
 				{ LocalKeys.Buttons.Yes, "Да" },
 				{ LocalKeys.Buttons.No, "Нет" },
+				{ LocalKeys.Buttons.BalanceUpYookassa, "ЮКасса" },
+				{ LocalKeys.Buttons.BalanceUpFreekassa, "FreeKassa" },
 				// Errors
 				{ LocalKeys.Errors.Occurred, "❌ Произошла ошибка" },
 				{ LocalKeys.Errors.SessionExpired, "⏰ Сессия истекла. Используйте /start" },

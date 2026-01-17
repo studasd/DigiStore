@@ -76,6 +76,8 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 {_localService.GetMessage(LocalKeys.Balances.CurrentBalance, langCode)}: <b>{wallet.Balance:F2} {wallet.Currency}</b>
 📊 {_localService.GetMessage(LocalKeys.Balances.TotalDeposited, langCode)}: {wallet.TotalDeposited:F2} {wallet.Currency}
 📤 {_localService.GetMessage(LocalKeys.Balances.TotalWithdrawn, langCode)}: {wallet.TotalWithdrawn:F2} {wallet.Currency}
+
+{_localService.GetMessage(LocalKeys.Balances.TopUpBalance, langCode)}:
 ";
 
 		var keyboard = GetBackToMainMenuKeyboard(langCode);
