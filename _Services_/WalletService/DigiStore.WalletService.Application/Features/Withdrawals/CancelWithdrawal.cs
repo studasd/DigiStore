@@ -30,14 +30,17 @@ public sealed class CancelWithdrawal : IEndpoint
 public sealed class CancelWithdrawalHandler : IWalletServiceHandler
 {
 	private readonly ILogger<CancelWithdrawalHandler> _logger;
-	private readonly IWalletRepository _walletRepository;
+    private readonly IWithdrawalService _withdrawalService;
+    private readonly IWalletRepository _walletRepository;
 
 	public CancelWithdrawalHandler(
 		ILogger<CancelWithdrawalHandler> logger,
+		IWithdrawalService _withdrawalService,
 		IWalletRepository walletRepository)
 	{
 		_logger = logger;
-		_walletRepository = walletRepository;
+        this._withdrawalService = _withdrawalService;
+        _walletRepository = walletRepository;
 	}
 
 

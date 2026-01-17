@@ -1,10 +1,14 @@
-﻿using DigiStore.Enums;
+﻿using CSharpFunctionalExtensions;
+using DigiStore.Enums;
+using DigiStore.SharedKernel;
 using DigiStore.WalletService.Application.Configurations;
+using DigiStore.WalletService.Application.Interfaces;
 using DigiStore.WalletService.Domain;
 using DigiStore.WalletService.Domain.Enums;
 using DigiStore.WalletService.Infrastructure.Yookassa.Validators;
 using Microsoft.Extensions.Logging;
 using Yandex.Checkout.V3;
+using Error = DigiStore.SharedKernel.Error;
 
 namespace DigiStore.WalletService.Infrastructure.Yookassa.Services;
 
@@ -17,21 +21,24 @@ public class YooKassaWithdrawalService
 	private readonly Client _yooKassaClient;
 	private readonly YooKassaSettings _settings;
 	private readonly WithdrawalValidator _validator;
-	private readonly WalletDbContext _dbContext;
-	private readonly ILogger<YooKassaWithdrawalService> _logger;
+    private readonly IWalletRepository _walletRepository;
+    private readonly IWithdrawalRepository _withdrawalRepository;
+    private readonly ILogger<YooKassaWithdrawalService> _logger;
 
 	public YooKassaWithdrawalService(
 		Client yooKassaClient,
 		YooKassaSettings settings,
 		WithdrawalValidator validator,
-		WalletDbContext dbContext,
+		IWalletRepository walletRepository,
+		IWithdrawalRepository withdrawalRepository,
 		ILogger<YooKassaWithdrawalService> logger)
 	{
 		_yooKassaClient = yooKassaClient;
 		_settings = settings;
 		_validator = validator;
-		_dbContext = dbContext;
-		_logger = logger;
+        _walletRepository = walletRepository;
+        _withdrawalRepository = withdrawalRepository;
+        _logger = logger;
 	}
 
 	/// <summary>
@@ -41,15 +48,15 @@ public class YooKassaWithdrawalService
 		Guid walletId,
 		Guid userId,
 		decimal amount,
-		string cardNumber)
+		string cardNumber,
+		CancellationToken ct)
 	{
 		try
 		{
 			_logger.LogInformation($"YooKassa: Создание выплаты - WalletId: {walletId}, Amount: {amount}");
 
 			// Проверить кошелек
-			var wallet = await _dbContext.Set<WalletDS>()
-				.FirstOrDefaultAsync(w => w.Id == walletId);
+			var wallet = await _walletRepository.GetByIdAsync(walletId, ct);
 			if (wallet == null)
 				return (false, null, "Кошелек не найден");
 
@@ -123,8 +130,7 @@ public class YooKassaWithdrawalService
 				withdrawal.MarkAsProcessing();
 
 				// Добавить в БД
-				_dbContext.Set<WithdrawalDS>().Add(withdrawal);
-				await _dbContext.SaveChangesAsync();
+				await _withdrawalRepository.AddAsync(withdrawal, ct);
 
 				_logger.LogInformation(
 					$"YooKassa: Выплата создана - WithdrawalId: {withdrawal.Id}, " +
@@ -161,29 +167,28 @@ public class YooKassaWithdrawalService
 	/// <summary>
 	/// Получить выплату по ID
 	/// </summary>
-	public async Task<WithdrawalDS?> GetWithdrawalAsync(Guid withdrawalId)
+	public async Task<Result<WithdrawalDS, Error>> GetWithdrawalAsync(Guid withdrawalId, CancellationToken ct)
 	{
-		return await _dbContext.Set<WithdrawalDS>()
-			.FirstOrDefaultAsync(w => w.Id == withdrawalId);
+		return await _withdrawalRepository.GetByIdAsync(withdrawalId, ct);
 	}
 
 	/// <summary>
 	/// Получить выплату по ID YooKassa
 	/// </summary>
-	public async Task<WithdrawalDS?> GetWithdrawalByYooKassaIdAsync(string yooKassaWithdrawalId)
+	public async Task<Result<WithdrawalDS, Error>> GetWithdrawalByYooKassaIdAsync(string yooKassaWithdrawalId)
 	{
-		return await _dbContext.Set<WithdrawalDS>()
-			.FirstOrDefaultAsync(w => w.YooKassaWithdrawalId == yooKassaWithdrawalId);
+		return await _withdrawalRepository.GetByAggregatorIdAsync(yooKassaWithdrawalId);
 	}
 
 	/// <summary>
 	/// Обновить статус выплаты
 	/// </summary>
-	public async Task UpdateWithdrawalStatusAsync(Guid withdrawalId, WithdrawalStatus status)
+	public async Task UpdateWithdrawalStatusAsync(Guid withdrawalId, WithdrawalStatus status, CancellationToken ct)
 	{
-		var withdrawal = await GetWithdrawalAsync(withdrawalId);
-		if (withdrawal != null)
+		var withdrawalResult = await GetWithdrawalAsync(withdrawalId, ct);
+		if (withdrawalResult.IsSuccess)
 		{
+			var withdrawal = withdrawalResult.Value;
 			withdrawal.Status = status;
 			withdrawal.UpdatedAt = DateTime.UtcNow;
 
@@ -192,21 +197,22 @@ public class YooKassaWithdrawalService
 				withdrawal.MarkAsSucceeded();
 			}
 
-			await _dbContext.SaveChangesAsync();
+			await _withdrawalRepository.UpdateAsync(withdrawal, ct);
 		}
 	}
 
 	/// <summary>
 	/// Завершить выплату
 	/// </summary>
-	public async Task CompleteWithdrawalAsync(Guid withdrawalId)
+	public async Task CompleteWithdrawalAsync(Guid withdrawalId, CancellationToken ct)
 	{
-		var withdrawal = await GetWithdrawalAsync(withdrawalId);
-		if (withdrawal == null)
+		var withdrawalResult = await GetWithdrawalAsync(withdrawalId, ct);
+		if (withdrawalResult.IsFailure)
 			return;
 
+		var withdrawal = withdrawalResult.Value;
 		withdrawal.MarkAsSucceeded();
-		await _dbContext.SaveChangesAsync();
+		await _withdrawalRepository.UpdateAsync(withdrawal, ct);
 
 		_logger.LogInformation(
 			$"YooKassa: Выплата завершена - WithdrawalId: {withdrawalId}, " +
@@ -216,22 +222,22 @@ public class YooKassaWithdrawalService
 	/// <summary>
 	/// Отменить выплату и вернуть средства
 	/// </summary>
-	public async Task CancelWithdrawalAsync(Guid withdrawalId, string? reason = null)
+	public async Task CancelWithdrawalAsync(Guid withdrawalId, string? reason = null, CancellationToken ct = default)
 	{
-		var withdrawal = await GetWithdrawalAsync(withdrawalId);
-		if (withdrawal == null)
+		var withdrawalResult = await GetWithdrawalAsync(withdrawalId, ct);
+		if (withdrawalResult.IsFailure)
 			return;
 
 		// Вернуть средства если выплата была в обработке
-		var wallet = await _dbContext.Set<WalletDS>()
-			.FirstOrDefaultAsync(w => w.Id == withdrawal.WalletId);
+		var withdrawal = withdrawalResult.Value;
+		var wallet = await _walletRepository.GetByIdAsync(withdrawal.WalletId, ct);
 		if (wallet != null && withdrawal.Status == WithdrawalStatus.Processing)
 		{
 			wallet.Balance += withdrawal.RequestedAmount;
 		}
 
 		withdrawal.MarkAsCanceled(reason);
-		await _dbContext.SaveChangesAsync();
+		await _withdrawalRepository.UpdateAsync(withdrawal, ct);
 
 		_logger.LogInformation($"YooKassa: Выплата отменена - WithdrawalId: {withdrawalId}");
 	}
@@ -239,17 +245,13 @@ public class YooKassaWithdrawalService
 	/// <summary>
 	/// Получить выплаты пользователя
 	/// </summary>
-	public async Task<List<WithdrawalDS>> GetUserWithdrawalsAsync(
+	public async Task<Result<List<WithdrawalDS>, Error>> GetUserWithdrawalsAsync(
 		Guid userId,
 		int skip = 0,
-		int take = 10)
+		int take = 10,
+		CancellationToken ct = default)
 	{
-		return await _dbContext.Set<WithdrawalDS>()
-			.Where(w => w.UserId == userId)
-			.OrderByDescending(w => w.CreatedAt)
-			.Skip(skip)
-			.Take(take)
-			.ToListAsync();
+		return await _withdrawalRepository.GetUserWithdrawalsAsync(userId, skip, take, ct);
 	}
 
 	/// <summary>

@@ -1,6 +1,6 @@
 ﻿namespace DigiStore.WalletService.Application.Interfaces;
 
-public interface IWalletService
+public interface IWithdrawalService
 {
 	
 }

@@ -54,7 +54,7 @@ public sealed class GetWithdrawalHandler : IWalletServiceHandler
 			return NotFound(new { error = "Выплата не найдена" });
 
 
-		return Ok(new WithdrawalResponse
+		return new WithdrawalResponse
 		(
 			withdrawal!.Id,
 			withdrawal.RequestedAmount,
@@ -63,7 +63,8 @@ public sealed class GetWithdrawalHandler : IWalletServiceHandler
 			withdrawal.CardMask,
 			withdrawal.Status,
 			withdrawal.Crea,
-		));
+			withdrawal.CompletedAt
+		);
 	}
 
 }

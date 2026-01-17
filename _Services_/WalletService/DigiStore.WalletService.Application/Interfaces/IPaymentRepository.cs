@@ -8,7 +8,10 @@ public interface IPaymentRepository
 {
     Task<Result<PaymentDS, Error>> AddAsync(PaymentDS payment, CancellationToken ct = default);
 
-    Task<Result<PaymentDS, Error>> GetByIdAsync(Guid paymentId, CancellationToken ct = default);
+	/// <summary>
+	/// Получить платеж по ID
+	/// </summary>
+	Task<Result<PaymentDS, Error>> GetByIdAsync(Guid paymentId, CancellationToken ct = default);
 
     Task<Result<PaymentDS, Error>> GetByAggregatorIdAsync(string aggregatorPaymentId, CancellationToken ct = default);
 

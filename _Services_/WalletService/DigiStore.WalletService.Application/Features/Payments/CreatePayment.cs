@@ -40,8 +40,6 @@ public sealed class CreatePayment : IEndpoint
 
 public class CreateLessonRequestValidator : AbstractValidator<CreatePaymentCommand>
 {
-
-
 	public CreateLessonRequestValidator(PaymentValidator paymentValidator)
 	{
 
@@ -94,7 +92,6 @@ public sealed class CreatePaymentHandler : IWalletServiceHandler
         _validator = validator;
         _walletRepository = walletRepository;
 	}
-
 
 
 	public async Task<Result<CreatePaymentResponse, Error>> Handle(CreatePaymentCommand command, CancellationToken ct)

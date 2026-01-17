@@ -1,0 +1,95 @@
+using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
+using DigiStore.WalletService.Application.Interfaces;
+using DigiStore.WalletService.Domain;
+using DigiStore.WalletService.Infrastructure.Postgres.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
+namespace DigiStore.WalletService.Infrastructure.Postgres.Repositories;
+
+public class WithdrawalRepository : IWithdrawalRepository
+{
+    private readonly WalletDbContext _context;
+    private readonly ILogger<WithdrawalRepository> _logger;
+
+    public WithdrawalRepository(WalletDbContext context, ILogger<WithdrawalRepository> logger)
+    {
+        _context = context;
+        _logger = logger;
+    }
+
+    public async Task<Result<WithdrawalDS, Error>> AddAsync(WithdrawalDS withdrawal, CancellationToken ct = default)
+    {
+        try
+        {
+            _context.Withdrawals.Add(withdrawal);
+            await _context.SaveChangesAsync(ct);
+            _logger.LogInformation("Withdrawal created: {WithdrawalId}", withdrawal.Id);
+            return withdrawal;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to add withdrawal for user {UserId}", withdrawal.UserId);
+            return Error.Failure("withdrawal.add_failed", ex.Message);
+        }
+    }
+
+    public async Task<Result<WithdrawalDS, Error>> GetByIdAsync(Guid withdrawalId, CancellationToken ct = default)
+    {
+        var w = await _context.Withdrawals
+            .FirstOrDefaultAsync(p => p.Id == withdrawalId, ct);
+
+        if (w == null)
+            return Error.NotFound("withdrawal.not_found", "Withdrawal not found");
+
+        return w;
+    }
+
+    public async Task<Result<WithdrawalDS, Error>> GetByAggregatorIdAsync(string aggregatorWithdrawalId, CancellationToken ct = default)
+    {
+        var w = await _context.Withdrawals
+            .FirstOrDefaultAsync(p => p.AggregatorWithdrawalId == aggregatorWithdrawalId, ct);
+
+        if (w == null)
+            return Error.NotFound("withdrawal.not_found", "Withdrawal not found");
+
+        return w;
+    }
+
+    public async Task<Result<List<WithdrawalDS>, Error>> GetUserWithdrawalsAsync(Guid userId, int skip = 0, int take = 10, CancellationToken ct = default)
+    {
+        try
+        {
+            var list = await _context.Withdrawals
+                .Where(p => p.UserId == userId)
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync(ct);
+
+			return list;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get withdrawals for user {UserId}", userId);
+            return Error.Failure("withdrawal.query_failed", ex.Message);
+        }
+    }
+
+    public async Task<Result<WithdrawalDS, Error>> UpdateAsync(WithdrawalDS withdrawal, CancellationToken ct = default)
+    {
+        try
+        {
+            _context.Withdrawals.Update(withdrawal);
+            await _context.SaveChangesAsync(ct);
+            _logger.LogInformation("Withdrawal updated: {WithdrawalId}", withdrawal.Id);
+            return withdrawal;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to update withdrawal {WithdrawalId}", withdrawal.Id);
+            return Error.Failure("withdrawal.update_failed", ex.Message);
+        }
+    }
+}

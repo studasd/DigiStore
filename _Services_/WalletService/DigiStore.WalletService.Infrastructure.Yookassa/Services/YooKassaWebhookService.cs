@@ -72,7 +72,7 @@ public class YooKassaWebhookService
 	/// <summary>
 	/// Обработать вебхук от YooKassa
 	/// </summary>
-	public async Task ProcessWebhookAsync(string jsonBody)
+	public async Task ProcessWebhookAsync(string jsonBody, CancellationToken ct)
 	{
 		try
 		{
@@ -100,7 +100,7 @@ public class YooKassaWebhookService
 			}
 			else if (notification is PayoutSucceededNotification payoutNotification)
 			{
-				await ProcessPayoutSucceededAsync(payoutNotification.Object);
+				await ProcessPayoutSucceededAsync(payoutNotification.Object, ct);
 			}
 			else if (notification is PayoutCanceledNotification payoutCancelNotification)
 			{
@@ -122,9 +122,9 @@ public class YooKassaWebhookService
 		_logger.LogInformation($"YooKassa: Платеж успешен - PaymentId: {payment.Id}");
 
 		var dbPayment = await _paymentService.GetPaymentByYooKassaIdAsync(payment.Id);
-		if (dbPayment != null)
+		if (dbPayment.IsSuccess)
 		{
-			await _paymentService.CompletePaymentAsync(dbPayment.Id);
+			await _paymentService.CompletePaymentAsync(dbPayment.Value.Id);
 		}
 	}
 
@@ -140,9 +140,9 @@ public class YooKassaWebhookService
 		_logger.LogInformation($"YooKassa: Платеж отменен - PaymentId: {payment.Id}");
 
 		var dbPayment = await _paymentService.GetPaymentByYooKassaIdAsync(payment.Id);
-		if (dbPayment != null)
+		if (dbPayment.IsSuccess)
 		{
-			await _paymentService.CancelPaymentAsync(dbPayment.Id, "Отменен YooKassa");
+			await _paymentService.CancelPaymentAsync(dbPayment.Value.Id, "Отменен YooKassa");
 		}
 	}
 
@@ -152,14 +152,14 @@ public class YooKassaWebhookService
 			$"YooKassa: Возврат успешен - RefundId: {refund.Id}, PaymentId: {refund.PaymentId}");
 	}
 
-	private async Task ProcessPayoutSucceededAsync(Payout payout)
+	private async Task ProcessPayoutSucceededAsync(Payout payout, CancellationToken ct)
 	{
 		_logger.LogInformation($"YooKassa: Выплата успешна - PayoutId: {payout.Id}");
 
 		var dbWithdrawal = await _withdrawalService.GetWithdrawalByYooKassaIdAsync(payout.Id);
-		if (dbWithdrawal != null)
+		if (dbWithdrawal.IsSuccess)
 		{
-			await _withdrawalService.CompleteWithdrawalAsync(dbWithdrawal.Id);
+			await _withdrawalService.CompleteWithdrawalAsync(dbWithdrawal.Value.Id, ct);
 		}
 	}
 
@@ -168,11 +168,9 @@ public class YooKassaWebhookService
 		_logger.LogInformation($"YooKassa: Выплата отменена - PayoutId: {payout.Id}");
 
 		var dbWithdrawal = await _withdrawalService.GetWithdrawalByYooKassaIdAsync(payout.Id);
-		if (dbWithdrawal != null)
+		if (dbWithdrawal.IsSuccess)
 		{
-			await _withdrawalService.CancelWithdrawalAsync(
-				dbWithdrawal.Id,
-				"Отменена YooKassa");
+			await _withdrawalService.CancelWithdrawalAsync(dbWithdrawal.Value.Id, "Отменена YooKassa");
 		}
 	}
 
