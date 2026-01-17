@@ -3,6 +3,7 @@ using DigiStore.Enums;
 using DigiStore.WalletService.Application.Configurations;
 using DigiStore.WalletService.Application.Interfaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Yandex.Checkout.V3;
 using Error = DigiStore.SharedKernel.Error;
 
@@ -19,11 +20,11 @@ public class YookassaProvider : IYookassaProvider
 
 	public YookassaProvider(
 		Client client,
-		YooKassaSettings settings,
+		IOptions<YooKassaSettings> settings,
 		ILogger<YookassaProvider> logger)
 	{
 		_clientYooKassa = client;
-		_settings = settings;
+		_settings = settings.Value;
         _logger = logger;
 	}
 

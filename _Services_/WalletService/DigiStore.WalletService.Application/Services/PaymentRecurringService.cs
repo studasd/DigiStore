@@ -10,7 +10,7 @@ namespace DigiStore.WalletService.Application.Services;
 /// <summary>
 /// Сервис управления рекуррентными платежами (подписки)
 /// </summary>
-public class PaymentRecurringService
+public class PaymentRecurringService : IPaymentRecurringService
 {
     private readonly IPaymentService _paymentService;
     private readonly IWalletRepository _walletRepository;

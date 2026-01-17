@@ -1,6 +1,7 @@
 ﻿using DigiStore.WalletService.Application.Configurations;
 using DigiStore.WalletService.Application.Interfaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 using System.Text;
 using Yandex.Checkout.V3;
@@ -21,7 +22,7 @@ public class YooKassaWebhookServiceOLD : IYooKassaWebhookService
     private readonly ILogger<YooKassaWebhookServiceOLD> _logger;
 
 	public YooKassaWebhookServiceOLD(
-		YooKassaSettings settings,
+		IOptions<YooKassaSettings> settings,
 		IYookassaProvider yookassaProvider,
 		IWithdrawalService withdrawalService,
 		IWithdrawalRepository withdrawalRepository,
@@ -29,7 +30,7 @@ public class YooKassaWebhookServiceOLD : IYooKassaWebhookService
 		IPaymentRepository paymentRepository,
 		ILogger<YooKassaWebhookServiceOLD> logger)
 	{
-		_settings = settings;
+		_settings = settings.Value;
 		_yookassaProvider = yookassaProvider;
 		_withdrawalService = withdrawalService;
         _withdrawalRepository = withdrawalRepository;
@@ -196,11 +197,10 @@ public class YooKassaWebhookService : IYooKassaWebhookService
 	private readonly ILogger<YooKassaWebhookService> _logger;
 
 	public YooKassaWebhookService(
-		YooKassaSettings settings,
-		YookassaProvider paymentService,
+		IOptions<YooKassaSettings> settings,
 		ILogger<YooKassaWebhookService> logger)
 	{
-		_settings = settings;
+		_settings = settings.Value;
 		_logger = logger;
 	}
 

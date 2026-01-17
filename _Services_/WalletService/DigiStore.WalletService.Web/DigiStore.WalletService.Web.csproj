@@ -13,6 +13,7 @@
     <JsonSerializerIsReflectionEnabledByDefault Condition="'$(Configuration)' == 'Debug'">true</JsonSerializerIsReflectionEnabledByDefault>
     <!-- Для Release используем source generators -->
     <PublishTrimmed Condition="'$(Configuration)' == 'Release'">true</PublishTrimmed>
+    <UserSecretsId>eb2bf6f8-4e03-4b2e-b6fd-c609270a0690</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

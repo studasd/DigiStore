@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.SharedKernel;
 using DigiStore.WalletService.Application.Configurations;
+using Microsoft.Extensions.Options;
 
 namespace DigiStore.WalletService.Application.Validators;
 
@@ -11,9 +12,9 @@ public class WithdrawalValidator
 {
 	private readonly YooKassaSettings _settings;
 
-	public WithdrawalValidator(YooKassaSettings settings)
+	public WithdrawalValidator(IOptions<YooKassaSettings> settings)
 	{
-		_settings = settings;
+		_settings = settings.Value;
 	}
 
 	/// <summary>

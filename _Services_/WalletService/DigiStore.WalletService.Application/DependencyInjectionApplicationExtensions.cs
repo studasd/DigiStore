@@ -1,14 +1,11 @@
 ﻿using DigiStore.SharedKernel.Extensions;
 using DigiStore.WalletService.Application.Configurations;
-using DigiStore.WalletService.Application.Features;
 using DigiStore.WalletService.Application.Features.Payments;
 using DigiStore.WalletService.Application.Interfaces;
+using DigiStore.WalletService.Application.Services;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DigiStore.WalletService.Application;
 
@@ -19,8 +16,13 @@ public static class DependencyInjectionApplicationExtensions
 		// Регистрируем хэндлеры
 		services.AddScopedFromInterface<IWalletServiceHandler>(typeof(DependencyInjectionApplicationExtensions).Assembly);
 
-		services.Configure<YooKassaSettings>(configuration.GetSection("YooKassaSettings"));
+		services.AddScoped<IWithdrawalService, WithdrawalService>();
+		services.AddScoped<IPaymentService, PaymentService>();
+		services.AddScoped<IPaymentRecurringService, PaymentRecurringService>();
+
 		services.AddTransient<IValidator<CreatePaymentCommand>, CreateLessonRequestValidator>();
+
+		services.Configure<YooKassaSettings>(configuration.GetSection(YooKassaSettings.SectionName));
 
 		return services;
 	}

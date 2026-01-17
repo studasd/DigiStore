@@ -37,6 +37,9 @@ public static class DependencyInjectionExtensions
 
 		// Repositories
 		services.AddScoped<IWalletRepository, WalletRepository>();
+		services.AddScoped<IWithdrawalRepository, WithdrawalRepository>();
+		services.AddScoped<IPaymentRepository, PaymentRepository>();
+		services.AddScoped<IPaymentRecurringRepository, PaymentRecurringRepository>();
 
 		// Services
 

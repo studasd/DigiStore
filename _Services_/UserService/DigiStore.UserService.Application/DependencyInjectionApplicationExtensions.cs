@@ -1,16 +1,9 @@
 ﻿using DigiStore.Framework.Endpoints;
-using DigiStore.UserService.Application.Features;
-using DigiStore.UserService.Application.Features.Roles;
+using DigiStore.SharedKernel.Extensions;
 using DigiStore.UserService.Application.Interfaces;
-using System.Linq;
-using System.Reflection;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using DigiStore.SharedKernel.Extensions;
 
 namespace DigiStore.UserService.Application;
 
