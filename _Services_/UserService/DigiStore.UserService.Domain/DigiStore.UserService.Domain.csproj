@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\_Shared_\DigiStore.Enums\DigiStore.Enums.csproj" />
     <ProjectReference Include="..\DigiStore.UserService.Contracts\DigiStore.UserService.Contracts.csproj" />
   </ItemGroup>
 

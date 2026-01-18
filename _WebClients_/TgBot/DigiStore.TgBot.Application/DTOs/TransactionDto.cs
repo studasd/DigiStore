@@ -1,9 +1,13 @@
-﻿namespace DigiStore.TgBot.Application.DTOs;
+﻿using DigiStore.Enums;
 
-public class TransactionDto
-{
-	public decimal Amount { get; set; }
-	public string Type { get; set; } = string.Empty;
-	public string Description { get; set; } = string.Empty;
-	public DateTime CreatedAt { get; set; }
-}
+namespace DigiStore.TgBot.Application.DTOs;
+
+public record TransactionDto(
+	Guid Id,
+	Guid WalletId,
+	decimal Amount,
+	TransactionTypes Type,
+	TransactionStatuses Status,
+	string Description,
+	decimal BalanceAfter,
+	DateTime CreatedAt);

@@ -1,7 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
+using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.DTOs;
-using DigiStore.UserService.Contracts.Enums;
 
 namespace DigiStore.TgBot.Application.Interfaces.Services;
 

@@ -1,6 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
+using DigiStore.Enums;
 using DigiStore.SharedKernel;
-using DigiStore.UserService.Contracts.Enums;
 using DigiStore.UserService.Contracts.Requests;
 using DigiStore.UserService.Contracts.Responses;
 

@@ -1,5 +1,5 @@
-using DigiStore.TgBot.Application.Handlers;
 using DigiStore.TgBot.Application.Options;
+using DigiStore.TgBot.Application.Updates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

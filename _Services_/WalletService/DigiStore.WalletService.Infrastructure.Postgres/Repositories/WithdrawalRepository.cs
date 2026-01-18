@@ -1,8 +1,8 @@
 using CSharpFunctionalExtensions;
+using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.WalletService.Application.Interfaces;
 using DigiStore.WalletService.Domain;
-using DigiStore.WalletService.Domain.Enums;
 using DigiStore.WalletService.Infrastructure.Postgres.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

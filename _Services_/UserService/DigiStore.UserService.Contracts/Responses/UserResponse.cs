@@ -1,7 +1,4 @@
-﻿using DigiStore.UserService.Contracts.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using DigiStore.Enums;
 
 namespace DigiStore.UserService.Contracts.Responses;
 

@@ -1,6 +1,4 @@
-﻿using DigiStore.UserService.Contracts.HttpClients;
-
-namespace DigiStore.TgBot.Application.Options;
+﻿namespace DigiStore.TgBot.Application.Options;
 
 public class ServiceOptions
 {

@@ -1,11 +1,11 @@
 ﻿using CSharpFunctionalExtensions;
+using DigiStore.Enums;
 using DigiStore.Framework.Endpoints;
 using DigiStore.SharedKernel;
 using DigiStore.WalletService.Application.Extensions;
 using DigiStore.WalletService.Application.Interfaces;
 using DigiStore.WalletService.Contracts.Responses;
 using DigiStore.WalletService.Domain;
-using DigiStore.WalletService.Domain.Enums;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;

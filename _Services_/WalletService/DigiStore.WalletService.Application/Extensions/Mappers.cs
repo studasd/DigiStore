@@ -12,8 +12,8 @@ public static class Mappers
 			Id: transaction.Id,
 			WalletId: transaction.WalletId,
 			Amount: transaction.Amount,
-			Type: transaction.Type.ToString(),
-			Status: transaction.Status.ToString(),
+			Type: transaction.Type,
+			Status: transaction.Status,
 			Description: transaction.Description,
 			BalanceAfter: transaction.BalanceAfter,
 			CreatedAt: transaction.CreatedAt

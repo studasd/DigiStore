@@ -1,9 +1,9 @@
 ﻿using CSharpFunctionalExtensions;
+using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.WalletService.Application.Interfaces;
 using DigiStore.WalletService.Application.Validators;
 using DigiStore.WalletService.Domain;
-using DigiStore.WalletService.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;

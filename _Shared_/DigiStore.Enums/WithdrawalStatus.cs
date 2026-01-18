@@ -1,4 +1,4 @@
-﻿namespace DigiStore.WalletService.Domain.Enums;
+﻿namespace DigiStore.Enums;
 
 /// <summary>
 /// Статусы выплат Агрегата

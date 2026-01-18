@@ -1,5 +1,4 @@
 ﻿using DigiStore.Enums;
-using DigiStore.WalletService.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;

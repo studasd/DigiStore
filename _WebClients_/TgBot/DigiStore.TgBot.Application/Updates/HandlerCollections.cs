@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Reflection;
 
-namespace DigiStore.TgBot.Application.Handlers;
+namespace DigiStore.TgBot.Application.Updates;
 
 /// <summary>
 /// Registry of handler types and lookup dictionaries.

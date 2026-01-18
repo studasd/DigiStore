@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DigiStore.WalletService.Domain.Enums;
+namespace DigiStore.Enums;
 
 /// <summary>
 /// Transaction type enum

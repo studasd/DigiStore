@@ -12,6 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\_Services_\UserService\DigiStore.UserService.Contracts\DigiStore.UserService.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\_Services_\WalletService\DigiStore.WalletService.Contracts\DigiStore.WalletService.Contracts.csproj" />
     <ProjectReference Include="..\DigiStore.TgBot.Application\DigiStore.TgBot.Application.csproj" />
     <ProjectReference Include="..\DigiStore.TgBot.Domain\DigiStore.TgBot.Domain.csproj" />
   </ItemGroup>

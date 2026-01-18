@@ -5,7 +5,6 @@ using DigiStore.SharedKernel.Extensions;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
 using DigiStore.TgBot.Application.Interfaces.Services;
-using DigiStore.UserService.Contracts.Enums;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -61,7 +60,7 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 		if (sessionResult.IsSuccess)
 			languageCode = sessionResult.Value.LangCode;
 
-	var payAggregatResult = callbackQuery.Data.Replace(CallbackData, "").ParseEnum<PaymentAggregators>();
+		var payAggregatResult = callbackQuery.Data.Replace(CallbackData, "").ParseEnum<PaymentAggregators>();
 		if (payAggregatResult.IsFailure)
 		{
 			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
@@ -91,7 +90,7 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 		await _sessionService.UpdateSessionAsync(session, token);
 
 
-		var text =	$"Для пополнения баланса на {""}р. перейди по ссылке:\n" +
+		var text =	$"Для пополнения баланса на {amount:F2}р. перейди по ссылке:\n" +
 					$"{result.Value}\n\n" +
 					$"После оплаты баланс профиля пополнится автоматически.";
 

@@ -1,4 +1,4 @@
-﻿using DigiStore.UserService.Contracts.Enums;
+﻿using DigiStore.Enums;
 
 namespace DigiStore.UserService.Contracts.Requests;
 

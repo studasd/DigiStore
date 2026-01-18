@@ -1,9 +1,6 @@
-﻿using DigiStore.TgBot.Application.Interfaces.Services;
-using DigiStore.UserService.Contracts.Enums;
-using DigiStore.TgBot.Application.Constants;
+﻿using DigiStore.Enums;
 using DigiStore.TgBot.Application.Interfaces.Repositories;
-using DigiStore.TgBot.Domain;
-using System.Linq;
+using DigiStore.TgBot.Application.Interfaces.Services;
 
 namespace DigiStore.TgBot.Application.Services;
 

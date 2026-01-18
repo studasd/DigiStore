@@ -1,17 +1,15 @@
-﻿using DigiStore.TgBot.Application.Handlers;
-using DigiStore.TgBot.Application.Services;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Telegram.Bot;
-using DigiStore.UserService.Contracts.HttpClients;
+﻿using DigiStore.Framework.Endpoints;
+using DigiStore.Framework.Proxies;
+using DigiStore.TgBot.Application.Handlers.Adstracts;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.TgBot.Application.Options;
+using DigiStore.TgBot.Application.Services;
+using DigiStore.TgBot.Application.Updates;
+using DigiStore.TgBot.Application.Updates.Dispatchers;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using System.Net;
-using DigiStore.Framework.Proxies;
-using DigiStore.Framework.Endpoints;
-using DigiStore.TgBot.Application.Handlers.Adstracts;
-using DigiStore.WalletService.Contracts.HttpClients;
+using Telegram.Bot;
 
 
 namespace DigiStore.TgBot.Application;
@@ -51,19 +49,22 @@ public static class DependencyInjectionExtensions
 
 			return new TelegramBotClient(token);
 		});
-		services.AddScoped<ITgUserService, Services.TgUserService>();
-		services.AddUserServiceHttp(configuration);
-		services.AddWalletServiceHttp(configuration);
 
 
         // WalletService depends on an IWalletHttpClient (not System.Net.Http.HttpClient),
         // so register it as a scoped service instead of a typed HttpClient.
-        services.AddScoped<IWalletService, Services.WalletService>();
 
 		// Session & Localization
 		services.AddScoped<IProfileService, ProfileService>();
 
 		services.AddSingleton<HandlerCollections>();
+		services.AddScoped<CommandDispatcher>();
+		services.AddScoped<CallbackDispatcher>();
+		services.AddScoped<InputMessageDispatcher>();
+		services.AddScoped<IUpdateDispatcher>(sp => sp.GetRequiredService<CommandDispatcher>());
+		services.AddScoped<IUpdateDispatcher>(sp => sp.GetRequiredService<CallbackDispatcher>());
+		services.AddScoped<IUpdateDispatcher>(sp => sp.GetRequiredService<InputMessageDispatcher>());
+		services.AddScoped<UpdatePipeline>();
 		services.AddScoped<UpdateHandler>();
 
 		// Автоматическая регистрация всех хэндлеров команд и колбэков

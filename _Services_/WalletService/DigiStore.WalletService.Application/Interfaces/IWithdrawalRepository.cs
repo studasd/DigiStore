@@ -1,7 +1,7 @@
 using CSharpFunctionalExtensions;
+using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.WalletService.Domain;
-using DigiStore.WalletService.Domain.Enums;
 
 namespace DigiStore.WalletService.Application.Interfaces;
 

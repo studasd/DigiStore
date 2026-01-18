@@ -3,7 +3,6 @@ using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Interfaces.Services;
-using DigiStore.UserService.Contracts.Enums;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;

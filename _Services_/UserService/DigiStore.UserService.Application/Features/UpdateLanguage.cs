@@ -1,8 +1,8 @@
 ﻿using CSharpFunctionalExtensions;
+using DigiStore.Enums;
 using DigiStore.Framework.Endpoints;
 using DigiStore.SharedKernel;
 using DigiStore.UserService.Application.Interfaces;
-using DigiStore.UserService.Contracts.Enums;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

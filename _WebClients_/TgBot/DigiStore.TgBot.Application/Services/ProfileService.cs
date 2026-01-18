@@ -1,9 +1,9 @@
 ﻿using CSharpFunctionalExtensions;
+using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.DTOs;
 using DigiStore.TgBot.Application.Interfaces.Services;
-using DigiStore.UserService.Contracts.Enums;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types.ReplyMarkups;
 

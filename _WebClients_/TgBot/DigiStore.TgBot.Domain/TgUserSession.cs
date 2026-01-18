@@ -1,5 +1,5 @@
+using DigiStore.Enums;
 using DigiStore.TgBot.Domain.ValueObjects;
-using DigiStore.UserService.Contracts.Enums;
 
 namespace DigiStore.TgBot.Domain;
 

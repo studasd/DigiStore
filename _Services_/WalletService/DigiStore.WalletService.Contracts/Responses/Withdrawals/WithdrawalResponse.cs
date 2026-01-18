@@ -1,4 +1,4 @@
-﻿using DigiStore.WalletService.Domain.Enums;
+﻿using DigiStore.Enums;
 
 namespace DigiStore.WalletService.Contracts.Responses.Withdrawals;
 

@@ -5,7 +5,6 @@ using DigiStore.TgBot.Application.Interfaces.Repositories;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.TgBot.Domain;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
 
 namespace DigiStore.TgBot.Application.Services;
 

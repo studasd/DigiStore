@@ -1,6 +1,6 @@
 using DigiStore.Framework.Endpoints;
-using DigiStore.TgBot.Application.Handlers;
 using DigiStore.TgBot.Application.Services;
+using DigiStore.TgBot.Application.Updates;
 using DigiStore.TgBot.Infrastructure.Data;
 using DigiStore.TgBot.Infrastructure.Data.Seeders;
 using DigiStore.TgBot.Web;

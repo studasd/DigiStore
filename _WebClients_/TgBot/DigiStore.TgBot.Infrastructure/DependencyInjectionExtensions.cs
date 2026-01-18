@@ -3,6 +3,8 @@ using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.TgBot.Application.Services;
 using DigiStore.TgBot.Infrastructure.Data;
 using DigiStore.TgBot.Infrastructure.Data.Seeders;
+using DigiStore.UserService.Contracts.HttpClients;
+using DigiStore.WalletService.Contracts.HttpClients;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +29,11 @@ public static class DependencyInjectionExtensions
 		
 		services.AddScoped<IDataSeeder, DataSeeder>();
 
+		services.AddScoped<IWalletService, Services.WalletService>();
+		services.AddScoped<ITgUserService, Services.TgUserService>();
+
+		services.AddWalletServiceHttp(configuration);
+		services.AddUserServiceHttp(configuration);
 
 		// Database
 		services.AddDbContextPool<TgBotDbContext>((sp, options) =>

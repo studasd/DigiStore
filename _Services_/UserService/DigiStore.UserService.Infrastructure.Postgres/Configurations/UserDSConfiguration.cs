@@ -1,4 +1,4 @@
-﻿using DigiStore.UserService.Contracts.Enums;
+﻿using DigiStore.Enums;
 using DigiStore.UserService.Domain;
 using DigiStore.UserService.Domain.Enums;
 using Microsoft.EntityFrameworkCore;

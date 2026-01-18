@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
-namespace DigiStore.TgBot.Application.Services;
+namespace DigiStore.TgBot.Infrastructure.Services;
 
 
 public class WalletService : IWalletService
@@ -81,30 +81,43 @@ public class WalletService : IWalletService
 	}
 
 
-	public async Task<Result<IEnumerable<TransactionResponse>, Error>> GetTransactionsAsync(
+	public async Task<Result<IEnumerable<TransactionDto>, Error>> GetTransactionsAsync(
 		Guid userId,
 		int take = 10,
 		CancellationToken token = default)
 	{
 		//try
 		//{
-			var result = await _walletHttpClient.GetTransactionsAsync(userId, 0, take, token);
+		var result = await _walletHttpClient.GetTransactionsAsync(userId, 0, take, token);
+		if (result.IsFailure)
+			return result.Error;
 
-			return result;
+		var trans = result.Value;
+
+		return trans.Select(t => new TransactionDto
+			(t.Id, 
+			t.WalletId, 
+			t.Amount, 
+			t.Type, 
+			t.Status, 
+			t.Description, 
+			t.BalanceAfter, 
+			t.CreatedAt
+			)).ToList();
 
 			//var url = $"{_walletServiceUrl}/api/wallet/{userId}/transactions?skip=0&take={take}";
 			//var response = await _httpClient.GetAsync(url, ct);
 
-			//if (!response.IsSuccessStatusCode)
-			//{
-			//	_logger.LogWarning("Failed to get transactions for user ID: {UserId}", userId);
-			//	return TgBotErrors.OperationFailed;
-			//}
+		//if (!response.IsSuccessStatusCode)
+		//{
+		//	_logger.LogWarning("Failed to get transactions for user ID: {UserId}", userId);
+		//	return TgBotErrors.OperationFailed;
+		//}
 
-			//var content = await response.Content.ReadAsStringAsync(ct);
-			//var transactions = JsonSerializer.Deserialize<List<TransactionDto>>(content);
+		//var content = await response.Content.ReadAsStringAsync(ct);
+		//var transactions = JsonSerializer.Deserialize<List<TransactionDto>>(content);
 
-			//return transactions ?? new();
+		//return transactions ?? new();
 		//}
 		//catch (Exception ex)
 		//{
