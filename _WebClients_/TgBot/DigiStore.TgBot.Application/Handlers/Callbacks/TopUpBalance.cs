@@ -19,7 +19,8 @@ namespace DigiStore.TgBot.Application.Handlers.Callbacks;
 /// </summary>
 public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 {
-	public const string CallbackData = Constants.CallbackData.BalanceTopPrefix;
+	//public const string CallbackData = Constants.CallbackData.BalanceTopPrefix;
+	public const string CallbackData = "topup_do_";
 	public const bool IsPrefix = true;
 	
 	private readonly ISessionService _sessionService;
@@ -60,7 +61,7 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 		if (sessionResult.IsSuccess)
 			languageCode = sessionResult.Value.LangCode;
 
-		var payAggregatResult = callbackQuery.Data.Replace(CallbackData, "").ParseEnum<PaymentAggregators>();
+	var payAggregatResult = callbackQuery.Data.Replace(CallbackData, "").ParseEnum<PaymentAggregators>();
 		if (payAggregatResult.IsFailure)
 		{
 			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
@@ -71,7 +72,8 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 		_logger.LogInformation("Top up balance from agregattor: {Aggregate}, UserId: {UserId}", payAggregate, session.UserId);
 
 
-		var result = await _walletService.CreatePaymentAsync(session.UserId, payAggregate, 15, token);
+		var amount = session.PendingTopUpAmount ?? 15;
+		var result = await _walletService.CreatePaymentAsync(session.UserId, payAggregate, amount, token);
 		if(result.IsFailure)
 		{
 			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
@@ -80,10 +82,12 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 
 		// Update session
 		session.SetState(BotState.TopUpBalance);
+		session.PendingTopUpAmount = null;
+		session.PendingTopUpAggregator = null;
 		await _sessionService.UpdateSessionAsync(session, token);
 
 
-		var text =	$"Для оплаты перейди по ссылке:\n" +
+		var text =	$"Для пополнения баланса на {""}р. перейди по ссылке:\n" +
 					$"{result.Value}\n\n" +
 					$"После оплаты баланс профиля пополнится автоматически.";
 
@@ -106,7 +110,7 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 		{
 			await _botClient.EditMessageText(
 				callbackQuery.Message.Chat.Id,
-				callbackQuery.Message.MessageId,
+				845,
 				text,
 				parseMode: ParseMode.Html,
 				replyMarkup: keyboard,

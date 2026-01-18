@@ -17,6 +17,9 @@ public class TgUserSession
 
 	public CachedUserProfileVO? CachedProfile { get; set; }
 
+	public string? PendingTopUpAggregator { get; set; }
+	public decimal? PendingTopUpAmount { get; set; }
+
     public DateTime LastActivity { get; set; }
 
     public DateTime CreatedAt { get; set; }

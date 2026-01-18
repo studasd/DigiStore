@@ -97,7 +97,9 @@ public class SessionService : ISessionService
             LangCode = d.LangCode,
             CreatedAt = d.CreatedAt,
             LastActivity = d.LastActivity,
-            CachedProfile = d.CachedProfile
+			CachedProfile = d.CachedProfile,
+			PendingTopUpAggregator = d.PendingTopUpAggregator,
+			PendingTopUpAmount = d.PendingTopUpAmount
 		};
 
         return session;
@@ -113,6 +115,8 @@ public class SessionService : ISessionService
             CurrentState = s.CurrentState,
             LangCode = s.LangCode,
             CachedProfile = s.CachedProfile,
+			PendingTopUpAggregator = s.PendingTopUpAggregator,
+			PendingTopUpAmount = s.PendingTopUpAmount,
             LastActivity = s.LastActivity,
             CreatedAt = s.CreatedAt
         };

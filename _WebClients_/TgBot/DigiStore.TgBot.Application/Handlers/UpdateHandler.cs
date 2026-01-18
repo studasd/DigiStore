@@ -1,23 +1,16 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using System.Collections.Concurrent;
-using System.Reflection;
-using Telegram.Bot.Types;
-
-using DigiStore.TgBot.Application.Interfaces.Services;
-using DigiStore.TgBot.Application.Interfaces.Repositories;
-using DigiStore.TgBot.Domain;
-using DigiStore.TgBot.Domain.ValueObjects;
-using Telegram.Bot;
-using DigiStore.Framework.Endpoints;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Builder;
-using DigiStore.TgBot.Application.Handlers.Adstracts;
 using CSharpFunctionalExtensions;
 using DigiStore.SharedKernel;
-using Microsoft.Extensions.Options;
+using DigiStore.TgBot.Application.Constants;
+using DigiStore.TgBot.Application.Handlers.Adstracts;
+using DigiStore.TgBot.Application.Interfaces.Repositories;
+using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.TgBot.Application.Options;
+using DigiStore.TgBot.Domain;
+using DigiStore.TgBot.Domain.ValueObjects;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Telegram.Bot;
+using Telegram.Bot.Types;
 
 namespace DigiStore.TgBot.Application.Handlers;
 
@@ -175,6 +168,54 @@ public class UpdateHandler
 					_logger.LogError("Bad error HandleCommand: {errors}", handleCommandResult.Error.GetMessage());
 				}
 				return;
+			}
+
+			// Обработка ввода суммы пополнения (после выбора агрегатора)
+			if (update.Message?.Text != null && update.Message.From != null)
+			{
+				var sessionResult = await _sessionService.GetSessionAsync(update.Message.From.Id, token);
+				if (sessionResult.IsSuccess && sessionResult.Value.CurrentState == BotState.TopUpBalanceAmountAwaiting)
+				{
+					var session = sessionResult.Value;
+					var lang = session.LangCode;
+
+					var raw = update.Message.Text.Trim().Replace(',', '.');
+					if (!decimal.TryParse(raw, System.Globalization.CultureInfo.InvariantCulture, out var amount) || amount <= 0)
+					{
+						await _botClient.SendMessage(update.Message.Chat.Id, "Введите корректную сумму числом (больше 0).", cancellationToken: token);
+						return;
+					}
+
+					if (string.IsNullOrWhiteSpace(session.PendingTopUpAggregator) || !Enum.TryParse<DigiStore.Enums.PaymentAggregators>(session.PendingTopUpAggregator, out var aggregator))
+					{
+						await _botClient.SendMessage(update.Message.Chat.Id, "Не удалось определить способ оплаты. Откройте баланс и выберите агрегатор заново.", cancellationToken: token);
+						session.SetState(BotState.BalanceViewing);
+						session.PendingTopUpAmount = null;
+						session.PendingTopUpAggregator = null;
+						await _sessionService.UpdateSessionAsync(session, token);
+						return;
+					}
+
+					session.PendingTopUpAmount = amount;
+					session.SetState(BotState.TopUpBalance);
+					await _sessionService.UpdateSessionAsync(session, token);
+
+					// Запускаем следующий шаг как будто пришёл callback
+					var cb = new CallbackQuery
+					{
+						Id = Guid.NewGuid().ToString("N"),
+						From = update.Message.From,
+						Message = update.Message,
+						Data = DigiStore.TgBot.Application.Handlers.Callbacks.TopUpBalance.CallbackData + aggregator
+					};
+
+					var handleCallbackQueryResult = await HandleCallbackQueryAsync(cb, token);
+					if (handleCallbackQueryResult.IsFailure)
+					{
+						_logger.LogError("Bad error HandleCallbackQuery (amount step): {errors}", handleCallbackQueryResult.Error.GetMessage());
+					}
+					return;
+				}
 			}
 
 			// Обработка колбэков

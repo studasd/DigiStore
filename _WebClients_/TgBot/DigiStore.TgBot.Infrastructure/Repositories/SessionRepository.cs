@@ -32,6 +32,8 @@ public class SessionRepository : ISessionRepository
             existing.CurrentState = session.CurrentState;
             existing.LangCode = session.LangCode;
             existing.CachedProfile = session.CachedProfile;
+			existing.PendingTopUpAggregator = session.PendingTopUpAggregator;
+			existing.PendingTopUpAmount = session.PendingTopUpAmount;
             existing.LastActivity = DateTime.UtcNow;
         }
 
