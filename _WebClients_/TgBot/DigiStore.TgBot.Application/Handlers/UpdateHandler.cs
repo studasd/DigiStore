@@ -179,15 +179,40 @@ public class UpdateHandler
 					var session = sessionResult.Value;
 					var lang = session.LangCode;
 
+					int? userMessageIdToDelete = update.Message.MessageId;
+
+					// Определяем исходное сообщение бота (то, которое редактировали в TopUpAmountRequest)
+					Message? originalBotMessage = null;
+					if (update.Message.ReplyToMessage != null)
+					{
+						originalBotMessage = update.Message.ReplyToMessage;
+					}
+
 					var raw = update.Message.Text.Trim().Replace(',', '.');
 					if (!decimal.TryParse(raw, System.Globalization.CultureInfo.InvariantCulture, out var amount) || amount <= 0)
 					{
+						if (userMessageIdToDelete.HasValue)
+						{
+							try
+							{
+								await _botClient.DeleteMessage(update.Message.Chat.Id, userMessageIdToDelete.Value, cancellationToken: token);
+							}
+							catch { }
+						}
 						await _botClient.SendMessage(update.Message.Chat.Id, "Введите корректную сумму числом (больше 0).", cancellationToken: token);
 						return;
 					}
 
 					if (string.IsNullOrWhiteSpace(session.PendingTopUpAggregator) || !Enum.TryParse<DigiStore.Enums.PaymentAggregators>(session.PendingTopUpAggregator, out var aggregator))
 					{
+						if (userMessageIdToDelete.HasValue)
+						{
+							try
+							{
+								await _botClient.DeleteMessage(update.Message.Chat.Id, userMessageIdToDelete.Value, cancellationToken: token);
+							}
+							catch { }
+						}
 						await _botClient.SendMessage(update.Message.Chat.Id, "Не удалось определить способ оплаты. Откройте баланс и выберите агрегатор заново.", cancellationToken: token);
 						session.SetState(BotState.BalanceViewing);
 						session.PendingTopUpAmount = null;
@@ -200,12 +225,21 @@ public class UpdateHandler
 					session.SetState(BotState.TopUpBalance);
 					await _sessionService.UpdateSessionAsync(session, token);
 
+					if (userMessageIdToDelete.HasValue)
+					{
+						try
+						{
+							await _botClient.DeleteMessage(update.Message.Chat.Id, userMessageIdToDelete.Value, cancellationToken: token);
+						}
+						catch { }
+					}
+
 					// Запускаем следующий шаг как будто пришёл callback
 					var cb = new CallbackQuery
 					{
 						Id = Guid.NewGuid().ToString("N"),
 						From = update.Message.From,
-						Message = update.Message,
+						Message = originalBotMessage ?? update.Message,
 						Data = DigiStore.TgBot.Application.Handlers.Callbacks.TopUpBalance.CallbackData + aggregator
 					};
 
