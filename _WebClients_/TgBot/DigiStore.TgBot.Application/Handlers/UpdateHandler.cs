@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.Builder;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
 using CSharpFunctionalExtensions;
 using DigiStore.SharedKernel;
+using Microsoft.Extensions.Options;
+using DigiStore.TgBot.Application.Options;
 
 namespace DigiStore.TgBot.Application.Handlers;
 
@@ -32,7 +34,8 @@ public class UpdateHandler
 	private readonly ITgUserService _userService;
 	private readonly ITgUserRepository _userRepository;
 	private readonly IServiceProvider _serviceProvider;
-	private readonly ILogger<UpdateHandler> _logger;
+    private readonly TelegramOptions _tgOptions;
+    private readonly ILogger<UpdateHandler> _logger;
     private readonly HandlerCollections _registry;
 
 	public UpdateHandler(
@@ -41,6 +44,7 @@ public class UpdateHandler
 		ITgUserService userService,
 		ITgUserRepository userRepository,
 		IServiceProvider serviceProvider,
+		IOptions<TelegramOptions> options,
 		ILogger<UpdateHandler> logger,
         HandlerCollections registry)
     {
@@ -49,7 +53,8 @@ public class UpdateHandler
 		_userService = userService;
 		_userRepository = userRepository;
 		_serviceProvider = serviceProvider;
-		_logger = logger;
+		_tgOptions = options.Value;
+        _logger = logger;
         _registry = registry;
     }
 
@@ -57,7 +62,22 @@ public class UpdateHandler
 	/// <summary>
 	/// Обрабатывает Update
 	/// </summary>
-	public async Task HandleUpdateAsync(Update update, CancellationToken cancellationToken = default)
+	public async Task HandleUpdateAsync(Update update, CancellationToken token = default)
+	{
+		//if (_tgOptions.IsDebugShortResponse)
+		//{
+		//	// ✅ ОТВЕТИТЬ ТЕЛЕГРАМУ СРАЗУ
+		//	// ✅ ОБРАБОТКА В ФОНЕ БЕЗ ОЖИДАНИЯ
+		//	_ = ProcessUpdateAsync(update, token);
+		//}
+		//else
+		{
+			await ProcessUpdateAsync(update, token);
+		}
+	}
+
+
+	private async Task ProcessUpdateAsync(Update update, CancellationToken token)
 	{
 		try
 		{
@@ -85,7 +105,7 @@ public class UpdateHandler
 
 			if (telegramId.HasValue)
 			{
-				var sessionResult = await _sessionService.GetOrCreateSessionAsync(telegramId.Value, cancellationToken);
+				var sessionResult = await _sessionService.GetOrCreateSessionAsync(telegramId.Value, token);
 				if (sessionResult.IsFailure)
 				{
 					_logger.LogWarning("Failed to get or create user from Session for TelegramId {TelegramId}: {Error}", telegramId.Value, sessionResult.Error?.GetMessage());
@@ -96,8 +116,8 @@ public class UpdateHandler
 				if (session.UserId == default)
 				{
 					var lang = session.LangCode;
-					var userResult = await _userService.GetOrCreateUserAsync(telegramId.Value, username, firstName, lastName, lang, cancellationToken);
-						
+					var userResult = await _userService.GetOrCreateUserAsync(telegramId.Value, username, firstName, lastName, lang, token);
+
 					if (userResult.IsSuccess)
 					{
 						var userDto = userResult.Value!;
@@ -115,7 +135,7 @@ public class UpdateHandler
 							UpdatedAt = DateTime.UtcNow
 						};
 
-						await _userRepository.AddOrUpdateAsync(tgUser, cancellationToken);
+						await _userRepository.AddOrUpdateAsync(tgUser, token);
 
 
 						// Set session.UserId and optionally cache profile
@@ -132,10 +152,10 @@ public class UpdateHandler
 							Roles = userDto.Roles,
 						};
 
-						await _sessionService.UpdateSessionAsync(session, cancellationToken);
+						await _sessionService.UpdateSessionAsync(session, token);
 
 						// Notify UserService about activity
-						_ = _userService.UpdateActivityAsync(userDto.Id, cancellationToken);
+						_ = _userService.UpdateActivityAsync(userDto.Id, token);
 					}
 					else
 					{
@@ -144,28 +164,28 @@ public class UpdateHandler
 				}
 			}
 
-            // Обработка команд
-            if (update.Message?.Text != null && update.Message.Text.StartsWith("/"))
-            {
-                var command = update.Message.Text.Split(' ')[0].ToLowerInvariant();
-                var handleCommandResult = await HandleCommandAsync(update.Message, command, cancellationToken);
+			// Обработка команд
+			if (update.Message?.Text != null && update.Message.Text.StartsWith("/"))
+			{
+				var command = update.Message.Text.Split(' ')[0].ToLowerInvariant();
+				var handleCommandResult = await HandleCommandAsync(update.Message, command, token);
 
 				if (handleCommandResult.IsFailure)
 				{
 					_logger.LogError("Bad error HandleCommand: {errors}", handleCommandResult.Error.GetMessage());
 				}
-                return;
-            }
+				return;
+			}
 
 			// Обработка колбэков
 			if (update.CallbackQuery != null)
 			{
-				var handleCallbackQueryResult = await HandleCallbackQueryAsync(update.CallbackQuery, cancellationToken);
+				var handleCallbackQueryResult = await HandleCallbackQueryAsync(update.CallbackQuery, token);
 
 				if (handleCallbackQueryResult.IsFailure)
 				{
 					_logger.LogError("Bad error HandleCallbackQuery: {errors}", handleCallbackQueryResult.Error.GetMessage());
-					await _botClient.AnswerCallbackQuery(update.CallbackQuery.Id, "Не реализовано", cancellationToken: cancellationToken);
+					await _botClient.AnswerCallbackQuery(update.CallbackQuery.Id, "Не реализовано", cancellationToken: token);
 				}
 				return;
 			}
@@ -173,7 +193,7 @@ public class UpdateHandler
 
 			if (update.Message.From != null)
 			{
-				await _sessionService.RecordCommandAsync(update.Message.From.Id, null, update.Message?.Text, cancellationToken);
+				await _sessionService.RecordCommandAsync(update.Message.From.Id, null, update.Message?.Text, token);
 			}
 
 			_logger.LogWarning("Unhandled update type: {UpdateType}", update.Type);
@@ -185,13 +205,17 @@ public class UpdateHandler
 		}
 	}
 
+
+
+
+
 	/// <summary>
 	/// Обрабатывает команду
 	/// </summary>
 	private async Task<UnitResult<Error>> HandleCommandAsync(
 		Message message,
 		string command,
-		CancellationToken cancellationToken)
+		CancellationToken token)
 	{
         if (!_registry.CommandHandlers.TryGetValue(command, out var handlerType))
 		{
@@ -207,7 +231,7 @@ public class UpdateHandler
 			return Error.NotFound("handler.command", "Failed to create handler instance for command");
 		}
 
-		var handlerResult = await handler.HandleAsync(message, cancellationToken);
+		var handlerResult = await handler.HandleAsync(message, token);
 
 		if(handlerResult.IsFailure)
 		{
@@ -217,7 +241,7 @@ public class UpdateHandler
 		// Record command history if session service available
 		if (message.From != null)
 		{
-			await _sessionService.RecordCommandAsync(message.From.Id, command, String.IsNullOrEmpty(command) ? message.Text : null, cancellationToken);
+			await _sessionService.RecordCommandAsync(message.From.Id, command, String.IsNullOrEmpty(command) ? message.Text : null, token);
 		}
 
 		return Result.Success<Error>();
@@ -228,24 +252,33 @@ public class UpdateHandler
 	/// </summary>
 	private async Task<UnitResult<Error>> HandleCallbackQueryAsync(
 		CallbackQuery callbackQuery,
-		CancellationToken cancellationToken)
+		CancellationToken token)
 	{
 		if (callbackQuery.Data == null)
 			return Error.NotFound("handle.callback", "No data found for callbackQuery");
+
+
+		if (_tgOptions.IsDebugShortResponse)
+		{
+			// ✅ ОТВЕТИТЬ ТЕЛЕГРАМУ СРАЗУ
+			await _botClient.AnswerCallbackQuery(callbackQuery.Id, "DEBUG режим. Ответ получен.", cancellationToken: token);
+		}
 		
+
+
 		var callbackData = callbackQuery.Data;
 
         // Сначала проверяем точное совпадение
         if (_registry.CallbackHandlers.TryGetValue(callbackData, out var exactHandlerType))
 		{
-			var executeResult = await ExecuteCallbackHandlerAsync(callbackQuery, exactHandlerType, cancellationToken);
+			var executeResult = await ExecuteCallbackHandlerAsync(callbackQuery, exactHandlerType, token);
 
 			if(executeResult.IsFailure)
 				return executeResult.Error;
 			
 			if (callbackQuery.From != null)
 			{
-				await _sessionService.RecordCommandAsync(callbackQuery.From.Id, callbackData, String.IsNullOrEmpty(callbackData) ? callbackQuery.Message?.Text : null, cancellationToken);
+				await _sessionService.RecordCommandAsync(callbackQuery.From.Id, callbackData, String.IsNullOrEmpty(callbackData) ? callbackQuery.Message?.Text : null, token);
 			}
 			return Result.Success<Error>();
 		}
@@ -255,14 +288,14 @@ public class UpdateHandler
 		{
 			if (callbackData.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
 			{
-				var executeResult = await ExecuteCallbackHandlerAsync(callbackQuery, handlerType, cancellationToken);
+				var executeResult = await ExecuteCallbackHandlerAsync(callbackQuery, handlerType, token);
 				
 				if (executeResult.IsFailure)
 					return executeResult.Error;
 
 				if (callbackQuery.From != null)
 				{
-					await _sessionService.RecordCommandAsync(callbackQuery.From.Id, callbackData, String.IsNullOrEmpty(callbackData) ? callbackQuery.Message?.Text : null, cancellationToken);
+					await _sessionService.RecordCommandAsync(callbackQuery.From.Id, callbackData, String.IsNullOrEmpty(callbackData) ? callbackQuery.Message?.Text : null, token);
 				}
 				return Result.Success<Error>();
 			}
@@ -270,7 +303,7 @@ public class UpdateHandler
 
 		_logger.LogWarning("No handler found for callback: {CallbackData}", callbackData);
 
-		await _botClient.AnswerCallbackQuery(callbackQuery.Id, "Не реализовано", cancellationToken: cancellationToken);
+		await _botClient.AnswerCallbackQuery(callbackQuery.Id, "Не реализовано", cancellationToken: token);
 
 		return Result.Success<Error>();
 	}
@@ -281,7 +314,7 @@ public class UpdateHandler
 	private async Task<UnitResult<Error>> ExecuteCallbackHandlerAsync(
 		CallbackQuery callbackQuery,
 		Type handlerType,
-		CancellationToken cancellationToken)
+		CancellationToken token)
 	{
 		var handler = _serviceProvider.GetService(handlerType) as ICallbackQueryHandler;
 		if (handler == null)
@@ -290,7 +323,7 @@ public class UpdateHandler
 			return Error.NotFound("handler.callback", "Failed to create handler instance for callback");
 		}
 
-		var handlerResult = await handler.HandleAsync(callbackQuery, cancellationToken);
+		var handlerResult = await handler.HandleAsync(callbackQuery, token);
 
 		if (handlerResult.IsFailure)
 		{

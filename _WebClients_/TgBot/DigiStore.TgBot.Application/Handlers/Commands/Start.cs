@@ -41,7 +41,7 @@ public class Start : BaseHandler, ICommandHandler
 	}
 
 
-	public async Task<UnitResult<Error>> HandleAsync(Message message, CancellationToken cancellationToken = default)
+	public async Task<UnitResult<Error>> HandleAsync(Message message, CancellationToken token = default)
 	{
 		// Handle /start command
 		// 1. Check if user exists
@@ -66,18 +66,18 @@ public class Start : BaseHandler, ICommandHandler
 			firstName,
 			lastName,
 			defaultLanguage,
-			cancellationToken);
+			token);
 
 		if (userResult.IsFailure)
 		{
-			await SendErrorMessage(message.Chat.Id, "Failed to initialize user account", cancellationToken);
+			await SendErrorMessage(message.Chat.Id, "Failed to initialize user account", token);
 			return userResult.Error;
 		}
 
 		var user = userResult.Value!;
 
 		// Get or create session
-		var sessionResult = await _sessionService.GetOrCreateSessionAsync(telegramId, cancellationToken);
+		var sessionResult = await _sessionService.GetOrCreateSessionAsync(telegramId, token);
 
 		if (sessionResult.IsFailure)
 			return sessionResult.Error;
@@ -90,7 +90,7 @@ public class Start : BaseHandler, ICommandHandler
 		if (user.IsNew)
 		{
 			// Send greeting and language selection
-			var sendLangResult = await SendLanguageSelection(message.Chat.Id, session.LangCode, isStartCommand: true, cancellationToken);
+			var sendLangResult = await SendLanguageSelection(message.Chat.Id, session.LangCode, isStartCommand: true, token);
 			if (sendLangResult.IsFailure)
 			{
 				return sendLangResult.Error;
@@ -98,16 +98,16 @@ public class Start : BaseHandler, ICommandHandler
 
 			// Update session - waiting for language selection
 			session.SetState(BotState.LanguageSelectionAwaiting);
-			await _sessionService.UpdateSessionAsync(session, cancellationToken);
+			await _sessionService.UpdateSessionAsync(session, token);
 		}
 		else
 		{
 			// Existing user - show profile immediately
-			var profileResult = await _profileService.GetFullProfileAsync(user.Id, telegramId, cancellationToken);
+			var profileResult = await _profileService.GetFullProfileAsync(user.Id, telegramId, token);
 			
 			if (profileResult.IsFailure)
 			{
-				await SendErrorMessage(message.Chat.Id, _localService.GetMessage(LocalKeys.Errors.Occurred, session.LangCode), cancellationToken);
+				await SendErrorMessage(message.Chat.Id, _localService.GetMessage(LocalKeys.Errors.Occurred, session.LangCode), token);
 				return profileResult.Error;
 			}
 
@@ -132,7 +132,7 @@ public class Start : BaseHandler, ICommandHandler
 			};
 
 			session.SetState(BotState.ProfileViewing);
-			await _sessionService.UpdateSessionAsync(session, cancellationToken);
+			await _sessionService.UpdateSessionAsync(session, token);
 
 			var profileText = _profileService.FormatProfileText(profile, session.LangCode);
 			var keyboard = GetProfileKeyboard(session.LangCode);
@@ -144,12 +144,12 @@ public class Start : BaseHandler, ICommandHandler
 					profileText,
 					parseMode: Telegram.Bot.Types.Enums.ParseMode.Html,
 					replyMarkup: keyboard,
-					cancellationToken: cancellationToken);
+					cancellationToken: token);
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error in StartCommandHandler");
-				await SendErrorMessage(message.Chat.Id, "An error occurred", cancellationToken);
+				await SendErrorMessage(message.Chat.Id, "An error occurred", token);
 				return Error.Failure("command.handler.start", "Error in StartCommandHandler");
 			}
 

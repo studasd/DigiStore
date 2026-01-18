@@ -35,29 +35,28 @@ public class Balance : BaseHandler, ICommandHandler
 		_logger = logger;
 	}
 
-	public async Task<UnitResult<Error>> HandleAsync(Message message, CancellationToken cancellationToken = default)
+	public async Task<UnitResult<Error>> HandleAsync(Message message, CancellationToken token = default)
 	{
 		// Handle /balance command - show wallet info
-
 		
 		var telegramId = message.From!.Id;
 		var chatId = message.Chat.Id;
 
 		// Get session
-		var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+		var sessionResult = await _sessionService.GetSessionAsync(telegramId, token);
 		if (sessionResult.IsFailure)
 		{
-			await SendErrorMessage(chatId, "Session expired", cancellationToken);
+			await SendErrorMessage(chatId, "Session expired", token);
 			return sessionResult.Error;
 		}
 
 		var session = sessionResult.Value;
 		var langCode = session.LangCode;
 
-		var profileResult = await _profileService.GetFullProfileAsync(session.UserId, telegramId, cancellationToken);
+		var profileResult = await _profileService.GetFullProfileAsync(session.UserId, telegramId, token);
 		if (profileResult.IsFailure)
 		{
-			await SendErrorMessage(chatId, _localService.GetMessage(LocalKeys.Errors.Occurred, langCode), cancellationToken);
+			await SendErrorMessage(chatId, _localService.GetMessage(LocalKeys.Errors.Occurred, langCode), token);
 			return profileResult;
 		}
 
@@ -79,12 +78,12 @@ public class Balance : BaseHandler, ICommandHandler
 				text,
 				parseMode: ParseMode.Html,
 				replyMarkup: keyboard,
-				cancellationToken: cancellationToken);
+				cancellationToken: token);
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in BalanceCommandHandler");
-			await SendErrorMessage(message.Chat.Id, "An error occurred", cancellationToken);
+			await SendErrorMessage(message.Chat.Id, "An error occurred", token);
 			return Error.Failure("command.handler.balance", "Error in BalanceCommandHandler");
 		}
 

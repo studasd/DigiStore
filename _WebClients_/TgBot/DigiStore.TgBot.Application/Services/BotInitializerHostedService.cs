@@ -62,7 +62,7 @@ public class BotInitializerHostedService : BackgroundService
                 await botClient.SetWebhook(
                     $"{telegramOptions.WebhookUrl}",
                     allowedUpdates: Array.Empty<UpdateType>(),
-                    cancellationToken: stoppingToken);
+					cancellationToken: stoppingToken);
 
                 _logger.LogInformation("Webhook configured: {WebhookUrl}", telegramOptions.WebhookUrl);
             }
@@ -95,18 +95,18 @@ public class BotInitializerHostedService : BackgroundService
 			};
 
             await botClient.ReceiveAsync(
-                updateHandler: async (client, update, cancellationToken) =>
+                updateHandler: async (client, update, token) =>
                 {
                     try
                     {
-                        await updateHandlerServ.HandleUpdateAsync(update, cancellationToken);
+                        await updateHandlerServ.HandleUpdateAsync(update, token);
                     }
                     catch (Exception ex)
                     {
                         logger.LogError(ex, "Error processing update");
                     }
                 },
-                errorHandler: (client, exception, cancellationToken) =>
+                errorHandler: (client, exception, token) =>
                 {
                     logger.LogError(exception, "Polling error");
                     return Task.CompletedTask;

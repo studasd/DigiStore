@@ -14,6 +14,7 @@ public static class BotState
 	public const string MainMenu =						"MainMenu";
 	public const string ProfileViewing =				"ProfileViewing";
 	public const string BalanceViewing =				"BalanceViewing";
+	public const string TopUpBalance =					"TopUpBalance";
 	public const string CatalogViewing =				"CatalogViewing";
 	public const string ProductViewing =				"ProductViewing";
 

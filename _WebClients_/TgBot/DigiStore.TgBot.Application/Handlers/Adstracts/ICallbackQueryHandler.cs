@@ -12,5 +12,5 @@ public interface ICallbackQueryHandler
 	/// <summary>
 	/// Обрабатывает колбэк
 	/// </summary>
-	Task<UnitResult<Error>> HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default);
+	Task<UnitResult<Error>> HandleAsync(CallbackQuery callbackQuery, CancellationToken token = default);
 }

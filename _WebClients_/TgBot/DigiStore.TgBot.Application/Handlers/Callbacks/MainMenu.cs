@@ -33,7 +33,7 @@ public class MainMenu : BaseHandler, ICallbackQueryHandler
 		_logger = logger;
 	}
 
-	public async Task<UnitResult<Error>> HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
+	public async Task<UnitResult<Error>> HandleAsync(CallbackQuery callbackQuery, CancellationToken token = default)
 	{
 		// Handle main menu
 
@@ -42,14 +42,12 @@ public class MainMenu : BaseHandler, ICallbackQueryHandler
 
 
 		var telegramId = callbackQuery.From.Id;
-		var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+		var sessionResult = await _sessionService.GetSessionAsync(telegramId, token);
 
 		var languageCode = LanguageCodes.en;
 
 		if(sessionResult.IsSuccess)
-		{
 			languageCode = sessionResult.Value.LangCode;
-		}
 
 		var text =	$"{_localService.GetMessage(LocalKeys.Navigations.MainMenu, languageCode)}\n\n" +
 					$"{_localService.GetMessage(LocalKeys.Navigations.ChooseOption, languageCode)}";
@@ -64,14 +62,14 @@ public class MainMenu : BaseHandler, ICallbackQueryHandler
 				callbackQuery.Message.MessageId,
 				text,
 				replyMarkup: keyboard,
-				cancellationToken: cancellationToken);
+				cancellationToken: token);
 
-			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
+			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: token);
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in MainMenuCallbackHandler");
-			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
+			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
 			return Error.Failure("callback.mainmenu.error", "Error in MainMenuCallbackHandler");
 		}
 

@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.DTOs;
 using DigiStore.WalletService.Contracts.Responses;
@@ -25,4 +26,6 @@ public interface IWalletService
 	/// Initiate withdrawal
 	/// </summary>
 	Task<Result<bool, Error>> InitiateWithdrawalAsync(Guid userId, decimal amount, CancellationToken token);
+
+	Task<Result<string, Error>> CreatePaymentAsync(Guid userId, PaymentAggregators paymentAggregator, decimal amount, CancellationToken token);
 }

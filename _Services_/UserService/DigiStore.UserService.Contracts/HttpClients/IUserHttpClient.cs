@@ -8,11 +8,11 @@ namespace DigiStore.UserService.Contracts.HttpClients;
 
 public interface IUserHttpClient
 {
-	Task<Result<UserResponse, Error>> GetUserById(Guid userId, CancellationToken cancellationToken);
-	Task<Result<UserResponse, Error>> GetUserByTelegramId(long telegramId, CancellationToken cancellationToken);
+	Task<Result<UserResponse, Error>> GetUserById(Guid userId, CancellationToken token);
+	Task<Result<UserResponse, Error>> GetUserByTelegramId(long telegramId, CancellationToken token);
 	
-	Task<UnitResult<Error>> UpdateLanguage(Guid userId, LanguageCodes langCode, CancellationToken cancellationToken);
-	Task<UnitResult<Error>> UpdateActivity(Guid userId, CancellationToken cancellationToken);
+	Task<UnitResult<Error>> UpdateLanguage(Guid userId, LanguageCodes langCode, CancellationToken token);
+	Task<UnitResult<Error>> UpdateActivity(Guid userId, CancellationToken token);
 
-	Task<Result<UserResponse, Error>> RegisterUser(CreateUserRequest request, CancellationToken cancellationToken);
+	Task<Result<UserResponse, Error>> RegisterUser(CreateUserRequest request, CancellationToken token);
 }

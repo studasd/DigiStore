@@ -32,7 +32,7 @@ public class Language : BaseHandler, ICommandHandler
 		_logger = logger;
 	}
 
-	public async Task<UnitResult<Error>> HandleAsync(Message message, CancellationToken cancellationToken = default)
+	public async Task<UnitResult<Error>> HandleAsync(Message message, CancellationToken token = default)
 	{
 		// Handle /language command - change language
 
@@ -42,10 +42,10 @@ public class Language : BaseHandler, ICommandHandler
 		_logger.LogInformation("Language command from Telegram ID: {TelegramId}", telegramId);
 
 		// Get session
-		var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+		var sessionResult = await _sessionService.GetSessionAsync(telegramId, token);
 		if (sessionResult.IsFailure)
 		{
-			await SendErrorMessage(chatId, _localService.GetMessage(LocalKeys.Errors.SessionExpired, LanguageCodes.en), cancellationToken);
+			await SendErrorMessage(chatId, _localService.GetMessage(LocalKeys.Errors.SessionExpired, LanguageCodes.en), token);
 			return sessionResult.Error;
 		}
 
@@ -53,7 +53,7 @@ public class Language : BaseHandler, ICommandHandler
 		var currentLanguage = session.LangCode;
 
 		// Send language selection
-		var sendLangResult = await SendLanguageSelection(chatId, currentLanguage, isStartCommand: false, cancellationToken);
+		var sendLangResult = await SendLanguageSelection(chatId, currentLanguage, isStartCommand: false, token);
 
 		if (sendLangResult.IsFailure)
 		{
@@ -62,7 +62,7 @@ public class Language : BaseHandler, ICommandHandler
 
 		// Update session
 		session.SetState(BotState.LanguageChangeAwaiting);
-		await _sessionService.UpdateSessionAsync(session, cancellationToken);
+		await _sessionService.UpdateSessionAsync(session, token);
 
 		_logger.LogInformation("Language selection sent for user: {TelegramId}", telegramId);
 		return Result.Success<Error>();

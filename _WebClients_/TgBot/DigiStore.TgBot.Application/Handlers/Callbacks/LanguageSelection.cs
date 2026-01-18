@@ -41,7 +41,7 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 		_logger = logger;
 	}
 
-	public async Task<UnitResult<Error>> HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
+	public async Task<UnitResult<Error>> HandleAsync(CallbackQuery callbackQuery, CancellationToken token = default)
 	{
 		// Handle language selection from /start command
 
@@ -50,7 +50,7 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 
 		
 		var telegramId = callbackQuery.From.Id;
-		var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+		var sessionResult = await _sessionService.GetSessionAsync(telegramId, token);
 
 		if (sessionResult.IsFailure)
 			return sessionResult.Error;
@@ -60,7 +60,7 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 		var langCodeResult = callbackQuery.Data.Replace(CallbackData, "").ParseEnum<LanguageCodes>();
 		if(langCodeResult.IsFailure)
 		{
-			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
+			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
 			return langCodeResult.Error;
 		}
 		var langCode = langCodeResult.Value;
@@ -71,28 +71,28 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 		var updateResult = await _profileService.UpdateUserLanguageAsync(
 			session.UserId,
 			langCode,
-			cancellationToken);
+			token);
 
 		if (updateResult.IsFailure)
 		{
-			await AnswerCallbackQueryWithError(callbackQuery.Id, langCode, cancellationToken);
+			await AnswerCallbackQueryWithError(callbackQuery.Id, langCode, token);
 			return updateResult.Error;
 		}
 
 		// Update session
 		session.LangCode = langCode;
 		session.SetState(BotState.LanguageSelected);
-		await _sessionService.UpdateSessionAsync(session, cancellationToken);
+		await _sessionService.UpdateSessionAsync(session, token);
 
 		// Get full profile
 		var profileResult = await _profileService.GetFullProfileAsync(
 			session.UserId,
 			session.TelegramId,
-			cancellationToken);
+			token);
 
 		if (profileResult.IsFailure)
 		{
-			await AnswerCallbackQueryWithError(callbackQuery.Id, langCode, cancellationToken);
+			await AnswerCallbackQueryWithError(callbackQuery.Id, langCode, token);
 			return profileResult.Error;
 		}
 
@@ -117,7 +117,7 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 		};
 
 		session.SetState(BotState.ProfileViewing);
-		await _sessionService.UpdateSessionAsync(session, cancellationToken);
+		await _sessionService.UpdateSessionAsync(session, token);
 
 		// Format and send profile
 		var profileText = _profileService.FormatProfileText(profile, langCode);
@@ -132,9 +132,9 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 				profileText,
 				parseMode: ParseMode.Html,
 				replyMarkup: keyboard,
-				cancellationToken: cancellationToken);
+				cancellationToken: token);
 
-			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
+			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: token);
 
 			_logger.LogInformation(
 				"Profile shown after language selection for user: {UserId}",
@@ -143,7 +143,7 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in LanguageSelectionCallbackHandler");
-			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
+			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
 			return Error.Failure("callback.langselect.error", "Error in LanguageSelectionCallbackHandler");
 		}
 

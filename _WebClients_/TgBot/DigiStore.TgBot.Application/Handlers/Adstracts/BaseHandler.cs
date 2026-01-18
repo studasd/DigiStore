@@ -29,11 +29,11 @@ public abstract class BaseHandler
 	/// <summary>
 	/// Отправляет сообщение об ошибке
 	/// </summary>
-	protected async Task SendErrorMessage(long chatId, string error, CancellationToken cancellationToken = default)
+	protected async Task SendErrorMessage(long chatId, string error, CancellationToken token = default)
 	{
 		try
 		{
-			await _botClient.SendMessage(chatId, $"❌ {error}", cancellationToken: cancellationToken);
+			await _botClient.SendMessage(chatId, $"❌ {error}", cancellationToken: token);
 		}
 		catch {	}
 	}
@@ -42,7 +42,7 @@ public abstract class BaseHandler
 	/// <summary>
 	/// Отправляет ответ на callback query с ошибкой
 	/// </summary>
-	protected async Task AnswerCallbackQueryWithError(string callbackQueryId, LanguageCodes langCode, CancellationToken cancellationToken = default)
+	protected async Task AnswerCallbackQueryWithError(string callbackQueryId, LanguageCodes langCode, CancellationToken token = default)
 	{
 		try
 		{
@@ -50,7 +50,7 @@ public abstract class BaseHandler
 				callbackQueryId,
 				_localService.GetMessage(LocalKeys.Errors.Occurred, langCode),
 				showAlert: true,
-				cancellationToken: cancellationToken);
+				cancellationToken: token);
 		}
 		catch { }
 	}
@@ -59,7 +59,7 @@ public abstract class BaseHandler
 	/// <summary>
 	/// Отправляет выбор языка
 	/// </summary>
-	protected async Task<UnitResult<Error>> SendLanguageSelection(long chatId, LanguageCodes currentLang, bool isStartCommand, CancellationToken cancellationToken = default)
+	protected async Task<UnitResult<Error>> SendLanguageSelection(long chatId, LanguageCodes currentLang, bool isStartCommand, CancellationToken token = default)
 	{
 		var languages = _localService.GetLanguages();
 		var buttons = new List<List<InlineKeyboardButton>>();
@@ -92,11 +92,11 @@ public abstract class BaseHandler
 
 		try
 		{
-			await _botClient.SendMessage(chatId, text, replyMarkup: keyboard, cancellationToken: cancellationToken);
+			await _botClient.SendMessage(chatId, text, replyMarkup: keyboard, cancellationToken: token);
 		}
 		catch(Exception ex)
 		{
-			await SendErrorMessage(chatId, "An error occurred", cancellationToken);
+			await SendErrorMessage(chatId, "An error occurred", token);
 			return Error.Failure("bot.send.error", "Failed to send language selection message");
 		}
 

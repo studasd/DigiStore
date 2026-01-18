@@ -37,7 +37,7 @@ public class ProfileView : BaseHandler, ICallbackQueryHandler
 		_logger = logger;
 	}
 
-	public async Task<UnitResult<Error>> HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
+	public async Task<UnitResult<Error>> HandleAsync(CallbackQuery callbackQuery, CancellationToken token = default)
 	{
 		// Handle profile view callback
 
@@ -46,7 +46,7 @@ public class ProfileView : BaseHandler, ICallbackQueryHandler
 		
 
 		var telegramId = callbackQuery.From.Id;
-		var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+		var sessionResult = await _sessionService.GetSessionAsync(telegramId, token);
 
 		if (sessionResult.IsFailure)
 			return sessionResult.Error;
@@ -57,11 +57,11 @@ public class ProfileView : BaseHandler, ICallbackQueryHandler
 		var profileResult = await _profileService.GetFullProfileAsync(
 			session.UserId,
 			session.TelegramId,
-			cancellationToken);
+			token);
 
 		if (profileResult.IsFailure)
 		{
-			await AnswerCallbackQueryWithError(callbackQuery.Id, languageCode, cancellationToken);
+			await AnswerCallbackQueryWithError(callbackQuery.Id, languageCode, token);
 			return profileResult.Error;
 		}
 
@@ -77,14 +77,14 @@ public class ProfileView : BaseHandler, ICallbackQueryHandler
 				profileText,
 				parseMode: ParseMode.Html,
 				replyMarkup: keyboard,
-				cancellationToken: cancellationToken);
+				cancellationToken: token);
 
-			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
+			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: token);
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in ProfileViewCallbackHandler");
-			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
+			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
 			return Error.Failure("callback.profile.error", "Error in ProfileViewCallbackHandler");
 		}
 

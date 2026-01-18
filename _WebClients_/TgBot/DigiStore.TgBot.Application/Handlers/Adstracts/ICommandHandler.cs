@@ -12,5 +12,5 @@ public interface ICommandHandler
 	/// <summary>
 	/// Обрабатывает команду
 	/// </summary>
-	Task<UnitResult<Error>> HandleAsync(Message message, CancellationToken cancellationToken = default);
+	Task<UnitResult<Error>> HandleAsync(Message message, CancellationToken token = default);
 }

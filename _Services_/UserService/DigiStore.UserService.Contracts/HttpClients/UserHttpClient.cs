@@ -21,35 +21,35 @@ internal sealed class UserHttpClient : IUserHttpClient
     }
 
 
-	public async Task<Result<UserResponse, Error>> GetUserByTelegramId(long telegramId, CancellationToken cancellationToken)
+	public async Task<Result<UserResponse, Error>> GetUserByTelegramId(long telegramId, CancellationToken token)
 	{
-		return await _httpService.GetAsync<UserResponse>($"/getUser/byTelegram/{telegramId}", cancellationToken);
+		return await _httpService.GetAsync<UserResponse>($"/getUser/byTelegram/{telegramId}", token);
 	}
 	
-	public async Task<Result<UserResponse, Error>> GetUserById(Guid userId, CancellationToken cancellationToken)
+	public async Task<Result<UserResponse, Error>> GetUserById(Guid userId, CancellationToken token)
 	{
-		return await _httpService.GetAsync<UserResponse>($"/getUser/byId/{userId}", cancellationToken);
+		return await _httpService.GetAsync<UserResponse>($"/getUser/byId/{userId}", token);
 	}
 	
 	
-	public async Task<UnitResult<Error>> UpdateLanguage(Guid userId, LanguageCodes langCode, CancellationToken cancellationToken)
+	public async Task<UnitResult<Error>> UpdateLanguage(Guid userId, LanguageCodes langCode, CancellationToken token)
 	{
-		return await _httpService.PostAsync($"/language/{userId}/{langCode}", null, cancellationToken);
+		return await _httpService.PostAsync($"/language/{userId}/{langCode}", null, token);
 	}
 
 
-	public async Task<UnitResult<Error>> UpdateActivity(Guid userId, CancellationToken cancellationToken)
+	public async Task<UnitResult<Error>> UpdateActivity(Guid userId, CancellationToken token)
 	{
-		return await _httpService.PostAsync($"/activity/{userId}", null, cancellationToken);
+		return await _httpService.PostAsync($"/activity/{userId}", null, token);
 	}
 
 
-	public async Task<Result<UserResponse, Error>> RegisterUser(CreateUserRequest request, CancellationToken cancellationToken)
+	public async Task<Result<UserResponse, Error>> RegisterUser(CreateUserRequest request, CancellationToken token)
 	{
 		
 		var json = JsonSerializer.Serialize(request);
 		var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-		return await _httpService.PostAsync<UserResponse>($"/register", content, cancellationToken);
+		return await _httpService.PostAsync<UserResponse>($"/register", content, token);
 	}
 }

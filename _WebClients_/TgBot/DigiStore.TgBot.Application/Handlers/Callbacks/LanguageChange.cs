@@ -38,7 +38,7 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 		_logger = logger;
 	}
 
-	public async Task<UnitResult<Error>> HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
+	public async Task<UnitResult<Error>> HandleAsync(CallbackQuery callbackQuery, CancellationToken token = default)
 	{
 		// Handle language change from /language command
 
@@ -47,7 +47,7 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 
 		
 		var telegramId = callbackQuery.From.Id;
-		var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+		var sessionResult = await _sessionService.GetSessionAsync(telegramId, token);
 
 		if (sessionResult.IsFailure)
 		{
@@ -79,9 +79,9 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 				callbackQuery.Message.MessageId,
 				text,
 				replyMarkup: keyboard,
-				cancellationToken: cancellationToken);
+				cancellationToken: token);
 
-			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
+			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: token);
 			return Result.Success<Error>();
 		}
 
@@ -95,18 +95,18 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 		var updateResult = await _profileService.UpdateUserLanguageAsync(
 			session.UserId,
 			languageCode,
-			cancellationToken);
+			token);
 
 		if (updateResult.IsFailure)
 		{
-			await AnswerCallbackQueryWithError(callbackQuery.Id, currentLanguage, cancellationToken);
+			await AnswerCallbackQueryWithError(callbackQuery.Id, currentLanguage, token);
 			return updateResult.Error;
 		}
 
 		// Update session
 		session.LangCode = languageCode;
 		session.SetState(BotState.MainMenu);
-		await _sessionService.UpdateSessionAsync(session, cancellationToken);
+		await _sessionService.UpdateSessionAsync(session, token);
 
 		var confirmText = _localService.GetMessage(LocalKeys.Navigations.LanguageChanged, languageCode);
 		var keyboard2 = GetMainMenuKeyboard(languageCode);
@@ -118,9 +118,9 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 				callbackQuery.Message.MessageId,
 				confirmText,
 				replyMarkup: keyboard2,
-				cancellationToken: cancellationToken);
+				cancellationToken: token);
 
-			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
+			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: token);
 
 			_logger.LogInformation(
 				"Language updated successfully for user: {UserId}",
@@ -129,7 +129,7 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in LanguageChangeCallbackHandler");
-			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
+			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
 			return Error.Failure("callback.langchange.error", "Error in LanguageChangeCallbackHandler");
 		}
 

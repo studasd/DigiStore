@@ -37,7 +37,7 @@ public class Profile : BaseHandler, ICommandHandler
 		_logger = logger;
 	}
 
-	public async Task<UnitResult<Error>> HandleAsync(Message message, CancellationToken cancellationToken = default)
+	public async Task<UnitResult<Error>> HandleAsync(Message message, CancellationToken token = default)
 	{
 		// Handle /profile command - show user profile with balance
 		
@@ -47,10 +47,10 @@ public class Profile : BaseHandler, ICommandHandler
 		_logger.LogInformation("Profile command from Telegram ID: {TelegramId}", telegramId);
 
 		// Get session
-		var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+		var sessionResult = await _sessionService.GetSessionAsync(telegramId, token);
 		if (sessionResult.IsFailure)
 		{
-			await SendErrorMessage(chatId, _localService.GetMessage(LocalKeys.Errors.SessionExpired, LanguageCodes.en), cancellationToken);
+			await SendErrorMessage(chatId, _localService.GetMessage(LocalKeys.Errors.SessionExpired, LanguageCodes.en), token);
 			return sessionResult.Error;
 		}
 
@@ -59,10 +59,10 @@ public class Profile : BaseHandler, ICommandHandler
 		var languageCode = session.LangCode;
 
 		// Get full profile
-		var profileResult = await _profileService.GetFullProfileAsync(userId, telegramId, cancellationToken);
+		var profileResult = await _profileService.GetFullProfileAsync(userId, telegramId, token);
 		if (profileResult.IsFailure)
 		{
-			await SendErrorMessage(chatId, _localService.GetMessage(LocalKeys.Errors.Occurred, languageCode), cancellationToken);
+			await SendErrorMessage(chatId, _localService.GetMessage(LocalKeys.Errors.Occurred, languageCode), token);
 			return sessionResult.Error;
 		}
 
@@ -87,7 +87,7 @@ public class Profile : BaseHandler, ICommandHandler
 		};
 
 		session.SetState(BotState.ProfileViewing);
-		await _sessionService.UpdateSessionAsync(session, cancellationToken);
+		await _sessionService.UpdateSessionAsync(session, token);
 
 		// Format and send profile
 		var profileText = _profileService.FormatProfileText(profile, languageCode);
@@ -100,14 +100,14 @@ public class Profile : BaseHandler, ICommandHandler
 				profileText,
 				parseMode: ParseMode.Html,
 				replyMarkup: keyboard,
-				cancellationToken: cancellationToken);
+				cancellationToken: token);
 
 			_logger.LogInformation("Profile sent for user: {UserId}, TelegramId: {TelegramId}", userId, telegramId);
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in ProfileCommandHandler");
-			await SendErrorMessage(message.Chat.Id, "An error occurred", cancellationToken);
+			await SendErrorMessage(message.Chat.Id, "An error occurred", token);
 			return Error.Failure("command.handler.profile", "Error in ProfileCommandHandler");
 		}
 

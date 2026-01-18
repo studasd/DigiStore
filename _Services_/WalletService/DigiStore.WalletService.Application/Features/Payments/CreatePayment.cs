@@ -67,7 +67,7 @@ public class CreateLessonRequestValidator : AbstractValidator<CreatePaymentComma
 		});
 
 		RuleFor(x => x.Description)
-			.Null().WithError(Error.Validation("description.is.invalid", $"Описание не может быть пустым"))
+			.NotNull().WithError(Error.Validation("description.is.invalid", $"Описание не может быть пустым"))
 			.MaximumLength(500).WithError(Error.Validation("description.is.too.long", $"Описание не может быть длиннее 500 символов"));
 	}
 }

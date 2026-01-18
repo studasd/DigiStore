@@ -1,9 +1,11 @@
 ﻿using CSharpFunctionalExtensions;
+using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.DTOs;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.WalletService.Contracts.HttpClients;
+using DigiStore.WalletService.Contracts.Requests.Payments;
 using DigiStore.WalletService.Contracts.Responses;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -24,6 +26,18 @@ public class WalletService : IWalletService
 	{
         _walletHttpClient = walletHttpClient;
         _logger = logger;
+	}
+
+
+	public async Task<Result<string, Error>> CreatePaymentAsync(Guid userId, PaymentAggregators paymentAggregator, decimal amount, CancellationToken token)
+	{
+		var req = new CreatePaymentRequest(paymentAggregator, amount, "Пополнение баланса");
+
+		var result = await _walletHttpClient.CreatePaymentAsync(userId, req, token);
+		if (result.IsFailure)
+			return result.Error;
+
+		return result.Value.RredirectUrl;
 	}
 
 

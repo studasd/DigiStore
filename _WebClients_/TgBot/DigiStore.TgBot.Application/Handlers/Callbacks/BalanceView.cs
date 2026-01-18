@@ -38,7 +38,7 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 		_logger = logger;
 	}
 
-	public async Task<UnitResult<Error>> HandleAsync(CallbackQuery callbackQuery, CancellationToken cancellationToken = default)
+	public async Task<UnitResult<Error>> HandleAsync(CallbackQuery callbackQuery, CancellationToken token = default)
 	{
 		// Handle balance view callback
 
@@ -47,11 +47,11 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 
 		
 		var telegramId = callbackQuery.From.Id;
-		var sessionResult = await _sessionService.GetSessionAsync(telegramId, cancellationToken);
+		var sessionResult = await _sessionService.GetSessionAsync(telegramId, token);
 
 		if(sessionResult.IsFailure)
 		{
-			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
+			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
 			return sessionResult.Error;
 		}
 
@@ -61,11 +61,11 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 
 		var langCode = session.LangCode;
 
-		var walletResult = await _walletService.GetBalanceAsync(session.UserId, cancellationToken);
+		var walletResult = await _walletService.GetBalanceAsync(session.UserId, token);
 
 		if (walletResult.IsFailure)
 		{
-			await AnswerCallbackQueryWithError(callbackQuery.Id, langCode, cancellationToken);
+			await AnswerCallbackQueryWithError(callbackQuery.Id, langCode, token);
 			return walletResult.Error;
 		}
 
@@ -90,14 +90,14 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 				text,
 				parseMode: ParseMode.Html,
 				replyMarkup: keyboard,
-				cancellationToken: cancellationToken);
+				cancellationToken: token);
 
-			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: cancellationToken);
+			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: token);
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error in BalanceViewCallbackHandler");
-			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, cancellationToken);
+			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
 			return Error.Failure("callback.balance.error", "Error in BalanceViewCallbackHandler");
 		}
 

@@ -26,6 +26,7 @@ public class RecurringPaymentBackgroundService : BackgroundService
 	protected override async Task ExecuteAsync(CancellationToken token)
 	{
 		_logger.LogInformation("RecurringPaymentBackgroundService запущен");
+		return;
 
 		while (!token.IsCancellationRequested)
 		{
