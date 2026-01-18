@@ -51,7 +51,5 @@
     <Project Path="_WebClients_/TgBot/DigiStore.TgBot.Web/DigiStore.TgBot.Web.csproj" Id="e63927d7-be99-4d00-a8e4-af12dc7e322a" />
   </Folder>
   <Folder Name="/WebClients/VkBot/" />
-  <Folder Name="/WebClients/WEB/">
-    <Project Path="_WebClients_/WEB/DigiStore.Web/DigiStore.Web.csproj" />
-  </Folder>
+  <Folder Name="/WebClients/WEB/" />
 </Solution>
