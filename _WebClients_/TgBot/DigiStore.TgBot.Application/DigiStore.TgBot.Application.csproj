@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Extensions\**" />
+    <EmbeddedResource Remove="Extensions\**" />
+    <None Remove="Extensions\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="DigiStore.Framework" Version="0.0.8" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.1" />
     <PackageReference Include="Telegram.Bot" Version="22.7.6" />
@@ -16,10 +22,6 @@
     <ProjectReference Include="..\..\..\_Services_\UserService\DigiStore.UserService.Contracts\DigiStore.UserService.Contracts.csproj" />
     <ProjectReference Include="..\..\..\_Services_\WalletService\DigiStore.WalletService.Contracts\DigiStore.WalletService.Contracts.csproj" />
     <ProjectReference Include="..\DigiStore.TgBot.Domain\DigiStore.TgBot.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Extensions\" />
   </ItemGroup>
 
 </Project>

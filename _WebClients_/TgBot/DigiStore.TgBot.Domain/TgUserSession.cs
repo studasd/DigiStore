@@ -19,6 +19,8 @@ public class TgUserSession
 
 	public string? PendingTopUpAggregator { get; set; }
 	public decimal? PendingTopUpAmount { get; set; }
+	public long? PendingTopUpChatId { get; set; }
+	public int? PendingTopUpMessageId { get; set; }
 
     public DateTime LastActivity { get; set; }
 

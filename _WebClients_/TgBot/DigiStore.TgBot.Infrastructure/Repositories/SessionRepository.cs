@@ -34,6 +34,8 @@ public class SessionRepository : ISessionRepository
             existing.CachedProfile = session.CachedProfile;
 			existing.PendingTopUpAggregator = session.PendingTopUpAggregator;
 			existing.PendingTopUpAmount = session.PendingTopUpAmount;
+			existing.PendingTopUpChatId = session.PendingTopUpChatId;
+			existing.PendingTopUpMessageId = session.PendingTopUpMessageId;
             existing.LastActivity = DateTime.UtcNow;
         }
 

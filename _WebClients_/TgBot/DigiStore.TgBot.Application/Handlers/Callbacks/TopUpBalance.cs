@@ -84,6 +84,10 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 		session.SetState(BotState.TopUpBalance);
 		session.PendingTopUpAmount = null;
 		session.PendingTopUpAggregator = null;
+		var editChatId = session.PendingTopUpChatId ?? callbackQuery.Message.Chat.Id;
+		var editMessageId = session.PendingTopUpMessageId ?? callbackQuery.Message.MessageId;
+		session.PendingTopUpChatId = null;
+		session.PendingTopUpMessageId = null;
 		await _sessionService.UpdateSessionAsync(session, token);
 
 
@@ -109,8 +113,8 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 		try
 		{
 			await _botClient.EditMessageText(
-				callbackQuery.Message.Chat.Id,
-				894,
+				editChatId,
+				editMessageId,
 				text,
 				parseMode: ParseMode.Html,
 				replyMarkup: keyboard,

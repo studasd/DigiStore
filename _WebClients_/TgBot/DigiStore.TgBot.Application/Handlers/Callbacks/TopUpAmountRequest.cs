@@ -60,6 +60,8 @@ public class TopUpAmountRequest : BaseHandler, ICallbackQueryHandler
 
 		session.PendingTopUpAggregator = payAggregatResult.Value.ToString();
 		session.PendingTopUpAmount = null;
+		session.PendingTopUpChatId = callbackQuery.Message.Chat.Id;
+		session.PendingTopUpMessageId = callbackQuery.Message.MessageId;
 		session.SetState(BotState.TopUpBalanceAmountAwaiting);
 		await _sessionService.UpdateSessionAsync(session, token);
 

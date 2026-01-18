@@ -99,7 +99,9 @@ public class SessionService : ISessionService
             LastActivity = d.LastActivity,
 			CachedProfile = d.CachedProfile,
 			PendingTopUpAggregator = d.PendingTopUpAggregator,
-			PendingTopUpAmount = d.PendingTopUpAmount
+			PendingTopUpAmount = d.PendingTopUpAmount,
+			PendingTopUpChatId = d.PendingTopUpChatId,
+			PendingTopUpMessageId = d.PendingTopUpMessageId
 		};
 
         return session;
@@ -117,6 +119,8 @@ public class SessionService : ISessionService
             CachedProfile = s.CachedProfile,
 			PendingTopUpAggregator = s.PendingTopUpAggregator,
 			PendingTopUpAmount = s.PendingTopUpAmount,
+			PendingTopUpChatId = s.PendingTopUpChatId,
+			PendingTopUpMessageId = s.PendingTopUpMessageId,
             LastActivity = s.LastActivity,
             CreatedAt = s.CreatedAt
         };
