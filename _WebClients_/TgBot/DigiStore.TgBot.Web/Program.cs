@@ -2,6 +2,7 @@ using DigiStore.Framework.Endpoints;
 using DigiStore.TgBot.Application.Handlers;
 using DigiStore.TgBot.Application.Services;
 using DigiStore.TgBot.Infrastructure.Data;
+using DigiStore.TgBot.Infrastructure.Data.Seeders;
 using DigiStore.TgBot.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -33,8 +34,15 @@ var app = builder.Build();
 using var scope = app.Services.CreateScope();
 var serviceProvider = scope.ServiceProvider;
 
-var dbContext = serviceProvider.GetRequiredService<TgBotDbContext>();
-await dbContext.Database.MigrateAsync();
+//var dbContext = serviceProvider.GetRequiredService<TgBotDbContext>();
+//await dbContext.Database.MigrateAsync();
+
+var db = serviceProvider.GetRequiredService<TgBotDbContext>();
+//// Применить миграции (асинхронно)
+//await db.Database.MigrateAsync();
+// Выполнить seeding (асинхронно)
+var seeder = serviceProvider.GetRequiredService<IDataSeeder>();
+await seeder.SeedAsync(db, serviceProvider, CancellationToken.None);
 
 app.MapEndpoints();
 

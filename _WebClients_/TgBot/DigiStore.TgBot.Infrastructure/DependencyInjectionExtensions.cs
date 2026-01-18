@@ -24,6 +24,8 @@ public static class DependencyInjectionExtensions
 		services.AddScoped<ISessionRepository, Repositories.SessionRepository>();
 		services.AddScoped<ICommandHistoryRepository, Repositories.CommandHistoryRepository>();
 		services.AddScoped<ILocalizationRepository, Repositories.LocalizationRepository>();
+		
+		services.AddScoped<IDataSeeder, DataSeeder>();
 
 
 		// Database
@@ -34,11 +36,12 @@ public static class DependencyInjectionExtensions
 			ILoggerFactory loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 
 			options.UseNpgsql(connectionString)
-				.UseAsyncSeeding(async (context, result, token) =>
-				{
-					var seeder = ActivatorUtilities.CreateInstance<DataSeeder>(sp);
-					await seeder.SeedAsync((TgBotDbContext)context, sp, CancellationToken.None);
-				});
+				//.UseAsyncSeeding(async (context, result, token) =>
+				//{
+				//	var seeder = ActivatorUtilities.CreateInstance<DataSeeder>(sp);
+				//	await seeder.SeedAsync((TgBotDbContext)context, sp, CancellationToken.None);
+				//});
+				;
 
 			if (hostEnvironment.IsDevelopment())
 			{

@@ -147,6 +147,12 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<string>("PendingTopUpAggregator")
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("PendingTopUpAmount")
+                        .HasColumnType("numeric");
+
                     b.Property<long>("TelegramId")
                         .HasColumnType("bigint");
 

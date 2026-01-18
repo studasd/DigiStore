@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DigiStore.TgBot.Infrastructure.Migrations
 {
     [DbContext(typeof(TgBotDbContext))]
-    [Migration("20260113003111_Init")]
+    [Migration("20260118013547_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -149,6 +149,12 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
+
+                    b.Property<string>("PendingTopUpAggregator")
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("PendingTopUpAmount")
+                        .HasColumnType("numeric");
 
                     b.Property<long>("TelegramId")
                         .HasColumnType("bigint");

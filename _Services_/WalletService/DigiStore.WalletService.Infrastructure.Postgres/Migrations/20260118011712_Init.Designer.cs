@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DigiStore.WalletService.Infrastructure.Postgres.Migrations
 {
     [DbContext(typeof(WalletDbContext))]
-    [Migration("20260117225543_Init")]
+    [Migration("20260118011712_Init")]
     partial class Init
     {
         /// <inheritdoc />
