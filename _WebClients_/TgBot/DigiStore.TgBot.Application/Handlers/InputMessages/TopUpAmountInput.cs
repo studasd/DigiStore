@@ -7,6 +7,7 @@ using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DigiStore.TgBot.Application.Handlers.InputMessages;
 
@@ -47,10 +48,21 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 
 		var session = sessionResult.Value;
 		int? userMessageIdToDelete = message.MessageId;
-
-		Message? originalBotMessage = message.ReplyToMessage;
+		var editChatId = session.PendingTopUpChatId ?? message.Chat.Id;
+		var editMessageId = session.PendingTopUpMessageId;
 
 		var raw = (message.Text ?? string.Empty).Trim().Replace(',', '.');
+
+		var langCode = session.LangCode;
+		var keyboard = new InlineKeyboardMarkup(new[]
+		{
+			new[]
+			{
+				InlineKeyboardButton.WithCallbackData(_localService.GetMessage(LocalKeys.Buttons.Back, langCode), Constants.CallbackData.BalanceView)
+			},
+		});
+
+
 		if (!decimal.TryParse(raw, System.Globalization.CultureInfo.InvariantCulture, out var amount) || amount <= 0)
 		{
 			if (userMessageIdToDelete.HasValue)
@@ -61,7 +73,15 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 				}
 				catch { }
 			}
-			await _botClient.SendMessage(message.Chat.Id, "Введите корректную сумму числом (больше 0).", cancellationToken: token);
+			if (editMessageId.HasValue)
+			{
+				await _botClient.EditMessageText(
+					editChatId,
+					editMessageId.Value,
+					"Введите корректную сумму числом (больше 0).",
+					replyMarkup: keyboard,
+					cancellationToken: token);
+			}
 			return Result.Success<Error>();
 		}
 
@@ -75,11 +95,20 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 				}
 				catch { }
 			}
-
-			await _botClient.SendMessage(message.Chat.Id, "Не удалось определить способ оплаты. Откройте баланс и выберите агрегатор заново.", cancellationToken: token);
+			if (editMessageId.HasValue)
+			{
+				await _botClient.EditMessageText(
+					editChatId,
+					editMessageId.Value,
+					"Не удалось определить способ оплаты. Откройте баланс и выберите агрегатор заново.",
+					replyMarkup: keyboard,
+					cancellationToken: token);
+			}
 			session.SetState(BotState.BalanceViewing);
 			session.PendingTopUpAmount = null;
 			session.PendingTopUpAggregator = null;
+			session.PendingTopUpChatId = null;
+			session.PendingTopUpMessageId = null;
 			await _sessionService.UpdateSessionAsync(session, token);
 			return Result.Success<Error>();
 		}
@@ -101,7 +130,7 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 		{
 			Id = Guid.NewGuid().ToString("N"),
 			From = message.From,
-			Message = originalBotMessage ?? message,
+			Message = message,
 			Data = TopUpBalance.CallbackData + aggregator
 		};
 

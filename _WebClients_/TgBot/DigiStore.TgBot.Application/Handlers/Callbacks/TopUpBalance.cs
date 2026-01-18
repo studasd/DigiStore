@@ -56,9 +56,9 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 
 		var session = sessionResult.Value;
 
-		var languageCode = LanguageCodes.en;
+		var langCode = LanguageCodes.en;
 		if (sessionResult.IsSuccess)
-			languageCode = sessionResult.Value.LangCode;
+			langCode = sessionResult.Value.LangCode;
 
 		var payAggregatResult = callbackQuery.Data.Replace(CallbackData, "").ParseEnum<PaymentAggregators>();
 		if (payAggregatResult.IsFailure)
@@ -103,7 +103,7 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 
 			new[]
 			{
-				InlineKeyboardButton.WithCallbackData(_localService.GetMessage(LocalKeys.Buttons.Back, languageCode), Constants.CallbackData.BalanceView)
+				InlineKeyboardButton.WithCallbackData(_localService.GetMessage(LocalKeys.Buttons.Back, langCode), Constants.CallbackData.BalanceView)
 			},
 		});
 

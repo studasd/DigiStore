@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DigiStore.TgBot.Application.Handlers.Callbacks;
 
@@ -65,6 +66,13 @@ public class TopUpAmountRequest : BaseHandler, ICallbackQueryHandler
 		await _sessionService.UpdateSessionAsync(session, token);
 
 		var text = "¬ведите сумму пополнени€ числом (например 1500).";
+		var keyboard = new InlineKeyboardMarkup(new[]
+		{
+			new[]
+			{
+				InlineKeyboardButton.WithCallbackData(_localService.GetMessage(LocalKeys.Buttons.Back, langCode), Constants.CallbackData.BalanceView)
+			},
+		});
 
 		try
 		{
@@ -73,7 +81,7 @@ public class TopUpAmountRequest : BaseHandler, ICallbackQueryHandler
 				callbackQuery.Message.MessageId,
 				text,
 				parseMode: ParseMode.Html,
-				replyMarkup: null,
+				replyMarkup: keyboard,
 				cancellationToken: token);
 
 			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: token);
