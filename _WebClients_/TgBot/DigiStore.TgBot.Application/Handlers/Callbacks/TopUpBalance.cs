@@ -110,7 +110,7 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 		{
 			await _botClient.EditMessageText(
 				callbackQuery.Message.Chat.Id,
-				845,
+				894,
 				text,
 				parseMode: ParseMode.Html,
 				replyMarkup: keyboard,

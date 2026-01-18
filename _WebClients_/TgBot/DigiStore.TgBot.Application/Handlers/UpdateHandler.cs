@@ -170,88 +170,6 @@ public class UpdateHandler
 				return;
 			}
 
-			// Обработка ввода суммы пополнения (после выбора агрегатора)
-			if (update.Message?.Text != null && update.Message.From != null)
-			{
-				var sessionResult = await _sessionService.GetSessionAsync(update.Message.From.Id, token);
-				if (sessionResult.IsSuccess && sessionResult.Value.CurrentState == BotState.TopUpBalanceAmountAwaiting)
-				{
-					var session = sessionResult.Value;
-					var lang = session.LangCode;
-
-					int? userMessageIdToDelete = update.Message.MessageId;
-
-					// Определяем исходное сообщение бота (то, которое редактировали в TopUpAmountRequest)
-					Message? originalBotMessage = null;
-					if (update.Message.ReplyToMessage != null)
-					{
-						originalBotMessage = update.Message.ReplyToMessage;
-					}
-
-					var raw = update.Message.Text.Trim().Replace(',', '.');
-					if (!decimal.TryParse(raw, System.Globalization.CultureInfo.InvariantCulture, out var amount) || amount <= 0)
-					{
-						if (userMessageIdToDelete.HasValue)
-						{
-							try
-							{
-								await _botClient.DeleteMessage(update.Message.Chat.Id, userMessageIdToDelete.Value, cancellationToken: token);
-							}
-							catch { }
-						}
-						await _botClient.SendMessage(update.Message.Chat.Id, "Введите корректную сумму числом (больше 0).", cancellationToken: token);
-						return;
-					}
-
-					if (string.IsNullOrWhiteSpace(session.PendingTopUpAggregator) || !Enum.TryParse<DigiStore.Enums.PaymentAggregators>(session.PendingTopUpAggregator, out var aggregator))
-					{
-						if (userMessageIdToDelete.HasValue)
-						{
-							try
-							{
-								await _botClient.DeleteMessage(update.Message.Chat.Id, userMessageIdToDelete.Value, cancellationToken: token);
-							}
-							catch { }
-						}
-						await _botClient.SendMessage(update.Message.Chat.Id, "Не удалось определить способ оплаты. Откройте баланс и выберите агрегатор заново.", cancellationToken: token);
-						session.SetState(BotState.BalanceViewing);
-						session.PendingTopUpAmount = null;
-						session.PendingTopUpAggregator = null;
-						await _sessionService.UpdateSessionAsync(session, token);
-						return;
-					}
-
-					session.PendingTopUpAmount = amount;
-					session.SetState(BotState.TopUpBalance);
-					await _sessionService.UpdateSessionAsync(session, token);
-
-					if (userMessageIdToDelete.HasValue)
-					{
-						try
-						{
-							await _botClient.DeleteMessage(update.Message.Chat.Id, userMessageIdToDelete.Value, cancellationToken: token);
-						}
-						catch { }
-					}
-
-					// Запускаем следующий шаг как будто пришёл callback
-					var cb = new CallbackQuery
-					{
-						Id = Guid.NewGuid().ToString("N"),
-						From = update.Message.From,
-						Message = originalBotMessage ?? update.Message,
-						Data = DigiStore.TgBot.Application.Handlers.Callbacks.TopUpBalance.CallbackData + aggregator
-					};
-
-					var handleCallbackQueryResult = await HandleCallbackQueryAsync(cb, token);
-					if (handleCallbackQueryResult.IsFailure)
-					{
-						_logger.LogError("Bad error HandleCallbackQuery (amount step): {errors}", handleCallbackQueryResult.Error.GetMessage());
-					}
-					return;
-				}
-			}
-
 			// Обработка колбэков
 			if (update.CallbackQuery != null)
 			{
@@ -265,6 +183,26 @@ public class UpdateHandler
 				return;
 			}
 
+			// Обработка ввода текста (не команды)
+			if (update.Message != null && update.Message.Text != null && update.Message.From != null)
+			{
+				var sessionResult = await _sessionService.GetSessionAsync(update.Message.From.Id, token);
+				if (sessionResult.IsSuccess)
+				{
+					var state = sessionResult.Value.CurrentState;
+					if (!string.IsNullOrWhiteSpace(state) && _registry.InputMessageHandlers.TryGetValue(state, out var handlerType))
+					{
+						var handler = _serviceProvider.GetService(handlerType) as IInputMessageHandler;
+						if (handler != null)
+						{
+							var r = await handler.HandleAsync(update.Message, token);
+							if (r.IsFailure)
+								_logger.LogError("Bad error InputMessageHandler: {errors}", r.Error.GetMessage());
+							return;
+						}
+					}
+				}
+			}
 
 			if (update.Message.From != null)
 			{

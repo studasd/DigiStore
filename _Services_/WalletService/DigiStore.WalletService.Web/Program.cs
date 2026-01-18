@@ -1,6 +1,7 @@
 ﻿using DigiStore.WalletService.Web.Configurations;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
+using System.Text.Json.Serialization;
 
 
 var builder = WebApplication.CreateSlimBuilder(args);
@@ -23,7 +24,14 @@ builder.Services.AddConfiguration(builder.Configuration);
 builder.Services.AddCors();
 
 // Добавить контроллеры
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+	.AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
+// apply same converter for minimal API (input binding / output for MapPost etc.)
+builder.Services.ConfigureHttpJsonOptions(opts =>
+{
+	opts.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 
 var app = builder.Build();

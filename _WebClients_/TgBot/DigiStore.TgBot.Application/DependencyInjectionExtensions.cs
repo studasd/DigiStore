@@ -90,7 +90,7 @@ public static class DependencyInjectionExtensions
 
 		var handlerTypes = applicationAssembly.GetTypes()
 			.Where(t => !t.IsAbstract && !t.IsInterface)
-			.Where(t => typeof(ICommandHandler).IsAssignableFrom(t) || typeof(ICallbackQueryHandler).IsAssignableFrom(t));
+			.Where(t => typeof(ICommandHandler).IsAssignableFrom(t) || typeof(ICallbackQueryHandler).IsAssignableFrom(t) || typeof(IInputMessageHandler).IsAssignableFrom(t));
 
 		foreach (var handlerType in handlerTypes)
 		{
