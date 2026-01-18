@@ -15,10 +15,7 @@ public static class DependencyInjectionExtensions
 		services
 			.AddTgBotApplication(configuration)
 			.AddTgBotInfrastructure(configuration)
-			.AddSerilogLogging(
-				"TgBot", 
-				Assembly.GetExecutingAssembly(), 
-				sp => sp.GetRequiredService<IOptions<ServiceOptions>>().Value?.SeqUrl);
+			.AddSerilogLogging("TgBot", Assembly.GetExecutingAssembly(), sp => sp.GetRequiredService<IOptions<ServiceOptions>>().Value?.SeqUrl);
 
 		return services;
 	}

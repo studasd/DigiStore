@@ -18,13 +18,12 @@ public static class DependencyInjectionExtensions
 		services.AddHostedService<RecurringPaymentBackgroundService>();
 
 		services
-			.AddCore(configuration)
-			.AddInfrastructure(configuration)
+			.AddApplication(configuration)
+			.AddInfrastructurePostgres(configuration)
 			.AddInfrastructureYookassa(configuration)
 			//.AddSerilogLogging(configuration, "WalletService")
 			.AddSerilogLogging("WalletService", Assembly.GetExecutingAssembly(), seqUrl)
 			.AddOpenApiSpec("WalletService", "v1")
-			.AddEndpoints(typeof(DependencyInjectionApplicationExtensions).Assembly)
 			;
 
 		return services;

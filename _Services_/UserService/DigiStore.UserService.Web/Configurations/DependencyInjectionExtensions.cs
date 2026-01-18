@@ -13,7 +13,7 @@ public static class DependencyInjectionExtensions
 		var seqUrl = configuration.GetValue<string>("SeqUrl");
 
 		services
-			.AddCore(configuration)
+			.AddApplication(configuration)
 			.AddInfrastructurePostgres(configuration)
 			//.AddSerilogLogging(configuration, "UserService")
 			.AddSerilogLogging("UserService", Assembly.GetExecutingAssembly(), seqUrl)

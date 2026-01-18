@@ -38,9 +38,9 @@ public sealed class CreatePayment : IEndpoint
 }
 
 
-public class CreateLessonRequestValidator : AbstractValidator<CreatePaymentCommand>
+public class CreatePaymentCommandValidator : AbstractValidator<CreatePaymentCommand>
 {
-	public CreateLessonRequestValidator(PaymentValidator paymentValidator)
+	public CreatePaymentCommandValidator(PaymentValidator paymentValidator)
 	{
 
 		RuleFor(x => x.UserId)

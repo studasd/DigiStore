@@ -17,10 +17,6 @@ public static class DependencyInjectionExtensions
 {
 	public static IServiceCollection AddTgBotInfrastructure(this IServiceCollection services, IConfiguration configuration)
 	{
-		// Session & Localization
-		services.AddScoped<ISessionService, SessionService>();
-		services.AddScoped<ILocalizationService, LocalizationService>();
-
 		// Repositories
 		services.AddScoped<ITgUserRepository, Repositories.TgUserRepository>();
 		services.AddScoped<ISessionRepository, Repositories.SessionRepository>();

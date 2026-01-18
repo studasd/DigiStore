@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DigiStore.Core" Version="0.0.12" />
-    <PackageReference Include="DigiStore.Framework" Version="0.0.12" />
+    <PackageReference Include="DigiStore.Core" Version="0.0.16" />
+    <PackageReference Include="DigiStore.Framework" Version="0.0.16" />
   </ItemGroup>
 
   <ItemGroup>

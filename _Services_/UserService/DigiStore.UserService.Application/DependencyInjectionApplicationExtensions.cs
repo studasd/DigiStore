@@ -9,7 +9,7 @@ namespace DigiStore.UserService.Application;
 
 public static class DependencyInjectionApplicationExtensions
 {
-	public static IServiceCollection AddCore(this IServiceCollection services, IConfiguration configuration)
+	public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
 	{
 		services.AddValidatorsFromAssembly(typeof(DependencyInjectionApplicationExtensions).Assembly);
 

@@ -23,10 +23,6 @@ builder.Services.AddConfiguration(builder.Configuration);
 
 builder.Services.AddCors();
 
-// Добавить контроллеры
-builder.Services.AddControllers()
-	.AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-
 // apply same converter for minimal API (input binding / output for MapPost etc.)
 builder.Services.ConfigureHttpJsonOptions(opts =>
 {
@@ -35,11 +31,6 @@ builder.Services.ConfigureHttpJsonOptions(opts =>
 
 
 var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
-{
-	app.MapOpenApi();
-}
 
 app.Configure();
 

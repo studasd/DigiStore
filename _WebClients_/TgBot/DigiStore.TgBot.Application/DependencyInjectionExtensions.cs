@@ -18,10 +18,9 @@ public static class DependencyInjectionExtensions
 {
 	public static IServiceCollection AddTgBotApplication(this IServiceCollection services, IConfiguration configuration)
 	{
-		services.AddEndpoints(typeof(DependencyInjectionExtensions).Assembly);
-
 		services.Configure<ServiceOptions>(configuration.GetSection(nameof(ServiceOptions)));
 		services.Configure<TelegramOptions>(configuration.GetSection(nameof(TelegramOptions)));
+
 		//// Bind ServiceOptions to the DI system so it can be resolved via IOptions<ServiceOptions>
 		//services.Configure<ServiceOptions>(configuration);
 
@@ -51,12 +50,6 @@ public static class DependencyInjectionExtensions
 		});
 
 
-        // WalletService depends on an IWalletHttpClient (not System.Net.Http.HttpClient),
-        // so register it as a scoped service instead of a typed HttpClient.
-
-		// Session & Localization
-		services.AddScoped<IProfileService, ProfileService>();
-
 		services.AddSingleton<HandlerCollections>();
 		services.AddScoped<CommandDispatcher>();
 		services.AddScoped<CallbackDispatcher>();
@@ -66,6 +59,12 @@ public static class DependencyInjectionExtensions
 		services.AddScoped<IUpdateDispatcher>(sp => sp.GetRequiredService<InputMessageDispatcher>());
 		services.AddScoped<UpdatePipeline>();
 		services.AddScoped<UpdateHandler>();
+
+		// Session & Localization
+		services.AddScoped<ISessionService, SessionService>();
+		services.AddScoped<ILocalizationService, LocalizationService>();
+		services.AddScoped<IProfileService, ProfileService>();
+
 
 		// Автоматическая регистрация всех хэндлеров команд и колбэков
 		RegisterHandlers(services);

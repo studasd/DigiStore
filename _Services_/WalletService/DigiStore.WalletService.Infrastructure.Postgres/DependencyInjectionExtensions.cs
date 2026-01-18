@@ -14,7 +14,7 @@ namespace DigiStore.WalletService.Infrastructure.Postgres;
 
 public static class DependencyInjectionExtensions
 {
-	public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+	public static IServiceCollection AddInfrastructurePostgres(this IServiceCollection services, IConfiguration configuration)
 	{
 
 		services.AddDbContextPool<WalletDbContext>((sp, options) =>
