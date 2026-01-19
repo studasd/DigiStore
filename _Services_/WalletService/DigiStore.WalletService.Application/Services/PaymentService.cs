@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.Enums;
 using DigiStore.SharedKernel;
+using DigiStore.WalletService.Application.DTOs;
 using DigiStore.WalletService.Application.Interfaces;
 using DigiStore.WalletService.Domain;
 using Microsoft.Extensions.Logging;
@@ -83,9 +84,9 @@ public class PaymentService : IPaymentService
 	/// <summary>
 	/// Завершить платеж
 	/// </summary>
-	public async Task<UnitResult<Error>> CompletePaymentAsync(Guid paymentId, CancellationToken token)
+	public async Task<UnitResult<Error>> CompletePaymentAsync(PaymentSuccessDTO paymentSuccessDTO, CancellationToken token)
 	{
-		var paymentResult = await _paymentRepository.GetByIdAsync(paymentId, token);
+		var paymentResult = await _paymentRepository.GetByAggregatorIdAsync(paymentSuccessDTO.AggregatorPaymentId, token);
 		if (paymentResult.IsFailure)
 			return paymentResult.Error;
 
@@ -104,7 +105,7 @@ public class PaymentService : IPaymentService
         if(updateResult.IsFailure)
 			return updateResult.Error;
 
-        _logger.LogInformation($"YooKassa: Платеж завершен - PaymentId: {paymentId}, Amount: {payment.Amount}");
+        _logger.LogInformation($"YooKassa: Платеж завершен - PaymentId: {payment.Id}, Amount: {payment.Amount}");
 		return Result.Success<Error>();
 	}
 

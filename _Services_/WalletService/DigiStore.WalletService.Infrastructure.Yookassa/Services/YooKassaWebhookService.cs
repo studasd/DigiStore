@@ -1,4 +1,5 @@
 ﻿using DigiStore.WalletService.Application.Configurations;
+using DigiStore.WalletService.Application.DTOs;
 using DigiStore.WalletService.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -127,25 +128,25 @@ public class YooKassaWebhookService : IYooKassaWebhookService
 		}
 	}
 
+
 	private async Task ProcessPaymentSucceededAsync(Payment payment, CancellationToken token)
 	{
 		_logger.LogInformation($"YooKassa: Платеж успешен - PaymentId: {payment.Id}");
 
-		var dbPayment = await _paymentRepository.GetByAggregatorIdAsync(payment.Id, token);
-		if (dbPayment.IsSuccess)
-		{
-			await _paymentService.CompletePaymentAsync(dbPayment.Value.Id, token);
-		}
+		var dto = new PaymentSuccessDTO(payment.Id);
+
+		await _paymentService.CompletePaymentAsync(dto, token);
 	}
+
 
 	private async Task ProcessPaymentWaitingForCaptureAsync(Payment payment)
 	{
-		_logger.LogInformation(
-			$"YooKassa: Платеж требует подтверждения - PaymentId: {payment.Id}");
+		_logger.LogInformation($"YooKassa: Платеж требует подтверждения - PaymentId: {payment.Id}");
+		
 		// Подтвердить платеж
-
 		await _yookassaProvider.CapturePaymentAsync(payment.Id, token: CancellationToken.None);
 	}
+
 
 	private async Task ProcessPaymentCanceledAsync(Payment payment, CancellationToken token)
 	{
@@ -158,11 +159,12 @@ public class YooKassaWebhookService : IYooKassaWebhookService
 		}
 	}
 
+
 	private async Task ProcessRefundSucceededAsync(Refund refund)
 	{
-		_logger.LogInformation(
-			$"YooKassa: Возврат успешен - RefundId: {refund.Id}, PaymentId: {refund.PaymentId}");
+		_logger.LogInformation($"YooKassa: Возврат успешен - RefundId: {refund.Id}, PaymentId: {refund.PaymentId}");
 	}
+
 
 	private async Task ProcessPayoutSucceededAsync(Payout payout, CancellationToken token)
 	{
@@ -174,6 +176,7 @@ public class YooKassaWebhookService : IYooKassaWebhookService
 			await _withdrawalRepository.CompleteWithdrawalAsync(dbWithdrawal.Value.Id, token);
 		}
 	}
+
 
 	private async Task ProcessPayoutCanceledAsync(Payout payout, CancellationToken token)
 	{

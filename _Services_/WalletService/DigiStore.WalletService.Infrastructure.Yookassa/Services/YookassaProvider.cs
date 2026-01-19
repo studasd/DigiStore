@@ -175,9 +175,18 @@ public class YookassaProvider : IYookassaProvider
 
 	public async Task<Result<string, Error>> CapturePaymentAsync(string paymentId, CancellationToken token)
 	{
-		// 4. Подтвердите готовность принять платеж
-		var payResult = await _clientYooKassa.CapturePaymentAsync(paymentId, cancellationToken: token);
+		try
+		{
+			// 4. Подтвердите готовность принять платеж
+			var payResult = await _clientYooKassa.CapturePaymentAsync(paymentId, cancellationToken: token);
 
-		return payResult.Id;
+			return payResult.Id;
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "YooKassa: Ошибка при подтверждении платежа");
+
+			return Error.Failure("capture.fail", "Внутренняя ошибка сервера при подтверждении платежа");
+		}
 	}
 }

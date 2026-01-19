@@ -16,7 +16,7 @@ public sealed class YooKassaWebhook : IEndpoint
 	//[Authorize]
 	public void MapEndpoint(IEndpointRouteBuilder app)
 	{
-		app.MapPost("webhook/yookassa", async Task<EndpointResult> (
+		app.MapPost("webhook/yookassa", async Task<EndpointCustomResult> (
 			[FromServices] YooKassaWebhookHandler handler,
 			CancellationToken token,
 			HttpContext context) =>
@@ -45,7 +45,7 @@ public sealed class YooKassaWebhookHandler : IWalletServiceHandler
 
 
 
-	public async Task<UnitResult<Error>> Handle(HttpContext context, CancellationToken token)
+	public async Task<EndpointCustomResult> Handle(HttpContext context, CancellationToken token)
 	{
 		try
 		{
@@ -58,7 +58,8 @@ public sealed class YooKassaWebhookHandler : IWalletServiceHandler
 			if (string.IsNullOrEmpty(bodyContent))
 			{
 				_logger.LogWarning("YooKassa: Пустое тело вебхука");
-				return Error.Failure();
+				return new EndpointCustomResult(StatusCodes.Status500InternalServerError);
+				//return Error.Failure();
 			}
 
 
@@ -77,12 +78,19 @@ public sealed class YooKassaWebhookHandler : IWalletServiceHandler
 
 			_logger.LogInformation("YooKassa: Вебхук успешно обработан");
 
-			return Result.Success<Error>();
+			return new EndpointCustomResult(new { status = "success" });
+			//return Result.Success<Error>();
+
+			//// Вернуть 200 OK чтобы YooKassa не повторял webhook
+			//return Ok(new { status = "success" });
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "YooKassa: Ошибка при обработке вебхука");
-			return Error.Internal();
+
+			return new EndpointCustomResult(StatusCodes.Status500InternalServerError);
+			//return Error.Internal();
+			//return StatusCode(500);  // YooKassa повторит позже
 		}
 	}
 

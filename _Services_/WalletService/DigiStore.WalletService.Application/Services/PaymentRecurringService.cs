@@ -1,6 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.Enums;
 using DigiStore.SharedKernel;
+using DigiStore.WalletService.Application.DTOs;
 using DigiStore.WalletService.Application.Interfaces;
 using DigiStore.WalletService.Application.Validators;
 using DigiStore.WalletService.Domain;
@@ -146,7 +147,8 @@ public class PaymentRecurringService : IPaymentRecurringService
 			recurring.WalletId,
 			recurring.Amount,
 			PaymentAggregators.None,
-			$"Рекуррентный платеж - {recurring.Description}");
+			$"Рекуррентный платеж - {recurring.Description}", 
+			"");
 
 		if (recurringResult.IsFailure)
 		{
@@ -169,7 +171,7 @@ public class PaymentRecurringService : IPaymentRecurringService
 			return updateResult2.Error;
 
 		// Завершить платеж сразу для подписок
-		await _paymentService.CompletePaymentAsync(payment.Id, token);
+		await _paymentService.CompletePaymentAsync(new PaymentSuccessDTO(payment.AggregatorPaymentId.ToString()), token);
 
 		_logger.LogInformation($"YooKassa: Рекуррентный платеж обработан - PaymentId: {payment.Id}");
 
