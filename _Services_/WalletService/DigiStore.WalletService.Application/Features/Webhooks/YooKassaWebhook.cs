@@ -61,15 +61,16 @@ public sealed class YooKassaWebhookHandler : IWalletServiceHandler
 				return Error.Failure();
 			}
 
-			// Получить подпись
-			var signature = Request.Headers["Signature"].ToString();
 
-			// Проверить подпись
-			if (!_yooKassaWebhookService.VerifyWebhookSignature(bodyContent, signature))
-			{
-				_logger.LogWarning("YooKassa: Неверная подпись вебхука");
-				return Error.Authorization();
-			}
+			//// Получить подпись
+			//var signature = Request.Headers["Signature"].ToString();
+
+			//// Проверить подпись
+			//if (!_yooKassaWebhookService.VerifyWebhookSignature(bodyContent, signature))
+			//{
+			//	_logger.LogWarning("YooKassa: Неверная подпись вебхука");
+			//	return Error.Authorization();
+			//}
 
 			// Обработать вебхук
 			await _yooKassaWebhookService.ProcessWebhookAsync(bodyContent, token);

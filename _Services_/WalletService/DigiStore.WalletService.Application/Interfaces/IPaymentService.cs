@@ -8,7 +8,14 @@ namespace DigiStore.WalletService.Application.Interfaces;
 public interface IPaymentService
 {
 	/// Создать платеж
-	Task<Result<PaymentDS, Error>> CreatePaymentAsync(Guid userId, Guid walletId, decimal amount, string description = "", CancellationToken token = default);
+	Task<Result<PaymentDS, Error>> CreatePaymentAsync(
+		Guid userId, 
+		Guid walletId, 
+		decimal amount, 
+		PaymentAggregators aggregator, 
+		string description = "", 
+		string username = "", 
+		CancellationToken token = default);
 
 	/// Завершить платеж
 	Task<UnitResult<Error>> CompletePaymentAsync(Guid paymentId, CancellationToken token);

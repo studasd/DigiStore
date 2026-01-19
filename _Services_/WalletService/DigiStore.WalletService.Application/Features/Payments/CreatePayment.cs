@@ -17,7 +17,12 @@ using Microsoft.Extensions.Logging;
 namespace DigiStore.WalletService.Application.Features.Payments;
 
 
-public record CreatePaymentCommand(Guid UserId, PaymentAggregators Aggregator, decimal Amount, string Description);
+public record CreatePaymentCommand(
+	Guid UserId, 
+	PaymentAggregators Aggregator, 
+	decimal Amount, 
+	string Description, 
+	string? Username = null);
 
 
 /// Создать платеж (пополнить баланс)
@@ -32,7 +37,13 @@ public sealed class CreatePayment : IEndpoint
 			[FromServices] CreatePaymentHandler handler,
 			CancellationToken token) =>
 		{
-			return await handler.Handle(new CreatePaymentCommand(userId, request.Aggregator, request.Amount, request.Description), token);
+			return await handler.Handle(new CreatePaymentCommand(
+				userId, 
+				request.Aggregator, 
+				request.Amount, 
+				request.Description,
+				request.Username
+				), token);
 		});
 	}
 }
@@ -103,11 +114,18 @@ public sealed class CreatePaymentHandler : IWalletServiceHandler
 		// Получить кошелек пользователя
 		var wallet = await _walletRepository.GetOrCreateByUserIdAsync(command.UserId, token);
 
+
 		if (wallet.IsFailure)
 			return wallet.Error;
 
 
-		var paymentResult = await _paymentService.CreatePaymentAsync(command.UserId, wallet.Value.Id, command.Amount, command.Description);
+		var paymentResult = await _paymentService.CreatePaymentAsync(
+			command.UserId, 
+			wallet.Value.Id, 
+			command.Amount, 
+			command.Aggregator, 
+			command.Description,
+			command.Username);
 
 		if (paymentResult.IsFailure)
 			return paymentResult.Error;

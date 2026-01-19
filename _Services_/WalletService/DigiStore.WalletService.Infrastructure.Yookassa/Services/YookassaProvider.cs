@@ -14,7 +14,7 @@ namespace DigiStore.WalletService.Infrastructure.Yookassa.Services;
 /// </summary>
 public class YookassaProvider : IYookassaProvider
 {
-	private readonly Client _clientYooKassa;
+	private readonly AsyncClient _clientYooKassa;
 	private readonly YooKassaSettings _settings;
 	private readonly ILogger<YookassaProvider> _logger;
 
@@ -23,16 +23,23 @@ public class YookassaProvider : IYookassaProvider
 		IOptions<YooKassaSettings> settings,
 		ILogger<YookassaProvider> logger)
 	{
-		_clientYooKassa = client;
+		_clientYooKassa = client.MakeAsync();
 		_settings = settings.Value;
-        _logger = logger;
+		_logger = logger;
 	}
 
 
 	/// <summary>
 	/// Создать платеж
 	/// </summary>
-	public async Task<Result<string, Error>> CreatePaymentAsync(Guid userId, Guid walletId, Guid paymentId, decimal amount, string description = "", CancellationToken token = default)
+	public async Task<Result<string, Error>> CreatePaymentAsync(
+		Guid userId, 
+		Guid walletId, 
+		Guid paymentId, 
+		decimal amount, 
+		string description = "",
+		string username = "",
+		CancellationToken token = default)
 	{
 		try
 		{
@@ -49,7 +56,7 @@ public class YookassaProvider : IYookassaProvider
 				Confirmation = new Confirmation
 				{
 					Type = ConfirmationType.Redirect,
-					ReturnUrl = _settings.SuccessReturnUrl
+					ReturnUrl = $"{_settings.SuccessReturnUrl}/{username}"
 				},
 				Description = description,
 				Metadata = new Dictionary<string, string>
@@ -60,8 +67,8 @@ public class YookassaProvider : IYookassaProvider
 				}
 			};
 
-            // Вызвать API YooKassa
-            Payment yooKassaPayment = _clientYooKassa.CreatePayment(newPayment);
+			// Вызвать API YooKassa
+			Payment yooKassaPayment = await _clientYooKassa.CreatePaymentAsync(newPayment, cancellationToken: token);
 
 			if (yooKassaPayment == null)
 				return Error.NotFound("error.create.payment", "Не удалось создать платеж в YooKassa");
@@ -87,7 +94,7 @@ public class YookassaProvider : IYookassaProvider
 	{
 		try
 		{
-			var yooKassaPayment = _clientYooKassa.GetPayment(aggregatorPaymentId);
+			var yooKassaPayment = await _clientYooKassa.GetPaymentAsync(aggregatorPaymentId, cancellationToken: token);
 			var url = yooKassaPayment?.Confirmation?.ConfirmationUrl;
 
 			return String.IsNullOrEmpty(url) ? Error.NotFound("error.payment.url.not.found", "Ссылка на оплату не найдена") : url;
@@ -140,9 +147,9 @@ public class YookassaProvider : IYookassaProvider
 			// нужно использовать другой endpoint или сервис
 
 			// Попытаемся создать выплату
-			Payout? yooKassaPayout = _clientYooKassa.CreatePayout(newPayout);
+			Payout? yooKassaPayout = await _clientYooKassa.CreatePayoutAsync(newPayout, cancellationToken: token);
 
-			if(yooKassaPayout == null)
+			if (yooKassaPayout == null)
 				return Error.Failure("withdrawal.fail", "Не удалось создать выплату в YooKassa");
 
 			_logger.LogInformation(
@@ -163,5 +170,14 @@ public class YookassaProvider : IYookassaProvider
 
 			return Error.Failure("withdrawal.fail", "Внутренняя ошибка сервера при создании выплаты");
 		}
+	}
+
+
+	public async Task<Result<string, Error>> CapturePaymentAsync(string paymentId, CancellationToken token)
+	{
+		// 4. Подтвердите готовность принять платеж
+		var payResult = await _clientYooKassa.CapturePaymentAsync(paymentId, cancellationToken: token);
+
+		return payResult.Id;
 	}
 }

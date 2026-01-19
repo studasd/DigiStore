@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.WalletService.Application.Interfaces;
 using DigiStore.WalletService.Application.Validators;
@@ -141,9 +142,10 @@ public class PaymentRecurringService : IPaymentRecurringService
 
 		// Создать платеж
 		var paymentResult = await _paymentService.CreatePaymentAsync(
-			recurring.WalletId,
 			recurring.UserId,
+			recurring.WalletId,
 			recurring.Amount,
+			PaymentAggregators.None,
 			$"Рекуррентный платеж - {recurring.Description}");
 
 		if (recurringResult.IsFailure)

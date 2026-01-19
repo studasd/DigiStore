@@ -8,7 +8,14 @@ namespace DigiStore.WalletService.Application.Interfaces;
 
 public interface IYookassaProvider
 {
-	Task<Result<string, Error>> CreatePaymentAsync(Guid userId, Guid walletId, Guid paymentId, decimal amount, string description = "", CancellationToken token = default);
+	Task<Result<string, Error>> CreatePaymentAsync(
+		Guid userId, 
+		Guid walletId, 
+		Guid paymentId, 
+		decimal amount, 
+		string description = "", 
+		string username = "", 
+		CancellationToken token = default);
 
 	Task<Result<string, Error>> GetPaymentConfirmationUrlAsync(string aggregatorPaymentId, CancellationToken token);
 
@@ -18,4 +25,6 @@ public interface IYookassaProvider
 		decimal amount,
 		decimal actualAmount,
 		CancellationToken token);
+
+	Task<Result<string, Error>> CapturePaymentAsync(string paymentId, CancellationToken token);
 }

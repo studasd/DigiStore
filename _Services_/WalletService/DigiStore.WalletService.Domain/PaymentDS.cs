@@ -66,7 +66,7 @@ public class PaymentDS
 	/// <summary>
 	/// Создать новый платеж
 	/// </summary>
-	public static PaymentDS Create(Guid walletId, Guid userId, decimal amount, string description = "")
+	public static PaymentDS Create(Guid walletId, Guid userId, decimal amount, PaymentAggregators aggregator, string description = "")
 	{
 		if (amount <= 0)
 			throw new InvalidOperationException("Сумма платежа должна быть больше 0");
@@ -78,6 +78,7 @@ public class PaymentDS
 			UserId = userId,
 			Amount = amount,
 			Description = description,
+			Aggregator = aggregator,
 			Status = PaymentStatus.Pending,
 			CreatedAt = DateTime.UtcNow
 		};

@@ -35,6 +35,7 @@ public static class DependencyInjectionExtensions
 
 		// Регистрировать сервисы
 		services.AddScoped<IYookassaProvider, YookassaProvider>();
+		//services.AddScoped<IYooKassaWebhookService, YooKassaWebhookService>();
 		services.AddScoped<IYooKassaWebhookService, YooKassaWebhookService>();
 
 

@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.WalletService.Application.Interfaces;
 using DigiStore.WalletService.Domain;
@@ -33,44 +34,49 @@ public class PaymentService : IPaymentService
 	/// <summary>
 	/// Создать платеж
 	/// </summary>
-	public async Task<Result<PaymentDS, Error>> CreatePaymentAsync(Guid userId, Guid walletId, decimal amount, string description = "", CancellationToken token = default)
+	public async Task<Result<PaymentDS, Error>> CreatePaymentAsync(Guid userId, Guid walletId, decimal amount, PaymentAggregators aggregator, string description = "", string username = "", CancellationToken token = default)
 	{
-		try
+		_logger.LogInformation($"Создание платежа - WalletId: {walletId}, Amount: {amount}");
+
+
+		// Создать локальный платеж
+		var payment = PaymentDS.Create(walletId, userId, amount, aggregator, description);
+
+		if (aggregator == PaymentAggregators.YooKassa)
 		{
-			_logger.LogInformation($"YooKassa: Создание платежа - WalletId: {walletId}, Amount: {amount}");
-
-
-			// Создать локальный платеж
-			var payment = PaymentDS.Create(walletId, userId, amount, description);
-
-			
 			// Создать платеж в YooKassa (версия 4.3.1)
-			var yooKassaPaymentResult = await _yookassaProvider.CreatePaymentAsync(userId, walletId, payment.Id, amount, description, token);
+			var yooKassaPaymentResult = await _yookassaProvider.CreatePaymentAsync(
+				userId, 
+				walletId, 
+				payment.Id, 
+				amount, 
+				description,
+				username,
+				token);
 
-            if (yooKassaPaymentResult.IsFailure)
-            {
+			if (yooKassaPaymentResult.IsFailure)
+			{
 				return yooKassaPaymentResult.Error;
 			}
 
-            payment.AggregatorPaymentId = yooKassaPaymentResult.Value;
-
-
-			// Добавить в БД
-			var addResult = await _paymentRepository.AddAsync(payment, token);
-
-			if (addResult.IsFailure)
-			{
-				_logger.LogError("YooKassa: Ошибка при сохранении платежа в БД");
-				return Error.Internal("error.save.payment", "Внутренняя ошибка сервера");
-			}
-
-			return payment;
+			payment.AggregatorPaymentId = yooKassaPaymentResult.Value;
 		}
-		catch (Exception ex)
+		else
 		{
-			_logger.LogError(ex, "YooKassa: Ошибка при создании платежа");
-			return Error.Internal("error.create.payment", "Внутренняя ошибка сервера");
+			return Error.NotFound("error.aggregator.not.found", "Платежный агрегатор не найден");
 		}
+
+
+		// Добавить в БД
+		var addResult = await _paymentRepository.AddAsync(payment, token);
+
+		if (addResult.IsFailure)
+		{
+			_logger.LogError("YooKassa: Ошибка при сохранении платежа в БД");
+			return Error.Internal("error.save.payment", "Внутренняя ошибка сервера");
+		}
+
+		return payment;
 	}
 
 

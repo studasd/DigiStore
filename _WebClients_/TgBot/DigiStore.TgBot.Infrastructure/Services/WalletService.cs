@@ -1,15 +1,14 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.Enums;
 using DigiStore.SharedKernel;
-using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.DTOs;
+using DigiStore.TgBot.Application.Interfaces.Repositories;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.WalletService.Contracts.HttpClients;
 using DigiStore.WalletService.Contracts.Requests.Payments;
-using DigiStore.WalletService.Contracts.Responses;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
 
 namespace DigiStore.TgBot.Infrastructure.Services;
 
@@ -17,21 +16,28 @@ namespace DigiStore.TgBot.Infrastructure.Services;
 public class WalletService : IWalletService
 {
     private readonly IWalletHttpClient _walletHttpClient;
+    private readonly ITgUserRepository _tgUserRepository;
     private readonly ILogger<WalletService> _logger;
 
 	public WalletService(
 		IWalletHttpClient walletHttpClient,
+		ITgUserRepository tgUserRepository,
 		IConfiguration configuration,
 		ILogger<WalletService> logger)
 	{
         _walletHttpClient = walletHttpClient;
+        _tgUserRepository = tgUserRepository;
         _logger = logger;
 	}
 
 
 	public async Task<Result<string, Error>> CreatePaymentAsync(Guid userId, PaymentAggregators paymentAggregator, decimal amount, CancellationToken token)
 	{
-		var req = new CreatePaymentRequest(paymentAggregator, amount, "Пополнение баланса");
+		var userTg = await _tgUserRepository.GetByUserIdAsync(userId, token);
+		if (userTg == null)
+			return Error.Failure("bot.user_not_found", "Пользователь не найден");
+
+		var req = new CreatePaymentRequest(paymentAggregator, amount, $"Пополнение баланса #{userTg.TelegramId}", userTg.Username);
 
 		var result = await _walletHttpClient.CreatePaymentAsync(userId, req, token);
 		if (result.IsFailure)

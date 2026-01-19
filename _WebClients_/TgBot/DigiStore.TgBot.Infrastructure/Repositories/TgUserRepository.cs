@@ -24,7 +24,12 @@ public class TgUserRepository : ITgUserRepository
         return await _db.TelegramUsers.FirstOrDefaultAsync(u => u.Id == id, token);
     }
 
-    public async Task AddOrUpdateAsync(TgUser user, CancellationToken token)
+	public async Task<TgUser?> GetByUserIdAsync(Guid userId, CancellationToken token)
+	{
+		return await _db.TelegramUsers.FirstOrDefaultAsync(u => u.UserId == userId, token);
+	}
+
+	public async Task AddOrUpdateAsync(TgUser user, CancellationToken token)
     {
         var existing = await _db.TelegramUsers.FirstOrDefaultAsync(u => u.TelegramId == user.TelegramId, token);
         if (existing == null)

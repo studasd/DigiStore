@@ -11,7 +11,7 @@ namespace DigiStore.WalletService.Infrastructure.Yookassa.Services;
 /// <summary>
 /// Сервис обработки вебхуков от YooKassa
 /// </summary>
-public class YooKassaWebhookServiceOLD : IYooKassaWebhookService
+public class YooKassaWebhookService : IYooKassaWebhookService
 {
 	private readonly YooKassaSettings _settings;
 	private readonly IYookassaProvider _yookassaProvider;
@@ -19,16 +19,16 @@ public class YooKassaWebhookServiceOLD : IYooKassaWebhookService
     private readonly IWithdrawalRepository _withdrawalRepository;
     private readonly IPaymentService _paymentService;
     private readonly IPaymentRepository _paymentRepository;
-    private readonly ILogger<YooKassaWebhookServiceOLD> _logger;
+    private readonly ILogger<YooKassaWebhookService> _logger;
 
-	public YooKassaWebhookServiceOLD(
+	public YooKassaWebhookService(
 		IOptions<YooKassaSettings> settings,
 		IYookassaProvider yookassaProvider,
 		IWithdrawalService withdrawalService,
 		IWithdrawalRepository withdrawalRepository,
 		IPaymentService paymentService,
 		IPaymentRepository paymentRepository,
-		ILogger<YooKassaWebhookServiceOLD> logger)
+		ILogger<YooKassaWebhookService> logger)
 	{
 		_settings = settings.Value;
 		_yookassaProvider = yookassaProvider;
@@ -143,6 +143,8 @@ public class YooKassaWebhookServiceOLD : IYooKassaWebhookService
 		_logger.LogInformation(
 			$"YooKassa: Платеж требует подтверждения - PaymentId: {payment.Id}");
 		// Подтвердить платеж
+
+		await _yookassaProvider.CapturePaymentAsync(payment.Id, token: CancellationToken.None);
 	}
 
 	private async Task ProcessPaymentCanceledAsync(Payment payment, CancellationToken token)
@@ -181,80 +183,6 @@ public class YooKassaWebhookServiceOLD : IYooKassaWebhookService
 		if (dbWithdrawal.IsSuccess)
 		{
 			await _withdrawalService.CancelWithdrawalAsync(dbWithdrawal.Value.Id, "Отменена YooKassa");
-		}
-	}
-
-}
-
-
-
-/// <summary>
-/// Сервис обработки вебхуков YooKassa v4.3.1
-/// </summary>
-public class YooKassaWebhookService : IYooKassaWebhookService
-{
-	private readonly YooKassaSettings _settings;
-	private readonly ILogger<YooKassaWebhookService> _logger;
-
-	public YooKassaWebhookService(
-		IOptions<YooKassaSettings> settings,
-		ILogger<YooKassaWebhookService> logger)
-	{
-		_settings = settings.Value;
-		_logger = logger;
-	}
-
-	/// <summary>
-	/// Проверить подпись вебхука
-	/// </summary>
-	public bool VerifyWebhookSignature(string jsonBody, string signatureHeader)
-	{
-		try
-		{
-			if (string.IsNullOrEmpty(signatureHeader))
-				return false;
-
-			var data = Encoding.UTF8.GetBytes(jsonBody + _settings.WebhookSecret);
-			using var sha256 = SHA256.Create();
-			var hash = sha256.ComputeHash(data);
-			var computed = Convert.ToBase64String(hash);
-
-			var signature = signatureHeader.Replace("sha256=", "").Trim();
-			var result = computed == signature;
-
-			if (!result)
-				_logger.LogWarning("YooKassa: Неверная подпись вебхука");
-
-			return result;
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "YooKassa: Ошибка проверки подписи");
-			return false;
-		}
-	}
-
-
-	/// <summary>
-	/// Обработать вебхук
-	/// </summary>
-	public async Task ProcessWebhookAsync(string bodyContent, CancellationToken token)
-	{
-		try
-		{
-			// Парсить вебхук используя встроенный парсер версии 4.3.1
-			// ПРИМЕЧАНИЕ: В версии 4.3.1 используется другой способ парсинга
-
-			_logger.LogInformation($"YooKassa: Обработка вебхука - Body: {bodyContent.Substring(0, 100)}...");
-
-			// Здесь нужно использовать встроенный парсер из библиотеки
-			// В версии 4.3.1 это может быть разной реализацией
-
-			_logger.LogInformation("YooKassa: Вебхук обработан");
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "YooKassa: Ошибка при обработке вебхука");
 		}
 	}
 }

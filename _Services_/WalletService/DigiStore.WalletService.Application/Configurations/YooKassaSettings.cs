@@ -16,7 +16,7 @@ public class YooKassaSettings
 
 	/// <summary>Секретный ключ для API YooKassa</summary>
 	public string SecretKey { get; set; } = string.Empty;
-
+	
 	/// <summary>Секрет для проверки подписей вебхуков</summary>
 	public string WebhookSecret { get; set; } = string.Empty;
 
