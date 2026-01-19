@@ -15,5 +15,8 @@ public enum PaymentStatus
 	Canceled = 2,
 
 	/// <summary>Платеж возвращен</summary>
-	Refunded = 3
+	Refunded = 3,
+
+	/// <summary>Платеж создан</summary>
+	Created = 4
 }

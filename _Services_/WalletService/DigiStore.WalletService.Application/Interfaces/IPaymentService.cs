@@ -13,8 +13,8 @@ public interface IPaymentService
 		Guid walletId, 
 		decimal amount, 
 		PaymentAggregators aggregator, 
-		string description = "", 
-		string username = "", 
+		string description, 
+		string returnUrl, 
 		CancellationToken token = default);
 
 	/// Завершить платеж

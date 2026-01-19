@@ -37,8 +37,8 @@ public class YookassaProvider : IYookassaProvider
 		Guid walletId, 
 		Guid paymentId, 
 		decimal amount, 
-		string description = "",
-		string username = "",
+		string description,
+		string returnUrl,
 		CancellationToken token = default)
 	{
 		try
@@ -55,8 +55,8 @@ public class YookassaProvider : IYookassaProvider
 				},
 				Confirmation = new Confirmation
 				{
-					Type = ConfirmationType.Redirect,
-					ReturnUrl = $"{_settings.SuccessReturnUrl}/{username}"
+					Type = ConfirmationType.Redirect, 
+					ReturnUrl = returnUrl
 				},
 				Description = description,
 				Metadata = new Dictionary<string, string>

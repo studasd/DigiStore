@@ -37,7 +37,9 @@ public class WalletService : IWalletService
 		if (userTg == null)
 			return Error.Failure("bot.user_not_found", "Пользователь не найден");
 
-		var req = new CreatePaymentRequest(paymentAggregator, amount, $"Пополнение баланса #{userTg.TelegramId}", userTg.Username);
+		var returnUrl = $"https://t.me/{userTg.Username}"; // возврат после оплаты для юзера
+		
+		var req = new CreatePaymentRequest(paymentAggregator, amount, $"Пополнение баланса #{userTg.TelegramId}", returnUrl);
 
 		var result = await _walletHttpClient.CreatePaymentAsync(userId, req, token);
 		if (result.IsFailure)

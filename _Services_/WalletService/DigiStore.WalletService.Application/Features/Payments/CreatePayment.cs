@@ -22,7 +22,7 @@ public record CreatePaymentCommand(
 	PaymentAggregators Aggregator, 
 	decimal Amount, 
 	string Description, 
-	string? Username = null);
+	string ReturnUrl);
 
 
 /// Создать платеж (пополнить баланс)
@@ -42,7 +42,7 @@ public sealed class CreatePayment : IEndpoint
 				request.Aggregator, 
 				request.Amount, 
 				request.Description,
-				request.Username
+				request.ReturnUrl
 				), token);
 		});
 	}
@@ -125,7 +125,7 @@ public sealed class CreatePaymentHandler : IWalletServiceHandler
 			command.Amount, 
 			command.Aggregator, 
 			command.Description,
-			command.Username);
+			command.ReturnUrl);
 
 		if (paymentResult.IsFailure)
 			return paymentResult.Error;

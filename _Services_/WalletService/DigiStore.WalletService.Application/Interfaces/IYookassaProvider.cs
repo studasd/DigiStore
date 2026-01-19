@@ -13,8 +13,8 @@ public interface IYookassaProvider
 		Guid walletId, 
 		Guid paymentId, 
 		decimal amount, 
-		string description = "", 
-		string username = "", 
+		string description, 
+		string returnUrl, 
 		CancellationToken token = default);
 
 	Task<Result<string, Error>> GetPaymentConfirmationUrlAsync(string aggregatorPaymentId, CancellationToken token);

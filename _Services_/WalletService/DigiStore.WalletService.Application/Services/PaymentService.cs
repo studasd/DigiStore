@@ -34,13 +34,13 @@ public class PaymentService : IPaymentService
 	/// <summary>
 	/// Создать платеж
 	/// </summary>
-	public async Task<Result<PaymentDS, Error>> CreatePaymentAsync(Guid userId, Guid walletId, decimal amount, PaymentAggregators aggregator, string description = "", string username = "", CancellationToken token = default)
+	public async Task<Result<PaymentDS, Error>> CreatePaymentAsync(Guid userId, Guid walletId, decimal amount, PaymentAggregators aggregator, string description, string returnUrl, CancellationToken token = default)
 	{
 		_logger.LogInformation($"Создание платежа - WalletId: {walletId}, Amount: {amount}");
 
 
 		// Создать локальный платеж
-		var payment = PaymentDS.Create(walletId, userId, amount, aggregator, description);
+		var payment = PaymentDS.Create(walletId, userId, amount, aggregator, description, returnUrl);
 
 		if (aggregator == PaymentAggregators.YooKassa)
 		{
@@ -51,7 +51,7 @@ public class PaymentService : IPaymentService
 				payment.Id, 
 				amount, 
 				description,
-				username,
+				returnUrl,
 				token);
 
 			if (yooKassaPaymentResult.IsFailure)

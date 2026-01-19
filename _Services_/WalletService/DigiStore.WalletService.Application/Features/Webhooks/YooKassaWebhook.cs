@@ -16,7 +16,7 @@ public sealed class YooKassaWebhook : IEndpoint
 	//[Authorize]
 	public void MapEndpoint(IEndpointRouteBuilder app)
 	{
-		app.MapPost("handle", async Task<EndpointResult> (
+		app.MapPost("webhook/yookassa", async Task<EndpointResult> (
 			[FromServices] YooKassaWebhookHandler handler,
 			CancellationToken token,
 			HttpContext context) =>

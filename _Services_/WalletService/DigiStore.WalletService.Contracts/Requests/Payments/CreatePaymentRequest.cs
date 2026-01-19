@@ -2,4 +2,4 @@
 
 namespace DigiStore.WalletService.Contracts.Requests.Payments;
 
-public record CreatePaymentRequest(PaymentAggregators Aggregator, decimal Amount, string Description, string? Username = null);
+public record CreatePaymentRequest(PaymentAggregators Aggregator, decimal Amount, string Description, string ReturnUrl);
