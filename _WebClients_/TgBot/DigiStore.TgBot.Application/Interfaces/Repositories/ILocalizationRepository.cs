@@ -1,10 +1,16 @@
+using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
 using DigiStore.TgBot.Domain;
 
 namespace DigiStore.TgBot.Application.Interfaces.Repositories;
 
 public interface ILocalizationRepository
 {
-    Task<Localization?> GetByKeyAsync(string key, CancellationToken token);
-    Task<IEnumerable<Localization>> GetAllAsync(CancellationToken token);
-    Task AddOrUpdateAsync(Localization entity, CancellationToken token);
+	Task<Result<Localization, Error>> GetByKeyAsync(string key, CancellationToken token);
+
+	Task<Result<IEnumerable<Localization>, Error>> GetAllAsync(CancellationToken token);
+
+	Task<UnitResult<Error>> AddOrUpdateAsync(Localization entity, CancellationToken token);
+
+	Task<UnitResult<Error>> SaveChangesAsync(CancellationToken token);
 }

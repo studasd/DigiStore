@@ -33,10 +33,11 @@ public class WalletService : IWalletService
 
 	public async Task<Result<string, Error>> CreatePaymentAsync(Guid userId, PaymentAggregators paymentAggregator, decimal amount, CancellationToken token)
 	{
-		var userTg = await _tgUserRepository.GetByUserIdAsync(userId, token);
-		if (userTg == null)
-			return Error.Failure("bot.user_not_found", "Пользователь не найден");
+		var userTgResult = await _tgUserRepository.GetByUserIdAsync(userId, token);
+		if (userTgResult.IsFailure)
+			return userTgResult.Error;	
 
+		var userTg = userTgResult.Value;
 		var returnUrl = $"https://t.me/{userTg.Username}"; // возврат после оплаты для юзера
 		
 		var req = new CreatePaymentRequest(paymentAggregator, amount, $"Пополнение баланса #{userTg.TelegramId}", returnUrl);
@@ -51,41 +52,11 @@ public class WalletService : IWalletService
 
 	public async Task<Result<BalanceDto, Error>> GetBalanceAsync(Guid userId, CancellationToken token)
 	{
-		try
-		{
-			// Заглушка
+		var result = await _walletHttpClient.GetBalanceAsync(userId, token);
+		if(result.IsFailure)
+			return result.Error;
 
-			var result = await _walletHttpClient.GetBalanceAsync(userId, token);
-			if(result.IsFailure)
-				return result.Error;
-
-			return new BalanceDto(result.Value.Value);
-
-			//return new BalanceDto
-			//{
-			//	Balance = -1.11m,
-			//	Currency = "RUB"
-			//};
-
-			//var url = $"{_walletServiceUrl}/api/wallet/{userId}";
-			//var response = await _httpClient.GetAsync(url, ct);
-
-			//if (!response.IsSuccessStatusCode)
-			//{
-			//	_logger.LogWarning("Failed to get balance for user ID: {UserId}", userId);
-			//	return TgBotErrors.OperationFailed;
-			//}
-
-			//var content = await response.Content.ReadAsStringAsync(ct);
-			//var wallet = JsonSerializer.Deserialize<BalanceDto>(content);
-
-			//return wallet;
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error getting balance for user ID: {UserId}", userId);
-			return Error.Failure("bot.wallet_service_error", ex.Message);
-		}
+		return new BalanceDto(result.Value.Value);
 	}
 
 
@@ -94,8 +65,6 @@ public class WalletService : IWalletService
 		int take = 10,
 		CancellationToken token = default)
 	{
-		//try
-		//{
 		var result = await _walletHttpClient.GetTransactionsAsync(userId, 0, take, token);
 		if (result.IsFailure)
 			return result.Error;
@@ -112,26 +81,6 @@ public class WalletService : IWalletService
 			t.BalanceAfter, 
 			t.CreatedAt
 			)).ToList();
-
-			//var url = $"{_walletServiceUrl}/api/wallet/{userId}/transactions?skip=0&take={take}";
-			//var response = await _httpClient.GetAsync(url, ct);
-
-		//if (!response.IsSuccessStatusCode)
-		//{
-		//	_logger.LogWarning("Failed to get transactions for user ID: {UserId}", userId);
-		//	return TgBotErrors.OperationFailed;
-		//}
-
-		//var content = await response.Content.ReadAsStringAsync(ct);
-		//var transactions = JsonSerializer.Deserialize<List<TransactionDto>>(content);
-
-		//return transactions ?? new();
-		//}
-		//catch (Exception ex)
-		//{
-		//	_logger.LogError(ex, "Error getting transactions for user ID: {UserId}", userId);
-		//	return Error.Failure("bot.wallet_service_error", ex.Message);
-		//}
 	}
 
 
@@ -140,28 +89,6 @@ public class WalletService : IWalletService
 		decimal amount,
 		CancellationToken token)
 	{
-		//try
-		//{
-		//	var url = $"{_walletServiceUrl}/api/wallet/{userId}/withdraw";
-		//	var request = new { amount = amount, description = "Withdrawal via Telegram bot" };
-
-		//	var json = JsonSerializer.Serialize(request);
-		//	var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-
-		//	var response = await _httpClient.PostAsync(url, content, ct);
-
-		//	if (!response.IsSuccessStatusCode)
-		//	{
-		//		_logger.LogWarning("Failed to initiate withdrawal for user ID: {UserId}", userId);
-		//		return TgBotErrors.OperationFailed;
-		//	}
-
-			return true;
-		//}
-		//catch (Exception ex)
-		//{
-		//	_logger.LogError(ex, "Error initiating withdrawal for user ID: {UserId}", userId);
-		//	return Error.Failure("bot.wallet_service_error", ex.Message);
-		//}
+		return true;
 	}
 }

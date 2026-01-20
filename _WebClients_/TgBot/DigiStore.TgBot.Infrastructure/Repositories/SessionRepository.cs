@@ -1,25 +1,34 @@
+using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Interfaces.Repositories;
 using DigiStore.TgBot.Domain;
 using DigiStore.TgBot.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace DigiStore.TgBot.Infrastructure.Repositories;
 
 public class SessionRepository : ISessionRepository
 {
     private readonly TgBotDbContext _db;
+    private readonly ILogger<SessionRepository> _logger;
 
-    public SessionRepository(TgBotDbContext db)
+    public SessionRepository(TgBotDbContext db, ILogger<SessionRepository> logger)
     {
         _db = db;
+        _logger = logger;
     }
 
-    public async Task<TgUserSession?> GetByTelegramIdAsync(long telegramId, CancellationToken token)
+    public async Task<Result<TgUserSession,Error>> GetByTelegramIdAsync(long telegramId, CancellationToken token)
     {
-        return await _db.TelegramSessions.FirstOrDefaultAsync(s => s.TelegramId == telegramId, token);
-    }
+        var session = await _db.TelegramSessions.FirstOrDefaultAsync(s => s.TelegramId == telegramId, token);
+        if(session == null)
+            return Error.Failure("session.notfound", $"Session with TelegramId {telegramId} not found");
 
-    public async Task AddOrUpdateAsync(TgUserSession session, CancellationToken token)
+        return session;
+	}
+
+    public async Task<UnitResult<Error>> AddOrUpdateAsync(TgUserSession session, CancellationToken token)
     {
         var existing = await _db.TelegramSessions.FirstOrDefaultAsync(s => s.TelegramId == session.TelegramId, token);
         if (existing == null)
@@ -39,16 +48,33 @@ public class SessionRepository : ISessionRepository
             existing.LastActivity = DateTime.UtcNow;
         }
 
-        await _db.SaveChangesAsync(token);
-    }
+		return await SaveChangesAsync(token);
+	}
 
-    public async Task DeleteByTelegramIdAsync(long telegramId, CancellationToken token)
+    public async Task<UnitResult<Error>> DeleteByTelegramIdAsync(long telegramId, CancellationToken token)
     {
         var existing = await _db.TelegramSessions.FirstOrDefaultAsync(s => s.TelegramId == telegramId, token);
-        if (existing != null)
-        {
-            _db.TelegramSessions.Remove(existing);
-            await _db.SaveChangesAsync(token);
-        }
+        if (existing == null)
+            return Error.Failure("session.notfound", $"Session with TelegramId {telegramId} not found");
+
+		_db.TelegramSessions.Remove(existing);
+
+		return await SaveChangesAsync(token);
     }
+
+	public async Task<UnitResult<Error>> SaveChangesAsync(CancellationToken token)
+	{
+		try
+		{
+			await _db.SaveChangesAsync(token);
+		}
+		catch (DbUpdateException ex)
+		{
+			_logger.LogWarning(ex, "Failed save changes");
+
+			return Error.Failure("failed.db.savechange", $"Failed save changes");
+		}
+
+		return Result.Success<Error>();
+	}
 }

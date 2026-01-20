@@ -1,4 +1,6 @@
-﻿using DigiStore.Enums;
+﻿using CSharpFunctionalExtensions;
+using DigiStore.Enums;
+using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Interfaces.Repositories;
 using DigiStore.TgBot.Application.Interfaces.Services;
 
@@ -7,12 +9,12 @@ namespace DigiStore.TgBot.Application.Services;
 public class LocalizationService : ILocalizationService
 {
 	private readonly Dictionary<LanguageCodes, Dictionary<string, string>> _localizations;
-	private readonly ILocalizationRepository _localizationRepository;
+	private readonly ILocalizationRepository _localeRepository;
 
 	public LocalizationService(ILocalizationRepository localizationRepository)
 	{
-		_localizationRepository = localizationRepository;
-		_localizations = InitializeLocalizations();
+		_localeRepository = localizationRepository;
+		_localizations = InitializeLocalizations().Value;
 	}
 
 
@@ -41,15 +43,15 @@ public class LocalizationService : ILocalizationService
 		};
 	}
 
-	private Dictionary<LanguageCodes, Dictionary<string, string>> InitializeLocalizations()
+	private Result<Dictionary<LanguageCodes, Dictionary<string, string>>, Error> InitializeLocalizations()
 	{
 		// Load from database. This method blocks on async repository calls because constructor cannot be async.
-		var entries = _localizationRepository.GetAllAsync(CancellationToken.None).GetAwaiter().GetResult();
-
-		if(entries == null)
-			throw new Exception("Failed to load localization entries from the database.");
+		var entriesResult = _localeRepository.GetAllAsync(CancellationToken.None).GetAwaiter().GetResult();
+		if(entriesResult.IsFailure)
+			return entriesResult.Error;
 
 		// Build dictionaries
+		var entries = entriesResult.Value;
 		var enDictFinal = entries.ToDictionary(e => e.Key, e => e.En ?? e.Key);
 		var ruDictFinal = entries.ToDictionary(e => e.Key, e => e.Ru ?? e.Key);
 

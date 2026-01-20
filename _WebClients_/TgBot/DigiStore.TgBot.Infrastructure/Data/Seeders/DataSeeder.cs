@@ -33,9 +33,12 @@ public class DataSeeder : IDataSeeder
 		var localRepository = scope.ServiceProvider.GetRequiredService<ILocalizationRepository>();
 
 		// Load from database. This method blocks on async repository calls because constructor cannot be async.
-		var entries = await localRepository.GetAllAsync(token);
+		var entriesResult = await localRepository.GetAllAsync(token);
+		if (entriesResult.IsFailure)
+			return;
 
 		// If DB is empty, seed it from embedded hard-coded values
+		var entries = entriesResult.Value;
 		if (entries == null || !entries.Any())
 		{
 			var en = new Dictionary<string, string>

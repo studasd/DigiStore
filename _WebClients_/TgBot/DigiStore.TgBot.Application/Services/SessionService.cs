@@ -29,10 +29,10 @@ public class SessionService : ISessionService
 
     public async Task<Result<TgUserSession, Error>> GetOrCreateSessionAsync(long telegramId, CancellationToken token)
     {
-        var domain = await _sessionRepository.GetByTelegramIdAsync(telegramId, token);
-        if (domain != null)
+        var domainResult = await _sessionRepository.GetByTelegramIdAsync(telegramId, token);
+        if(domainResult.IsSuccess)
         {
-            var session = MapToDomain(domain);
+            var session = MapToDomain(domainResult.Value);
             _logger.LogDebug("Session retrieved from repository for Telegram ID: {TelegramId}", telegramId);
             return session;
         }
@@ -44,45 +44,48 @@ public class SessionService : ISessionService
             CreatedAt = DateTime.UtcNow
         };
 
-        await SaveSessionAsync(newSession, token);
-        _logger.LogInformation("New session created for Telegram ID: {TelegramId}", telegramId);
+        var resultSave = await SaveSessionAsync(newSession, token);
+        if (resultSave.IsFailure)
+            return resultSave.Error;
+
+		_logger.LogInformation("New session created for Telegram ID: {TelegramId}", telegramId);
 
         return newSession;
     }
 
 
-    public async Task UpdateSessionAsync(TgUserSession session, CancellationToken token)
+    public async Task<UnitResult<Error>> UpdateSessionAsync(TgUserSession session, CancellationToken token)
     {
         session.UpdateActivity();
-        await SaveSessionAsync(session, token);
+        return await SaveSessionAsync(session, token);
     }
 
 
-    public async Task ClearSessionAsync(long telegramId, CancellationToken token)
+    public async Task<UnitResult<Error>> ClearSessionAsync(long telegramId, CancellationToken token)
     {
-        await _sessionRepository.DeleteByTelegramIdAsync(telegramId, token);
+        var seeDetelResult = await _sessionRepository.DeleteByTelegramIdAsync(telegramId, token);
+        if (seeDetelResult.IsFailure)
+            return seeDetelResult.Error;
         _logger.LogInformation("Session cleared for Telegram ID: {TelegramId}", telegramId);
+        return Result.Success<Error>();
     }
 
 
     public async Task<Result<TgUserSession, Error>> GetSessionAsync(long telegramId, CancellationToken token)
     {
-        var domain = await _sessionRepository.GetByTelegramIdAsync(telegramId, token);
-        if (domain == null)
-        {
-            _logger.LogWarning("Session not found for Telegram ID: {TelegramId}", telegramId);
-			return Error.Failure("get.session.bytelegramid", $"Session not found telegramId: {telegramId}");
-        }
-
-        return MapToDomain(domain);
+        var domainResult = await _sessionRepository.GetByTelegramIdAsync(telegramId, token);
+        if (domainResult.IsFailure)
+            return domainResult.Error;
+        
+        return MapToDomain(domainResult.Value);
     }
 
 
-    private async Task SaveSessionAsync(TgUserSession session, CancellationToken token)
+    private async Task<UnitResult<Error>> SaveSessionAsync(TgUserSession session, CancellationToken token)
     {
         // convert to domain.UserSession and save via repository
         var domain = MapToDomainModel(session);
-        await _sessionRepository.AddOrUpdateAsync(domain, token);
+        return await _sessionRepository.AddOrUpdateAsync(domain, token);
     }
 
     private TgUserSession MapToDomain(TgUserSession d)
@@ -126,24 +129,17 @@ public class SessionService : ISessionService
     }
 
     // Additional helper to store command history
-    public async Task RecordCommandAsync(long telegramId, string command, string? message = null, CancellationToken token = default)
+    public async Task<UnitResult<Error>> RecordCommandAsync(long telegramId, string command, string? message = null, CancellationToken token = default)
     {
-        try
+        var history = new CommandHistory
         {
-            var history = new CommandHistory
-            {
-                Id = Guid.NewGuid(),
-                TelegramId = telegramId,
-                Command = command,
-                Message = message,
-                Timestamp = DateTime.UtcNow
-            };
+            Id = Guid.NewGuid(),
+            TelegramId = telegramId,
+            Command = command,
+            Message = message,
+            Timestamp = DateTime.UtcNow
+        };
 
-            await _historyRepository.AddAsync(history, token);
-        }
-        catch(Exception e) 
-        {
-			_logger.LogWarning(e, "Failed to record callback history for TelegramId {TelegramId}", telegramId);
-		}
+        return await _historyRepository.AddAsync(history, token);
 	}
 }
