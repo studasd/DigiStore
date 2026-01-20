@@ -13,7 +13,7 @@ public class TgBotDbContext : DbContext
     }
 
     public DbSet<TgUser> TelegramUsers { get; set; } = null!;
-    public DbSet<TgUserSession> TelegramSessions { get; set; } = null!;
+    public DbSet<TgSession> TelegramSessions { get; set; } = null!;
     public DbSet<CommandHistory> CommandHistories { get; set; } = null!;
     public DbSet<Localization> Localizations { get; set; } = null!;
 
@@ -26,18 +26,18 @@ public class TgBotDbContext : DbContext
 
 		modelBuilder.Entity<TgUser>(eb =>
         {
-            eb.ToTable("users");
+            eb.ToTable("Users");
 
-			eb.HasKey(e => e.Id);
+			eb.HasKey(e => e.UserId);
 
             eb.HasIndex(e => e.TelegramId).IsUnique();
             eb.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
 			eb.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
         });
 
-        modelBuilder.Entity<TgUserSession>(eb =>
+        modelBuilder.Entity<TgSession>(eb =>
         {
-            eb.ToTable("sessions");
+            eb.ToTable("Sessions");
 
 			eb.HasKey(e => e.Id);
 
@@ -63,7 +63,7 @@ public class TgBotDbContext : DbContext
 
         modelBuilder.Entity<CommandHistory>(eb =>
         {
-            eb.ToTable("command_histories");
+            eb.ToTable("CommandHistories");
 
 			eb.HasKey(e => e.Id);
 
@@ -75,7 +75,7 @@ public class TgBotDbContext : DbContext
 
         modelBuilder.Entity<Localization>(eb =>
         {
-            eb.ToTable("localizations");
+            eb.ToTable("Localizations");
 
             eb.HasKey(e => e.Key);
 

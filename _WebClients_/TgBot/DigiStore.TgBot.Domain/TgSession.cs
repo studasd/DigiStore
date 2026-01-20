@@ -3,7 +3,7 @@ using DigiStore.TgBot.Domain.ValueObjects;
 
 namespace DigiStore.TgBot.Domain;
 
-public class TgUserSession
+public class TgSession
 {
     public Guid Id { get; set; } = Guid.NewGuid();
 
@@ -25,6 +25,7 @@ public class TgUserSession
     public DateTime LastActivity { get; set; }
 
     public DateTime CreatedAt { get; set; }
+
 
 
 	public void UpdateActivity()

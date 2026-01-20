@@ -27,7 +27,7 @@ public class SessionService : ISessionService
         _logger = logger;
     }
 
-    public async Task<Result<TgUserSession, Error>> GetOrCreateSessionAsync(long telegramId, CancellationToken token)
+    public async Task<Result<TgSession, Error>> GetOrCreateSessionAsync(long telegramId, CancellationToken token)
     {
         var domainResult = await _sessionRepository.GetByTelegramIdAsync(telegramId, token);
         if(domainResult.IsSuccess)
@@ -37,7 +37,7 @@ public class SessionService : ISessionService
             return session;
         }
 
-        var newSession = new TgUserSession
+        var newSession = new TgSession
         {
             TelegramId = telegramId,
             CurrentState = BotState.Start,
@@ -54,7 +54,7 @@ public class SessionService : ISessionService
     }
 
 
-    public async Task<UnitResult<Error>> UpdateSessionAsync(TgUserSession session, CancellationToken token)
+    public async Task<UnitResult<Error>> UpdateSessionAsync(TgSession session, CancellationToken token)
     {
         session.UpdateActivity();
         return await SaveSessionAsync(session, token);
@@ -71,7 +71,7 @@ public class SessionService : ISessionService
     }
 
 
-    public async Task<Result<TgUserSession, Error>> GetSessionAsync(long telegramId, CancellationToken token)
+    public async Task<Result<TgSession, Error>> GetSessionAsync(long telegramId, CancellationToken token)
     {
         var domainResult = await _sessionRepository.GetByTelegramIdAsync(telegramId, token);
         if (domainResult.IsFailure)
@@ -81,16 +81,16 @@ public class SessionService : ISessionService
     }
 
 
-    private async Task<UnitResult<Error>> SaveSessionAsync(TgUserSession session, CancellationToken token)
+    private async Task<UnitResult<Error>> SaveSessionAsync(TgSession session, CancellationToken token)
     {
         // convert to domain.UserSession and save via repository
         var domain = MapToDomainModel(session);
         return await _sessionRepository.AddOrUpdateAsync(domain, token);
     }
 
-    private TgUserSession MapToDomain(TgUserSession d)
+    private TgSession MapToDomain(TgSession d)
     {
-        var session = new TgUserSession
+        var session = new TgSession
         {
             Id = d.Id,
             UserId = d.UserId,
@@ -109,9 +109,9 @@ public class SessionService : ISessionService
         return session;
     }
 
-    private TgUserSession MapToDomainModel(TgUserSession s)
+    private TgSession MapToDomainModel(TgSession s)
     {
-        return new TgUserSession
+        return new TgSession
         {
             Id = s.Id == Guid.Empty ? Guid.NewGuid() : s.Id,
             UserId = s.UserId,

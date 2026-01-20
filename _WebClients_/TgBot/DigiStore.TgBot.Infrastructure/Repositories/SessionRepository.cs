@@ -19,7 +19,7 @@ public class SessionRepository : ISessionRepository
         _logger = logger;
     }
 
-    public async Task<Result<TgUserSession,Error>> GetByTelegramIdAsync(long telegramId, CancellationToken token)
+    public async Task<Result<TgSession,Error>> GetByTelegramIdAsync(long telegramId, CancellationToken token)
     {
         var session = await _db.TelegramSessions.FirstOrDefaultAsync(s => s.TelegramId == telegramId, token);
         if(session == null)
@@ -28,7 +28,7 @@ public class SessionRepository : ISessionRepository
         return session;
 	}
 
-    public async Task<UnitResult<Error>> AddOrUpdateAsync(TgUserSession session, CancellationToken token)
+    public async Task<UnitResult<Error>> AddOrUpdateAsync(TgSession session, CancellationToken token)
     {
         var existing = await _db.TelegramSessions.FirstOrDefaultAsync(s => s.TelegramId == session.TelegramId, token);
         if (existing == null)

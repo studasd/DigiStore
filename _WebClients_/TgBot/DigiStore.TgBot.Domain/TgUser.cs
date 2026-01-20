@@ -1,15 +1,10 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace DigiStore.TgBot.Domain;
 
 public class TgUser
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+	public Guid UserId { get; set; }
 
-    public long TelegramId { get; set; }
-
-    public Guid? UserId { get; set; }
+	public long TelegramId { get; set; }
 
     public string FirstName { get; set; } = string.Empty;
 

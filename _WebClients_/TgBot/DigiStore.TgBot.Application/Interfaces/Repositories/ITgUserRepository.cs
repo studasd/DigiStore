@@ -8,8 +8,6 @@ public interface ITgUserRepository
 {
 	Task<Result<TgUser, Error>> GetByTelegramIdAsync(long telegramId, CancellationToken token);
 
-	Task<Result<TgUser, Error>> GetByIdAsync(Guid id, CancellationToken token);
-
 	Task<Result<TgUser, Error>> GetByUserIdAsync(Guid userId, CancellationToken token);
 
 	Task<UnitResult<Error>> AddOrUpdateAsync(TgUser user, CancellationToken token);

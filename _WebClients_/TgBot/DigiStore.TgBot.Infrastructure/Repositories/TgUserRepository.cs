@@ -28,15 +28,6 @@ public class TgUserRepository : ITgUserRepository
         return user;
 	}
 
-    public async Task<Result<TgUser, Error>> GetByIdAsync(Guid id, CancellationToken token)
-    {
-		var user = await _db.TelegramUsers.FirstOrDefaultAsync(u => u.Id == id, token);
-        if(user == null)
-            return Error.NotFound("tguser.notfound", $"Telegram user with Id '{id}' not found");
-
-        return user;
-	}
-
 	public async Task<Result<TgUser, Error>> GetByUserIdAsync(Guid userId, CancellationToken token)
 	{
 		var user = await _db.TelegramUsers.FirstOrDefaultAsync(u => u.UserId == userId, token);

@@ -10,16 +10,19 @@ public class PaymentDS
 	/// <summary>ID платежа в системе</summary>
 	public Guid Id { get; set; }
 
-	/// <summary>ID кошелька</summary>
-	public Guid WalletId { get; set; }
-
 	/// <summary>ID пользователя</summary>
 	public Guid UserId { get; set; }
+
+	/// <summary>ID кошелька</summary>
+	public Guid WalletId { get; set; }
 
 	public PaymentAggregators Aggregator { get; set; }
 
 	/// <summary>ID платежа у агрегатора YooKassa,FreeKassa... </summary>
 	public string AggregatorPaymentId { get; set; } = string.Empty;
+
+	/// <summary>ID рекуррентного платежа (если есть)</summary>
+	public Guid? RecurringPaymentId { get; set; }
 
 	/// <summary>Сумма платежа</summary>
 	public decimal Amount { get; set; }
@@ -33,14 +36,11 @@ public class PaymentDS
 	/// <summary>Описание платежа</summary>
 	public string Description { get; set; } = string.Empty;
 
-	/// <summary>Метод оплаты (card, wallet, etc)</summary>
-	public string? PaymentMethod { get; set; }
-
-	/// <summary>ID рекуррентного платежа (если есть)</summary>
-	public Guid? RecurringPaymentId { get; set; }
-
 	/// <summary>URL возврата</summary>
 	public string? ReturnUrl { get; set; }
+
+	/// <summary>Метод оплаты (card, wallet, etc)</summary>
+	public string? PaymentMethod { get; set; }
 
 	/// <summary>Сообщение об ошибке</summary>
 	public string? ErrorMessage { get; set; }
@@ -56,6 +56,7 @@ public class PaymentDS
 
 	/// <summary>Дата подтверждения</summary>
 	public DateTime? ConfirmedAt { get; set; }
+
 
 	// Navigation properties
 	public WalletDS? Wallet { get; set; }

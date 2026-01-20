@@ -15,7 +15,7 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
                 name: "TgBot");
 
             migrationBuilder.CreateTable(
-                name: "command_histories",
+                name: "CommandHistories",
                 schema: "TgBot",
                 columns: table => new
                 {
@@ -27,11 +27,11 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_command_histories", x => x.Id);
+                    table.PrimaryKey("PK_CommandHistories", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "localizations",
+                name: "Localizations",
                 schema: "TgBot",
                 columns: table => new
                 {
@@ -43,11 +43,11 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_localizations", x => x.Key);
+                    table.PrimaryKey("PK_Localizations", x => x.Key);
                 });
 
             migrationBuilder.CreateTable(
-                name: "sessions",
+                name: "Sessions",
                 schema: "TgBot",
                 columns: table => new
                 {
@@ -58,23 +58,24 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
                     LangCode = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
                     PendingTopUpAggregator = table.Column<string>(type: "text", nullable: true),
                     PendingTopUpAmount = table.Column<decimal>(type: "numeric", nullable: true),
+                    PendingTopUpChatId = table.Column<long>(type: "bigint", nullable: true),
+                    PendingTopUpMessageId = table.Column<int>(type: "integer", nullable: true),
                     LastActivity = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
                     CachedProfile = table.Column<string>(type: "jsonb", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_sessions", x => x.Id);
+                    table.PrimaryKey("PK_Sessions", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "users",
+                name: "Users",
                 schema: "TgBot",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     TelegramId = table.Column<long>(type: "bigint", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: true),
                     FirstName = table.Column<string>(type: "text", nullable: false),
                     LastName = table.Column<string>(type: "text", nullable: false),
                     Username = table.Column<string>(type: "text", nullable: true),
@@ -84,25 +85,25 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_users", x => x.Id);
+                    table.PrimaryKey("PK_Users", x => x.UserId);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_command_histories_TelegramId",
+                name: "IX_CommandHistories_TelegramId",
                 schema: "TgBot",
-                table: "command_histories",
+                table: "CommandHistories",
                 column: "TelegramId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_sessions_TelegramId",
+                name: "IX_Sessions_TelegramId",
                 schema: "TgBot",
-                table: "sessions",
+                table: "Sessions",
                 column: "TelegramId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_users_TelegramId",
+                name: "IX_Users_TelegramId",
                 schema: "TgBot",
-                table: "users",
+                table: "Users",
                 column: "TelegramId",
                 unique: true);
         }
@@ -111,19 +112,19 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "command_histories",
+                name: "CommandHistories",
                 schema: "TgBot");
 
             migrationBuilder.DropTable(
-                name: "localizations",
+                name: "Localizations",
                 schema: "TgBot");
 
             migrationBuilder.DropTable(
-                name: "sessions",
+                name: "Sessions",
                 schema: "TgBot");
 
             migrationBuilder.DropTable(
-                name: "users",
+                name: "Users",
                 schema: "TgBot");
         }
     }

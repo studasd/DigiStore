@@ -13,7 +13,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DigiStore.TgBot.Infrastructure.Migrations
 {
     [DbContext(typeof(TgBotDbContext))]
-    [Migration("20260118013547_Init")]
+    [Migration("20260120210426_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -51,7 +51,7 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
 
                     b.HasIndex("TelegramId");
 
-                    b.ToTable("command_histories", "TgBot");
+                    b.ToTable("CommandHistories", "TgBot");
                 });
 
             modelBuilder.Entity("DigiStore.TgBot.Domain.Localization", b =>
@@ -78,54 +78,10 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
 
                     b.HasKey("Key");
 
-                    b.ToTable("localizations", "TgBot");
+                    b.ToTable("Localizations", "TgBot");
                 });
 
-            modelBuilder.Entity("DigiStore.TgBot.Domain.TgUser", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long>("TelegramId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Username")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TelegramId")
-                        .IsUnique();
-
-                    b.ToTable("users", "TgBot");
-                });
-
-            modelBuilder.Entity("DigiStore.TgBot.Domain.TgUserSession", b =>
+            modelBuilder.Entity("DigiStore.TgBot.Domain.TgSession", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -156,13 +112,19 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
                     b.Property<decimal?>("PendingTopUpAmount")
                         .HasColumnType("numeric");
 
+                    b.Property<long?>("PendingTopUpChatId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("PendingTopUpMessageId")
+                        .HasColumnType("integer");
+
                     b.Property<long>("TelegramId")
                         .HasColumnType("bigint");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.ComplexProperty(typeof(Dictionary<string, object>), "CachedProfile", "DigiStore.TgBot.Domain.TgUserSession.CachedProfile#CachedUserProfileVO", b1 =>
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "CachedProfile", "DigiStore.TgBot.Domain.TgSession.CachedProfile#CachedUserProfileVO", b1 =>
                         {
                             b1.Property<decimal>("Balance")
                                 .HasPrecision(18, 2);
@@ -209,7 +171,48 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
 
                     b.HasIndex("TelegramId");
 
-                    b.ToTable("sessions", "TgBot");
+                    b.ToTable("Sessions", "TgBot");
+                });
+
+            modelBuilder.Entity("DigiStore.TgBot.Domain.TgUser", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("TelegramId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Username")
+                        .HasColumnType("text");
+
+                    b.HasKey("UserId");
+
+                    b.HasIndex("TelegramId")
+                        .IsUnique();
+
+                    b.ToTable("Users", "TgBot");
                 });
 #pragma warning restore 612, 618
         }

@@ -88,9 +88,8 @@ public class UpdateHandler
 
 						var tgUser = new TgUser
 						{
-							Id = Guid.NewGuid(),
-							TelegramId = userDto.TelegramId,
 							UserId = userDto.Id,
+							TelegramId = userDto.TelegramId,
 							FirstName = firstName ?? string.Empty,
 							LastName = lastName ?? string.Empty,
 							Username = username,
