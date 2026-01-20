@@ -4,11 +4,10 @@ using DigiStore.SharedKernel;
 using DigiStore.SharedKernel.Extensions;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
+using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
-using DigiStore.TgBot.Domain;
 using DigiStore.TgBot.Domain.ValueObjects;
 using Microsoft.Extensions.Logging;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -29,7 +28,7 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 	
 
 	public LanguageSelection(
-		ITelegramBotClient botClient,
+		IBotAPIClient botClient,
 		IProfileService profileService,
 		ISessionService sessionService,
 		ILocalizationService localizationService,
@@ -124,29 +123,22 @@ public class LanguageSelection : BaseHandler, ICallbackQueryHandler
 		var keyboard = GetProfileKeyboard(langCode);
 
 
-		try
-		{
-			await _botClient.EditMessageText(
-				callbackQuery.Message.Chat.Id,
-				callbackQuery.Message.MessageId,
-				profileText,
-				parseMode: ParseMode.Html,
-				replyMarkup: keyboard,
-				cancellationToken: token);
+		var editResult = await _botClient.EditMessageTextAsync(
+			callbackQuery.Message.Chat.Id,
+			callbackQuery.Message.MessageId,
+			profileText,
+			parseMode: ParseMode.Html,
+			replyMarkup: keyboard,
+			cancellationToken: token);
 
-			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: token);
-
-			_logger.LogInformation(
-				"Profile shown after language selection for user: {UserId}",
-				session.UserId);
-		}
-		catch (Exception ex)
+		if (editResult.IsFailure)
 		{
-			_logger.LogError(ex, "Error in LanguageSelectionCallbackHandler");
-			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
-			return Error.Failure("callback.langselect.error", "Error in LanguageSelectionCallbackHandler");
+			_logger.LogError("Error in LanguageSelectionCallbackHandler");
+			return await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
 		}
 
-		return Result.Success<Error>();
+		_logger.LogInformation("Profile shown after language selection for user: {UserId}", session.UserId);
+
+		return await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: token);
 	}
 }

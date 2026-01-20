@@ -4,10 +4,10 @@ using DigiStore.SharedKernel;
 using DigiStore.SharedKernel.Extensions;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
+using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.TgBot.Domain.ValueObjects;
 using Microsoft.Extensions.Logging;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace DigiStore.TgBot.Application.Handlers.Commands;
@@ -26,7 +26,7 @@ public class Start : BaseHandler, ICommandHandler
 
 
 	public Start(
-		ITelegramBotClient botClient,
+		IBotAPIClient botClient,
 		ITgUserService userService,
 		ISessionService sessionService,
 		IProfileService profileService,
@@ -92,19 +92,20 @@ public class Start : BaseHandler, ICommandHandler
 			// Send greeting and language selection
 			var sendLangResult = await SendLanguageSelection(message.Chat.Id, session.LangCode, isStartCommand: true, token);
 			if (sendLangResult.IsFailure)
-			{
 				return sendLangResult.Error;
-			}
 
 			// Update session - waiting for language selection
 			session.SetState(BotState.LanguageSelectionAwaiting);
-			await _sessionService.UpdateSessionAsync(session, token);
+
+			var updateResult = await _sessionService.UpdateSessionAsync(session, token);
+			if (updateResult.IsFailure)
+				return updateResult.Error;
 		}
 		else
 		{
 			// Existing user - show profile immediately
 			var profileResult = await _profileService.GetFullProfileAsync(user.Id, telegramId, token);
-			
+
 			if (profileResult.IsFailure)
 			{
 				await SendErrorMessage(message.Chat.Id, _localService.GetMessage(LocalKeys.Errors.Occurred, session.LangCode), token);
@@ -132,31 +133,29 @@ public class Start : BaseHandler, ICommandHandler
 			};
 
 			session.SetState(BotState.ProfileViewing);
-			await _sessionService.UpdateSessionAsync(session, token);
+			var updateResult = await _sessionService.UpdateSessionAsync(session, token);
+			if (updateResult.IsFailure)
+				return updateResult.Error;
 
 			var profileText = _profileService.FormatProfileText(profile, session.LangCode);
 			var keyboard = GetProfileKeyboard(session.LangCode);
 
-			try
+			var sendResult = await _botClient.SendMessageAsync(
+				message.Chat.Id,
+				profileText,
+				parseMode: Telegram.Bot.Types.Enums.ParseMode.Html,
+				replyMarkup: keyboard,
+				cancellationToken: token);
+
+			if (sendResult.IsFailure)
 			{
-				await _botClient.SendMessage(
-					message.Chat.Id,
-					profileText,
-					parseMode: Telegram.Bot.Types.Enums.ParseMode.Html,
-					replyMarkup: keyboard,
-					cancellationToken: token);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error in StartCommandHandler");
-				await SendErrorMessage(message.Chat.Id, "An error occurred", token);
-				return Error.Failure("command.handler.start", "Error in StartCommandHandler");
+				_logger.LogError("Failed to send profile message to user {TelegramId}", telegramId);
+				return await SendErrorMessage(message.Chat.Id, "An error occurred", token);
 			}
 
 			_logger.LogInformation("User initialized: TelegramId: {TelegramId}, UserId: {UserId}",
 				telegramId, user.Id);
 		}
-
 		return Result.Success<Error>();
 	}
 }

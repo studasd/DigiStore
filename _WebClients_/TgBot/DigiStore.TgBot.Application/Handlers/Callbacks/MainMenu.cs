@@ -3,9 +3,9 @@ using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
+using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace DigiStore.TgBot.Application.Handlers.Callbacks;
@@ -23,7 +23,7 @@ public class MainMenu : BaseHandler, ICallbackQueryHandler
 
 
 	public MainMenu(
-		ITelegramBotClient botClient,
+		IBotAPIClient botClient,
 		ISessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<MainMenu> logger)
@@ -55,24 +55,19 @@ public class MainMenu : BaseHandler, ICallbackQueryHandler
 		var keyboard = GetMainMenuKeyboard(languageCode);
 
 
-		try
-		{
-			await _botClient.EditMessageText(
-				callbackQuery.Message.Chat.Id,
-				callbackQuery.Message.MessageId,
-				text,
-				replyMarkup: keyboard,
-				cancellationToken: token);
+		var editResult = await _botClient.EditMessageTextAsync(
+			callbackQuery.Message.Chat.Id,
+			callbackQuery.Message.MessageId,
+			text,
+			replyMarkup: keyboard,
+			cancellationToken: token);
 
-			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: token);
-		}
-		catch (Exception ex)
+		if (editResult.IsFailure)
 		{
-			_logger.LogError(ex, "Error in MainMenuCallbackHandler");
-			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
-			return Error.Failure("callback.mainmenu.error", "Error in MainMenuCallbackHandler");
+			_logger.LogError("Error in MainMenuCallbackHandler");
+			return await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
 		}
 
-		return Result.Success<Error>();
+		return await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: token);
 	}
 }

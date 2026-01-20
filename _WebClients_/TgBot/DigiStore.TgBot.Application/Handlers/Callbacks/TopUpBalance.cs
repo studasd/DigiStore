@@ -4,9 +4,9 @@ using DigiStore.SharedKernel;
 using DigiStore.SharedKernel.Extensions;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
+using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -28,7 +28,7 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 
 
 	public TopUpBalance(
-		ITelegramBotClient botClient,
+		IBotAPIClient botClient,
 		ISessionService sessionService,
 		ILocalizationService localizationService,
 		IWalletService walletService,
@@ -108,26 +108,22 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 		});
 
 
+		var editResult = await _botClient.EditMessageTextAsync(
+			editChatId,
+			editMessageId,
+			text,
+			parseMode: ParseMode.Html,
+			replyMarkup: keyboard,
+			cancellationToken: token);
 
-		try
+		if (editResult.IsFailure)
 		{
-			await _botClient.EditMessageText(
-				editChatId,
-				editMessageId,
-				text,
-				parseMode: ParseMode.Html,
-				replyMarkup: keyboard,
-				cancellationToken: token);
-
-			_logger.LogInformation("Top up balance for user: {UserId}", session.UserId);
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error in LanguageSelectionCallbackHandler");
-			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
-			return Error.Failure("callback.langselect.error", "Error in LanguageSelectionCallbackHandler");
+			_logger.LogError("Failed to edit message in TopUpBalanceCallbackHandler for user: {UserId}", session.UserId);
+			return await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
 		}
 
-		return Result.Success<Error>();
+		_logger.LogInformation("Top up balance for user: {UserId}", session.UserId);
+
+		return await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: token);
 	}
 }

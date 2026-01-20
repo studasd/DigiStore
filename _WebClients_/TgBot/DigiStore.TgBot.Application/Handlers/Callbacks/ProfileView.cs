@@ -1,11 +1,10 @@
 using CSharpFunctionalExtensions;
 using DigiStore.Enums;
 using DigiStore.SharedKernel;
-using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
+using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -25,7 +24,7 @@ public class ProfileView : BaseHandler, ICallbackQueryHandler
 
 
 	public ProfileView(
-		ITelegramBotClient botClient,
+		IBotAPIClient botClient,
 		IProfileService profileService,
 		ISessionService sessionService,
 		ILocalizationService localizationService,
@@ -69,25 +68,21 @@ public class ProfileView : BaseHandler, ICallbackQueryHandler
 		var profileText = _profileService.FormatProfileText(profile, languageCode);
 		var keyboard = GetProfileKeyboard(languageCode);
 
-		try
-		{
-			await _botClient.EditMessageText(
-				callbackQuery.Message.Chat.Id,
-				callbackQuery.Message.MessageId,
-				profileText,
-				parseMode: ParseMode.Html,
-				replyMarkup: keyboard,
-				cancellationToken: token);
 
-			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: token);
-		}
-		catch (Exception ex)
+		var editResult = await _botClient.EditMessageTextAsync(
+			callbackQuery.Message.Chat.Id,
+			callbackQuery.Message.MessageId,
+			profileText,
+			parseMode: ParseMode.Html,
+			replyMarkup: keyboard,
+			cancellationToken: token);
+
+		if (editResult.IsFailure)
 		{
-			_logger.LogError(ex, "Error in ProfileViewCallbackHandler");
-			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
-			return Error.Failure("callback.profile.error", "Error in ProfileViewCallbackHandler");
+			_logger.LogError("Error in ProfileViewCallbackHandler");
+			return await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
 		}
 
-		return Result.Success<Error>();
+		return await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: token);
 	}
 }

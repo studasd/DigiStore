@@ -1,10 +1,8 @@
-using DigiStore.TgBot.Application.Options;
+using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Updates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -28,48 +26,44 @@ public class BotInitializerHostedService : BackgroundService
         using var scope = _services.CreateScope();
         var sp = scope.ServiceProvider;
 
-        var botClient = sp.GetRequiredService<ITelegramBotClient>();
-        var telegramOptions = sp.GetRequiredService<IOptions<TelegramOptions>>().Value;
+        var botClient = sp.GetRequiredService<IBotAPIClient>();
+        //var telegramOptions = sp.GetRequiredService<IOptions<TelegramOptions>>().Value;
 
         // Set Commands
-        try
-        {
-			var commands = new BotCommand[]
-		    {
-			    new() { Command = "start", Description = "Start the bot" },
-			    new() { Command = "profile", Description = "Show your profile" },
-			    new() { Command = "balance", Description = "Check your balance" },
-			    new() { Command = "language", Description = "Change language" },
-			    new() { Command = "catalog", Description = "Browse catalog" },
-			    new() { Command = "orders", Description = "View your orders" },
-			    new() { Command = "help", Description = "Get help" },
-		    };
+		var commands = new BotCommand[]
+		{
+			new() { Command = "start", Description = "Start the bot" },
+			new() { Command = "profile", Description = "Show your profile" },
+			new() { Command = "balance", Description = "Check your balance" },
+			new() { Command = "language", Description = "Change language" },
+			new() { Command = "catalog", Description = "Browse catalog" },
+			new() { Command = "orders", Description = "View your orders" },
+			new() { Command = "help", Description = "Get help" },
+		};
 
-			await botClient.SetMyCommands(commands, cancellationToken: stoppingToken);
-            _logger.LogInformation("Bot commands set successfully");
-        }
-        catch (Exception ex)
+		var setCommandsResult = await botClient.SetMyCommandsAsync(commands, cancellationToken: stoppingToken);
+
+        if (setCommandsResult.IsSuccess)
         {
-            _logger.LogError(ex, "Failed to set bot commands");
-        }
+			_logger.LogInformation("Bot commands set successfully");
+		}
 
 
         // Set Webhook
-        if (!string.IsNullOrEmpty(telegramOptions.WebhookUrl) && telegramOptions.IsWebhook)
+        if (!string.IsNullOrEmpty(botClient.WebhookUrl) && botClient.IsWebhook)
         {
-            try
-            {
-                await botClient.SetWebhook(
-                    $"{telegramOptions.WebhookUrl}",
-                    allowedUpdates: Array.Empty<UpdateType>(),
-					cancellationToken: stoppingToken);
+            var setWebhookResult = await botClient.SetWebhookAsync(
+                $"{botClient.WebhookUrl}",
+                allowedUpdates: Array.Empty<UpdateType>(),
+				cancellationToken: stoppingToken);
 
-                _logger.LogInformation("Webhook configured: {WebhookUrl}", telegramOptions.WebhookUrl);
-            }
-            catch (Exception ex)
+            if (setWebhookResult.IsFailure)
             {
-                _logger.LogError(ex, "Failed to set webhook");
-            }
+				_logger.LogError("Failed to set webhook: {Message}", setWebhookResult.Error.GetMessage());
+                return;
+			}
+
+            _logger.LogInformation("Webhook configured: {WebhookUrl}", botClient.WebhookUrl);
 
             // Hosted webhook mode: nothing else to do here - ASP.NET will receive POSTs at the mapped endpoint
             return;
@@ -83,7 +77,11 @@ public class BotInitializerHostedService : BackgroundService
 
         try
         {
-            await botClient.DeleteWebhook(cancellationToken: stoppingToken);
+            var deleteResult = await botClient.DeleteWebhookAsync(cancellationToken: stoppingToken);
+            if (deleteResult.IsFailure)
+            {
+                _logger.LogWarning("Failed to delete webhook: {Error}", deleteResult.Error);
+			}
 
             var updateHandlerServ = sp.GetRequiredService<UpdateHandler>();
             var logger = sp.GetRequiredService<ILogger<BotInitializerHostedService>>();

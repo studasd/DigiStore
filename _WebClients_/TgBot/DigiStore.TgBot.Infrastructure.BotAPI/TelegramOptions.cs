@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DigiStore.TgBot.Application.Options;
+namespace DigiStore.TgBot.Infrastructure.BotAPI;
 
 public class TelegramOptions
 {

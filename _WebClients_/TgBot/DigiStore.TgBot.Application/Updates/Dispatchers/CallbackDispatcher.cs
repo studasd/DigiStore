@@ -1,37 +1,32 @@
 using CSharpFunctionalExtensions;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
+using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
-using DigiStore.TgBot.Application.Options;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace DigiStore.TgBot.Application.Updates.Dispatchers;
 
 public sealed class CallbackDispatcher : IUpdateDispatcher
 {
-	private readonly ITelegramBotClient _botClient;
+	private readonly IBotAPIClient _botClient;
 	private readonly IServiceProvider _serviceProvider;
 	private readonly ISessionService _sessionService;
 	private readonly HandlerCollections _registry;
-	private readonly TelegramOptions _tgOptions;
 	private readonly ILogger<CallbackDispatcher> _logger;
 
 	public CallbackDispatcher(
-		ITelegramBotClient botClient,
+		IBotAPIClient botClient,
 		IServiceProvider serviceProvider,
 		ISessionService sessionService,
 		HandlerCollections registry,
-		IOptions<TelegramOptions> options,
 		ILogger<CallbackDispatcher> logger)
 	{
 		_botClient = botClient;
 		_serviceProvider = serviceProvider;
 		_sessionService = sessionService;
 		_registry = registry;
-		_tgOptions = options.Value;
 		_logger = logger;
 	}
 
@@ -46,9 +41,9 @@ public sealed class CallbackDispatcher : IUpdateDispatcher
 		if (callbackQuery.Data == null)
 			return Error.NotFound("handle.callback", "No data found for callbackQuery");
 
-		if (_tgOptions.IsDebugShortResponse)
+		if (_botClient.IsDebugShortResponse)
 		{
-			await _botClient.AnswerCallbackQuery(callbackQuery.Id, "DEBUG режим. Ответ получен.", cancellationToken: token);
+			await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, "DEBUG режим. Ответ получен.", cancellationToken: token);
 		}
 
 		var callbackData = callbackQuery.Data;
@@ -70,8 +65,7 @@ public sealed class CallbackDispatcher : IUpdateDispatcher
 		}
 
 		_logger.LogWarning("No handler found for callback: {CallbackData}", callbackData);
-		await _botClient.AnswerCallbackQuery(callbackQuery.Id, "Не реализовано", cancellationToken: token);
-		return Result.Success<Error>();
+		return await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, "Не реализовано", cancellationToken: token);
 	}
 
 	private async Task<UnitResult<Error>> ExecuteAsync(CallbackQuery callbackQuery, Type handlerType, CancellationToken token)

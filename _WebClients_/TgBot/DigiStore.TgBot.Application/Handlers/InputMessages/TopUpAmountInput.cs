@@ -3,9 +3,9 @@ using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
 using DigiStore.TgBot.Application.Handlers.Callbacks;
+using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -26,7 +26,7 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 	private readonly ILogger<TopUpAmountInput> _logger;
 
 	public TopUpAmountInput(
-		ITelegramBotClient botClient,
+		IBotAPIClient botClient,
 		ISessionService sessionService,
 		ILocalizationService localizationService,
 		DigiStore.TgBot.Application.Handlers.Callbacks.TopUpBalance topUpBalance,
@@ -67,20 +67,23 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 		{
 			if (userMessageIdToDelete.HasValue)
 			{
-				try
-				{
-					await _botClient.DeleteMessage(message.Chat.Id, userMessageIdToDelete.Value, cancellationToken: token);
-				}
-				catch { }
+				await _botClient.DeleteMessageAsync(message.Chat.Id, userMessageIdToDelete.Value, cancellationToken: token);
 			}
+
 			if (editMessageId.HasValue)
 			{
-				await _botClient.EditMessageText(
+				var editResult = await _botClient.EditMessageTextAsync(
 					editChatId,
 					editMessageId.Value,
 					"Введите корректную сумму числом (больше 0).",
 					replyMarkup: keyboard,
 					cancellationToken: token);
+
+				if (editResult.IsFailure)
+				{
+					_logger.LogError("Error in MainMenuCallbackHandler");
+					return editResult.Error;
+				}
 			}
 			return Result.Success<Error>();
 		}
@@ -89,27 +92,34 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 		{
 			if (userMessageIdToDelete.HasValue)
 			{
-				try
-				{
-					await _botClient.DeleteMessage(message.Chat.Id, userMessageIdToDelete.Value, cancellationToken: token);
-				}
-				catch { }
+				await _botClient.DeleteMessageAsync(message.Chat.Id, userMessageIdToDelete.Value, cancellationToken: token);
 			}
+
 			if (editMessageId.HasValue)
 			{
-				await _botClient.EditMessageText(
+				var editResult = await _botClient.EditMessageTextAsync(
 					editChatId,
 					editMessageId.Value,
 					"Не удалось определить способ оплаты. Откройте баланс и выберите агрегатор заново.",
 					replyMarkup: keyboard,
 					cancellationToken: token);
+
+				if (editResult.IsFailure)
+				{
+					_logger.LogError("Error in MainMenuCallbackHandler");
+				}
 			}
+
 			session.SetState(BotState.BalanceViewing);
 			session.PendingTopUpAmount = null;
 			session.PendingTopUpAggregator = null;
 			session.PendingTopUpChatId = null;
 			session.PendingTopUpMessageId = null;
-			await _sessionService.UpdateSessionAsync(session, token);
+
+			var updateResult = await _sessionService.UpdateSessionAsync(session, token);
+			if (updateResult.IsFailure)
+				return updateResult.Error;
+
 			return Result.Success<Error>();
 		}
 
@@ -119,11 +129,7 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 
 		if (userMessageIdToDelete.HasValue)
 		{
-			try
-			{
-				await _botClient.DeleteMessage(message.Chat.Id, userMessageIdToDelete.Value, cancellationToken: token);
-			}
-			catch { }
+			await _botClient.DeleteMessageAsync(message.Chat.Id, userMessageIdToDelete.Value, cancellationToken: token);
 		}
 
 		var cb = new CallbackQuery

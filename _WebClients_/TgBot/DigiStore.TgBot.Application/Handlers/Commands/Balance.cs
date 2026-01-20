@@ -2,9 +2,9 @@ using CSharpFunctionalExtensions;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
+using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -23,7 +23,7 @@ public class Balance : BaseHandler, ICommandHandler
 
 
 	public Balance(
-		ITelegramBotClient botClient,
+		IBotAPIClient botClient,
 		IProfileService profileService,
 		ISessionService sessionService,
 		ILocalizationService localizationService,
@@ -71,20 +71,17 @@ public class Balance : BaseHandler, ICommandHandler
 
 		var keyboard = GetBackToMainMenuKeyboard(langCode);
 
-		try
+		var sendResult = await _botClient.SendMessageAsync(
+			chatId,
+			text,
+			parseMode: ParseMode.Html,
+			replyMarkup: keyboard,
+			cancellationToken: token);
+
+		if (sendResult.IsFailure)
 		{
-			await _botClient.SendMessage(
-				chatId,
-				text,
-				parseMode: ParseMode.Html,
-				replyMarkup: keyboard,
-				cancellationToken: token);
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error in BalanceCommandHandler");
-			await SendErrorMessage(message.Chat.Id, "An error occurred", token);
-			return Error.Failure("command.handler.balance", "Error in BalanceCommandHandler");
+			_logger.LogError("Failed to send balance message to chat {ChatId}", chatId);
+			return await SendErrorMessage(chatId, _localService.GetMessage(LocalKeys.Errors.Occurred, langCode), token);
 		}
 
 		return Result.Success<Error>();

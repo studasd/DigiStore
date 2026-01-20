@@ -1,6 +1,4 @@
-﻿using DigiStore.Framework.Endpoints;
-using DigiStore.Framework.Proxies;
-using DigiStore.TgBot.Application.Handlers.Adstracts;
+﻿using DigiStore.TgBot.Application.Handlers.Adstracts;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.TgBot.Application.Options;
 using DigiStore.TgBot.Application.Services;
@@ -8,8 +6,6 @@ using DigiStore.TgBot.Application.Updates;
 using DigiStore.TgBot.Application.Updates.Dispatchers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Telegram.Bot;
 
 
 namespace DigiStore.TgBot.Application;
@@ -19,36 +15,6 @@ public static class DependencyInjectionExtensions
 	public static IServiceCollection AddTgBotApplication(this IServiceCollection services, IConfiguration configuration)
 	{
 		services.Configure<ServiceOptions>(configuration.GetSection(nameof(ServiceOptions)));
-		services.Configure<TelegramOptions>(configuration.GetSection(nameof(TelegramOptions)));
-
-		//// Bind ServiceOptions to the DI system so it can be resolved via IOptions<ServiceOptions>
-		//services.Configure<ServiceOptions>(configuration);
-
-		services.AddHttpClient("TelegramBotProxyClient")
-			.ConfigurePrimaryHttpMessageHandler(sp =>
-			{
-				var telegramOptions = sp.GetRequiredService<IOptions<TelegramOptions>>().Value;
-				var proxyTg = telegramOptions.Proxy;
-
-				return HProxy.GetClientHandler(proxyTg);
-			});
-
-
-		services.AddScoped<ITelegramBotClient>(x =>
-		{
-			var telegramOptions = x.GetRequiredService<IOptions<TelegramOptions>>().Value;
-			var token = telegramOptions.BotToken;
-
-			if (!String.IsNullOrWhiteSpace(telegramOptions.Proxy))
-			{
-				var clientFactory = x.GetRequiredService<IHttpClientFactory>();
-				var client = clientFactory.CreateClient("TelegramBotProxyClient");
-				return new TelegramBotClient(token, client);
-			}
-
-			return new TelegramBotClient(token);
-		});
-
 
 		services.AddSingleton<HandlerCollections>();
 		services.AddScoped<CommandDispatcher>();

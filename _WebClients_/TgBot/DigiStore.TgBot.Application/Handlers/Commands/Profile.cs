@@ -3,10 +3,10 @@ using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
+using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.TgBot.Domain.ValueObjects;
 using Microsoft.Extensions.Logging;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -25,7 +25,7 @@ public class Profile : BaseHandler, ICommandHandler
 
 
 	public Profile(
-		ITelegramBotClient botClient,
+		IBotAPIClient botClient,
 		IProfileService profileService,
 		ISessionService sessionService,
 		ILocalizationService localizationService,
@@ -93,24 +93,20 @@ public class Profile : BaseHandler, ICommandHandler
 		var profileText = _profileService.FormatProfileText(profile, languageCode);
 		var keyboard = GetProfileKeyboard(languageCode);
 
-		try
-		{
-			await _botClient.SendMessage(
+		var sendResult = await _botClient.SendMessageAsync(
 				chatId,
 				profileText,
 				parseMode: ParseMode.Html,
 				replyMarkup: keyboard,
 				cancellationToken: token);
 
-			_logger.LogInformation("Profile sent for user: {UserId}, TelegramId: {TelegramId}", userId, telegramId);
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error in ProfileCommandHandler");
+		if(sendResult.IsFailure) 
+		{ 
 			await SendErrorMessage(message.Chat.Id, "An error occurred", token);
 			return Error.Failure("command.handler.profile", "Error in ProfileCommandHandler");
 		}
 
+		_logger.LogInformation("Profile sent for user: {UserId}, TelegramId: {TelegramId}", userId, telegramId);
 		return Result.Success<Error>();
 	}
 }

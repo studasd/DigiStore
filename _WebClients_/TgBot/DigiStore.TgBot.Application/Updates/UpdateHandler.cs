@@ -4,7 +4,6 @@ using DigiStore.TgBot.Application.Updates.Dispatchers;
 using DigiStore.TgBot.Domain;
 using DigiStore.TgBot.Domain.ValueObjects;
 using Microsoft.Extensions.Logging;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace DigiStore.TgBot.Application.Updates;
@@ -17,7 +16,6 @@ namespace DigiStore.TgBot.Application.Updates;
 /// </summary>
 public class UpdateHandler
 {
-	private readonly ITelegramBotClient _botClient;
 	private readonly ISessionService _sessionService;
 	private readonly ITgUserService _userService;
 	private readonly ITgUserRepository _userRepository;
@@ -25,7 +23,6 @@ public class UpdateHandler
     private readonly ILogger<UpdateHandler> _logger;
 
 	public UpdateHandler(
-		ITelegramBotClient botClient,
 		ISessionService sessionService,
 		ITgUserService userService,
 		ITgUserRepository userRepository,
@@ -33,7 +30,6 @@ public class UpdateHandler
 		ILogger<UpdateHandler> logger,
 		HandlerCollections registry)
     {
-		_botClient = botClient;
 		_sessionService = sessionService;
 		_userService = userService;
 		_userRepository = userRepository;

@@ -3,9 +3,9 @@ using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
+using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace DigiStore.TgBot.Application.Handlers.Commands;
@@ -22,7 +22,7 @@ public class Language : BaseHandler, ICommandHandler
 
 
 	public Language(
-		ITelegramBotClient botClient,
+		IBotAPIClient botClient,
 		ISessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<Language> logger)
@@ -56,13 +56,14 @@ public class Language : BaseHandler, ICommandHandler
 		var sendLangResult = await SendLanguageSelection(chatId, currentLanguage, isStartCommand: false, token);
 
 		if (sendLangResult.IsFailure)
-		{
 			return sendLangResult.Error;
-		}
 
 		// Update session
 		session.SetState(BotState.LanguageChangeAwaiting);
-		await _sessionService.UpdateSessionAsync(session, token);
+
+		var updateResult = await _sessionService.UpdateSessionAsync(session, token);
+		if(updateResult.IsFailure)
+			return updateResult.Error;
 
 		_logger.LogInformation("Language selection sent for user: {TelegramId}", telegramId);
 		return Result.Success<Error>();

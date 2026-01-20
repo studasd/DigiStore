@@ -4,9 +4,9 @@ using DigiStore.SharedKernel;
 using DigiStore.SharedKernel.Extensions;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
+using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -25,7 +25,7 @@ public class TopUpAmountRequest : BaseHandler, ICallbackQueryHandler
 	private readonly ILogger<TopUpAmountRequest> _logger;
 
 	public TopUpAmountRequest(
-		ITelegramBotClient botClient,
+		IBotAPIClient botClient,
 		ISessionService sessionService,
 		ILocalizationService localizationService,
 		ILogger<TopUpAmountRequest> logger)
@@ -74,25 +74,21 @@ public class TopUpAmountRequest : BaseHandler, ICallbackQueryHandler
 			},
 		});
 
-		try
-		{
-			await _botClient.EditMessageText(
-				callbackQuery.Message.Chat.Id,
-				callbackQuery.Message.MessageId,
-				text,
-				parseMode: ParseMode.Html,
-				replyMarkup: keyboard,
-				cancellationToken: token);
 
-			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: token);
-		}
-		catch (Exception ex)
+		var editResult = await _botClient.EditMessageTextAsync(
+			callbackQuery.Message.Chat.Id,
+			callbackQuery.Message.MessageId,
+			text,
+			parseMode: ParseMode.Html,
+			replyMarkup: keyboard,
+			cancellationToken: token);
+
+		if (editResult.IsFailure)
 		{
-			_logger.LogError(ex, "Error in TopUpAmountRequest");
-			await AnswerCallbackQueryWithError(callbackQuery.Id, langCode, token);
-			return Error.Failure("callback.topupamount.error", "Error in TopUpAmountRequest");
+			_logger.LogWarning("Failed to edit message in TopUpAmountRequest: {Reason}", editResult.Error.GetMessage());
+			return await AnswerCallbackQueryWithError(callbackQuery.Id, langCode, token);
 		}
 
-		return Result.Success<Error>();
+		return await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: token);
 	}
 }

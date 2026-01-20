@@ -4,9 +4,9 @@ using DigiStore.SharedKernel;
 using DigiStore.SharedKernel.Extensions;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
+using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace DigiStore.TgBot.Application.Handlers.Callbacks;
@@ -26,7 +26,7 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 	
 
 	public LanguageChange(
-		ITelegramBotClient botClient,
+		IBotAPIClient botClient,
 		IProfileService profileService,
 		ISessionService sessionService,
 		ILocalizationService localizationService,
@@ -74,15 +74,19 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 			var keyboard = GetLanguageSelectionKeyboard(CallbackData);
 			var text = _localService.GetMessage(LocalKeys.Navigations.SelectLanguage, currentLanguage);
 
-			await _botClient.EditMessageText(
+			var editResult = await _botClient.EditMessageTextAsync(
 				callbackQuery.Message.Chat.Id,
 				callbackQuery.Message.MessageId,
 				text,
 				replyMarkup: keyboard,
 				cancellationToken: token);
+			if (editResult.IsFailure)
+			{
+				_logger.LogError("Error editing message for language selection: {Error}", editResult.Error);
+				return await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
+			}
 
-			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: token);
-			return Result.Success<Error>();
+			return await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: token);
 		}
 
 		// Change language
@@ -92,15 +96,16 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 			currentLanguage, languageCode, session.UserId);
 
 		// Update user language
-		var updateResult = await _profileService.UpdateUserLanguageAsync(
+		var updateResult2 = await _profileService.UpdateUserLanguageAsync(
 			session.UserId,
 			languageCode,
 			token);
 
-		if (updateResult.IsFailure)
+		if (updateResult2.IsFailure)
 		{
+			_logger.LogError("Error updating user language: {Error}", updateResult2.Error);
 			await AnswerCallbackQueryWithError(callbackQuery.Id, currentLanguage, token);
-			return updateResult.Error;
+			return updateResult2.Error;
 		}
 
 		// Update session
@@ -111,28 +116,23 @@ public class LanguageChange : BaseHandler, ICallbackQueryHandler
 		var confirmText = _localService.GetMessage(LocalKeys.Navigations.LanguageChanged, languageCode);
 		var keyboard2 = GetMainMenuKeyboard(languageCode);
 
-		try
-		{
-			await _botClient.EditMessageText(
-				callbackQuery.Message.Chat.Id,
-				callbackQuery.Message.MessageId,
-				confirmText,
-				replyMarkup: keyboard2,
-				cancellationToken: token);
 
-			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: token);
+		var editResult2 = await _botClient.EditMessageTextAsync(
+			callbackQuery.Message.Chat.Id,
+			callbackQuery.Message.MessageId,
+			confirmText,
+			replyMarkup: keyboard2,
+			cancellationToken: token);
 
-			_logger.LogInformation(
-				"Language updated successfully for user: {UserId}",
-				session.UserId);
-		}
-		catch (Exception ex)
+		if (editResult2.IsFailure)
 		{
-			_logger.LogError(ex, "Error in LanguageChangeCallbackHandler");
-			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
-			return Error.Failure("callback.langchange.error", "Error in LanguageChangeCallbackHandler");
+			_logger.LogError("Error editing message after language change: {Error}", editResult2.Error);
+			return await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
 		}
 
-		return Result.Success<Error>();
+		
+		_logger.LogInformation("Language updated successfully for user: {UserId}", session.UserId);
+
+		return await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: token);
 	}
 }

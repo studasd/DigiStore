@@ -3,9 +3,9 @@ using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
+using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -26,7 +26,7 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 	
 
 	public BalanceView(
-		ITelegramBotClient botClient,
+		IBotAPIClient botClient,
 		IWalletService walletService,
 		ISessionService sessionService,
 		ILocalizationService localizationService,
@@ -51,6 +51,7 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 
 		if(sessionResult.IsFailure)
 		{
+			_logger.LogError("Failed to get session in BalanceViewCallbackHandler: {Error}", sessionResult.Error.GetMessage());
 			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
 			return sessionResult.Error;
 		}
@@ -65,6 +66,7 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 
 		if (walletResult.IsFailure)
 		{
+			_logger.LogError("Failed to get wallet in BalanceViewCallbackHandler: {Error}", walletResult.Error.GetMessage());
 			await AnswerCallbackQueryWithError(callbackQuery.Id, langCode, token);
 			return walletResult.Error;
 		}
@@ -82,25 +84,20 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 
 		var keyboard = GetBackToMainMenuKeyboard(langCode);
 
-		try
-		{
-			await _botClient.EditMessageText(
-				callbackQuery.Message.Chat.Id,
-				callbackQuery.Message.MessageId,
-				text,
-				parseMode: ParseMode.Html,
-				replyMarkup: keyboard,
-				cancellationToken: token);
+		var editResult = await _botClient.EditMessageTextAsync(
+			callbackQuery.Message.Chat.Id,
+			callbackQuery.Message.MessageId,
+			text,
+			parseMode: ParseMode.Html,
+			replyMarkup: keyboard,
+			cancellationToken: token);
 
-			await _botClient.AnswerCallbackQuery(callbackQuery.Id, cancellationToken: token);
-		}
-		catch (Exception ex)
+		if (editResult.IsFailure)
 		{
-			_logger.LogError(ex, "Error in BalanceViewCallbackHandler");
-			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
-			return Error.Failure("callback.balance.error", "Error in BalanceViewCallbackHandler");
+			_logger.LogError("Failed to edit message in BalanceViewCallbackHandler: {Error}", editResult.Error.GetMessage());
+			return await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
 		}
 
-		return Result.Success<Error>();
+		return await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, cancellationToken: token);
 	}
 }

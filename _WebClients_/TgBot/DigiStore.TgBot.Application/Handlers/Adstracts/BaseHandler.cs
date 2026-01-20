@@ -2,9 +2,8 @@ using CSharpFunctionalExtensions;
 using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
+using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
-using Telegram.Bot;
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DigiStore.TgBot.Application.Handlers.Adstracts;
@@ -14,11 +13,11 @@ namespace DigiStore.TgBot.Application.Handlers.Adstracts;
 /// </summary>
 public abstract class BaseHandler
 {
-	protected readonly ITelegramBotClient _botClient;
+	protected readonly IBotAPIClient _botClient;
 	protected readonly ILocalizationService _localService;
 
 	protected BaseHandler(
-		ITelegramBotClient botClient,
+		IBotAPIClient botClient,
 		ILocalizationService localizationService)
 	{
 		_botClient = botClient;
@@ -28,30 +27,22 @@ public abstract class BaseHandler
 	/// <summary>
 	/// Отправляет сообщение об ошибке
 	/// </summary>
-	protected async Task SendErrorMessage(long chatId, string error, CancellationToken token = default)
+	protected async Task<UnitResult<Error>> SendErrorMessage(long chatId, string error, CancellationToken token = default)
 	{
-		try
-		{
-			await _botClient.SendMessage(chatId, $"❌ {error}", cancellationToken: token);
-		}
-		catch {	}
+		return await _botClient.SendMessageAsync(chatId, $"❌ {error}", cancellationToken: token);
 	}
 
 
 	/// <summary>
 	/// Отправляет ответ на callback query с ошибкой
 	/// </summary>
-	protected async Task AnswerCallbackQueryWithError(string callbackQueryId, LanguageCodes langCode, CancellationToken token = default)
+	protected async Task<UnitResult<Error>> AnswerCallbackQueryWithError(string callbackQueryId, LanguageCodes langCode, CancellationToken token = default)
 	{
-		try
-		{
-			await _botClient.AnswerCallbackQuery(
+		return await _botClient.AnswerCallbackQueryAsync(
 				callbackQueryId,
 				_localService.GetMessage(LocalKeys.Errors.Occurred, langCode),
 				showAlert: true,
 				cancellationToken: token);
-		}
-		catch { }
 	}
 
 
@@ -89,11 +80,8 @@ public abstract class BaseHandler
 		}
 
 
-		try
-		{
-			await _botClient.SendMessage(chatId, text, replyMarkup: keyboard, cancellationToken: token);
-		}
-		catch(Exception ex)
+		var sendResult = await _botClient.SendMessageAsync(chatId, text, replyMarkup: keyboard, cancellationToken: token);
+		if(sendResult.IsFailure)
 		{
 			await SendErrorMessage(chatId, "An error occurred", token);
 			return Error.Failure("bot.send.error", "Failed to send language selection message");
