@@ -10,6 +10,8 @@ public interface IWalletRepository
 
 	Task<Result<WalletDS, Error>> GetByIdAsync(Guid walletId, CancellationToken token);
 
+	Task<Result<WalletDS, Error>> GetByIdForUpdateAsync(Guid walletId, CancellationToken token);
+
 	Task<UnitResult<Error>> AddAsync(WalletDS wallet, CancellationToken token);
 
 	Task<UnitResult<Error>> UpdateAsync(WalletDS wallet, CancellationToken token);

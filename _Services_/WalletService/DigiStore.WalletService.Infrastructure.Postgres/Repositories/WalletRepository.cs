@@ -54,6 +54,21 @@ public class WalletRepository : IWalletRepository
 		return wallet;
 	}
 
+	public async Task<Result<WalletDS, Error>> GetByIdForUpdateAsync(Guid walletId, CancellationToken token)
+	{
+		FormattableString sql = $@"SELECT * FROM ""WalletService"".""Wallets"" WHERE ""Id"" = {walletId} FOR UPDATE";
+
+		var wallet = await _context.Wallets
+			.FromSqlInterpolated(sql)
+			.AsTracking()
+			.FirstOrDefaultAsync(token);
+
+		if (wallet == null)
+			return Error.NotFound("wallet.not", "Кошелек не найден");
+
+		return wallet;
+	}
+
 	public async Task<UnitResult<Error>> AddAsync(WalletDS wallet, CancellationToken token)
 	{
 		_context.Wallets.Add(wallet);

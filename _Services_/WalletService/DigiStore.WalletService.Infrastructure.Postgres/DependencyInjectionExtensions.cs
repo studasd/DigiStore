@@ -40,6 +40,7 @@ public static class DependencyInjectionExtensions
 		services.AddScoped<IWithdrawalRepository, WithdrawalRepository>();
 		services.AddScoped<IPaymentRepository, PaymentRepository>();
 		services.AddScoped<IPaymentRecurringRepository, PaymentRecurringRepository>();
+		services.AddScoped<IWalletUnitOfWork, WalletUnitOfWork>();
 
 		// Services
 

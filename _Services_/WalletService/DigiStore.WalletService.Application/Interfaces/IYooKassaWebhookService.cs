@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -8,5 +10,5 @@ public interface IYooKassaWebhookService
 {
 	bool VerifyWebhookSignature(string jsonBody, string signatureHeader);
 
-	Task ProcessWebhookAsync(string jsonBody, CancellationToken token);
+	Task<UnitResult<Error>> ProcessWebhookAsync(string jsonBody, CancellationToken token);
 }

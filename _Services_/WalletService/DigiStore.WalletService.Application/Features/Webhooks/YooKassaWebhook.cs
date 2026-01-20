@@ -27,6 +27,27 @@ public sealed class YooKassaWebhook : IEndpoint
 }
 
 
+public sealed class YooKassaWebhook2 : IEndpoint
+{
+	public void MapEndpoint(IEndpointRouteBuilder app)
+	{
+		app.MapPost("handle", async Task<EndpointCustomResult> (
+			[FromServices] YooKassaWebhookHandler handler,
+			CancellationToken token,
+			HttpContext context) =>
+		{
+			var Request = context.Request;
+
+			// Прочитать тело запроса
+			var bodyStream = new StreamReader(Request.Body);
+			var bodyContent = await bodyStream.ReadToEndAsync();
+
+			return await handler.Handle(context, token);
+		});
+	}
+}
+
+
 public sealed class YooKassaWebhookHandler : IWalletServiceHandler
 {
 	private readonly ILogger<YooKassaWebhookHandler> _logger;
@@ -74,10 +95,16 @@ public sealed class YooKassaWebhookHandler : IWalletServiceHandler
 			//}
 
 			// Обработать вебхук
-			await _yooKassaWebhookService.ProcessWebhookAsync(bodyContent, token);
+			var hookResult = await _yooKassaWebhookService.ProcessWebhookAsync(bodyContent, token);
+
+			if(hookResult.IsFailure)
+			{
+				_logger.LogError("YooKassa: Ошибка при обработке вебхука - {0}", hookResult.Error.GetMessage());
+				return new EndpointCustomResult(StatusCodes.Status500InternalServerError);
+				//return hookResult.Error;
+			}
 
 			_logger.LogInformation("YooKassa: Вебхук успешно обработан");
-
 			return new EndpointCustomResult(new { status = "success" });
 			//return Result.Success<Error>();
 

@@ -44,6 +44,21 @@ public class PaymentRepository : IPaymentRepository
         return payment;
     }
 
+	public async Task<Result<PaymentDS, Error>> GetByAggregatorIdForUpdateAsync(string aggregatorPaymentId, CancellationToken token)
+	{
+        FormattableString sql = $@"SELECT * FROM ""WalletService"".""Payments"" WHERE ""AggregatorPaymentId"" = {aggregatorPaymentId} FOR UPDATE";
+
+		var payment = await _context.Payments
+			.FromSqlInterpolated(sql)
+            .AsTracking()
+            .FirstOrDefaultAsync(token);
+
+        if (payment == null)
+            return Error.NotFound("payment.not_found", "Payment not found");
+
+        return payment;
+	}
+
     public async Task<Result<PaymentDS, Error>> GetByAggregatorIdAsync(string aggregatorPaymentId, CancellationToken token)
     {
         var payment = await _context.Payments
@@ -109,7 +124,7 @@ public class PaymentRepository : IPaymentRepository
 	/// <summary>
 	/// Отменить платеж
 	/// </summary>
-	public async Task<UnitResult<Error>> CancelPaymentAsync(Guid paymentId, string? reason = null, CancellationToken token = default)
+	public async Task<UnitResult<Error>> CancelPaymentAsync(Guid paymentId, string? errorMessage = null, string? paymentMethod = null, CancellationToken token = default)
 	{
 		var paymentResult = await GetByIdAsync(paymentId, token);
 		if (paymentResult.IsFailure)
@@ -117,7 +132,7 @@ public class PaymentRepository : IPaymentRepository
 
 		var payment = paymentResult.Value;
 
-		payment.MarkAsCanceled(reason);
+		payment.MarkAsCanceled(errorMessage, paymentMethod);
 
 		var updateResult = await UpdateAsync(payment, token);
         if (updateResult.IsFailure)

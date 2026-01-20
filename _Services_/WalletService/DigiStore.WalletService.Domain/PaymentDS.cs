@@ -95,10 +95,11 @@ public class PaymentDS
 	}
 
 	/// <summary>Отметить платеж как отмененный</summary>
-	public void MarkAsCanceled(string? reason = null)
+	public void MarkAsCanceled(string? errorMessage = null, string? paymentMethod = null)
 	{
 		Status = PaymentStatus.Canceled;
-		ErrorMessage = reason;
+		ErrorMessage = errorMessage;
+		PaymentMethod = paymentMethod;
 		UpdatedAt = DateTime.UtcNow;
 	}
 

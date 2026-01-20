@@ -13,6 +13,8 @@ public interface IPaymentRepository
 
 	Task<Result<PaymentDS, Error>> GetByAggregatorIdAsync(string aggregatorPaymentId, CancellationToken token);
 
+	Task<Result<PaymentDS, Error>> GetByAggregatorIdForUpdateAsync(string aggregatorPaymentId, CancellationToken token);
+
 	Task<Result<IReadOnlyList<PaymentDS>, Error>> GetUserPaymentsAsync(Guid userId, int skip = 0, int take = 10, CancellationToken token = default);
 
 	Task<Result<PaymentDS, Error>> UpdateAsync(PaymentDS payment, CancellationToken token);
@@ -25,7 +27,7 @@ public interface IPaymentRepository
 	/// <summary>
 	/// Отменить платеж
 	/// </summary>
-	Task<UnitResult<Error>> CancelPaymentAsync(Guid paymentId, string? reason = null, CancellationToken token = default);
+	Task<UnitResult<Error>> CancelPaymentAsync(Guid paymentId, string? errorMessage = null, string? paymentMethod = null, CancellationToken token = default);
 
 	Task<UnitResult<Error>> SaveChangesAsync(CancellationToken token);
 }

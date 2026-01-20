@@ -1,4 +1,5 @@
-﻿using DigiStore.WalletService.Application.Configurations;
+﻿using CSharpFunctionalExtensions;
+using DigiStore.WalletService.Application.Configurations;
 using DigiStore.WalletService.Application.DTOs;
 using DigiStore.WalletService.Application.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 using System.Text;
 using Yandex.Checkout.V3;
+using Error = DigiStore.SharedKernel.Error;
 
 namespace DigiStore.WalletService.Infrastructure.Yookassa.Services;
 
@@ -83,7 +85,7 @@ public class YooKassaWebhookService : IYooKassaWebhookService
 	/// <summary>
 	/// Обработать вебхук от YooKassa
 	/// </summary>
-	public async Task ProcessWebhookAsync(string jsonBody, CancellationToken token)
+	public async Task<UnitResult<Error>> ProcessWebhookAsync(string jsonBody, CancellationToken token)
 	{
 		try
 		{
@@ -95,97 +97,128 @@ public class YooKassaWebhookService : IYooKassaWebhookService
 
 			if (notification is PaymentSucceededNotification paymentNotification)
 			{
-				await ProcessPaymentSucceededAsync(paymentNotification.Object, token);
+				return await ProcessPaymentSucceededAsync(paymentNotification.Object, token);
 			}
 			else if (notification is PaymentWaitingForCaptureNotification captureNotification)
 			{
-				await ProcessPaymentWaitingForCaptureAsync(captureNotification.Object);
+				return await ProcessPaymentWaitingForCaptureAsync(captureNotification.Object);
 			}
 			else if (notification is PaymentCanceledNotification cancelNotification)
 			{
-				await ProcessPaymentCanceledAsync(cancelNotification.Object, token);
+				return await ProcessPaymentCanceledAsync(cancelNotification.Object, token);
 			}
 			else if (notification is RefundSucceededNotification refundNotification)
 			{
-				await ProcessRefundSucceededAsync(refundNotification.Object);
+				return await ProcessRefundSucceededAsync(refundNotification.Object);
 			}
 			else if (notification is PayoutSucceededNotification payoutNotification)
 			{
-				await ProcessPayoutSucceededAsync(payoutNotification.Object, token);
+				return await ProcessPayoutSucceededAsync(payoutNotification.Object, token);
 			}
 			else if (notification is PayoutCanceledNotification payoutCancelNotification)
 			{
-				await ProcessPayoutCanceledAsync(payoutCancelNotification.Object, token);
+				return await ProcessPayoutCanceledAsync(payoutCancelNotification.Object, token);
 			}
 			else
 			{
 				_logger.LogWarning("YooKassa: Неизвестный тип уведомления");
+				return Error.NotFound("error.unknown.notification", "Неизвестный тип уведомления");
 			}
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "YooKassa: Ошибка при обработке вебхука");
 		}
+
+		return Error.Failure("error.process.webhook", "Ошибка при обработке вебхука");
 	}
 
 
-	private async Task ProcessPaymentSucceededAsync(Payment payment, CancellationToken token)
+	private async Task<UnitResult<Error>> ProcessPaymentSucceededAsync(Payment payment, CancellationToken token)
 	{
-		_logger.LogInformation($"YooKassa: Платеж успешен - PaymentId: {payment.Id}");
+		if (payment.Status == PaymentStatus.Succeeded) 
+		{
+			_logger.LogInformation($"YooKassa: Платеж успешен - PaymentId: {payment.Id}");
 
-		var dto = new PaymentSuccessDTO(payment.Id);
+			if (!payment.Metadata.ContainsKey("wallet_id") || !Guid.TryParse(payment.Metadata["wallet_id"], out Guid walletId))
+				walletId = default;
 
-		await _paymentService.CompletePaymentAsync(dto, token);
+			if (!payment.Metadata.ContainsKey("user_id") || !Guid.TryParse(payment.Metadata["user_id"], out Guid userId))
+				userId = default;
+
+			if (!payment.Metadata.ContainsKey("payment_id") || !Guid.TryParse(payment.Metadata["payment_id"], out Guid paymentId))
+				paymentId = default;
+
+			var metaData = new PaymentMetaDTO(walletId, userId, paymentId);
+
+			var dto = new PaymentSuccessDTO(
+				payment.Id,
+				payment.Amount.Value,
+				payment.PaymentMethod.Type,
+				metaData
+				);
+
+			return await _paymentService.CompletePaymentAsync(dto, token); 
+		}
+
+		return Error.Failure("error.payment.not.succeeded", "Платеж не в статусе 'succeeded'");
 	}
 
 
-	private async Task ProcessPaymentWaitingForCaptureAsync(Payment payment)
+	private async Task<UnitResult<Error>> ProcessPaymentWaitingForCaptureAsync(Payment payment)
 	{
 		_logger.LogInformation($"YooKassa: Платеж требует подтверждения - PaymentId: {payment.Id}");
 		
 		// Подтвердить платеж
-		await _yookassaProvider.CapturePaymentAsync(payment.Id, token: CancellationToken.None);
+		return await _yookassaProvider.CapturePaymentAsync(payment.Id, token: CancellationToken.None);
 	}
 
 
-	private async Task ProcessPaymentCanceledAsync(Payment payment, CancellationToken token)
+	private async Task<UnitResult<Error>> ProcessPaymentCanceledAsync(Payment payment, CancellationToken token)
 	{
 		_logger.LogInformation($"YooKassa: Платеж отменен - PaymentId: {payment.Id}");
 
 		var dbPayment = await _paymentRepository.GetByAggregatorIdAsync(payment.Id, token);
 		if (dbPayment.IsSuccess)
 		{
-			await _paymentRepository.CancelPaymentAsync(dbPayment.Value.Id, "Отменен YooKassa");
+			return await _paymentRepository.CancelPaymentAsync(dbPayment.Value.Id, $"Отменен YooKassa [{payment.CancellationDetails.Party} : {payment.CancellationDetails.Reason}]", payment.PaymentMethod?.Type);
 		}
+
+		return Error.Failure("error.payment.not.found", "Платеж не найден в БД");
 	}
 
 
-	private async Task ProcessRefundSucceededAsync(Refund refund)
+	private async Task<UnitResult<Error>> ProcessRefundSucceededAsync(Refund refund)
 	{
 		_logger.LogInformation($"YooKassa: Возврат успешен - RefundId: {refund.Id}, PaymentId: {refund.PaymentId}");
+		return Result.Success<Error>();
 	}
 
 
-	private async Task ProcessPayoutSucceededAsync(Payout payout, CancellationToken token)
+	private async Task<UnitResult<Error>> ProcessPayoutSucceededAsync(Payout payout, CancellationToken token)
 	{
 		_logger.LogInformation($"YooKassa: Выплата успешна - PayoutId: {payout.Id}");
 
 		var dbWithdrawal = await _withdrawalRepository.GetByAggregatorIdAsync(payout.Id, token);
 		if (dbWithdrawal.IsSuccess)
 		{
-			await _withdrawalRepository.CompleteWithdrawalAsync(dbWithdrawal.Value.Id, token);
+			return await _withdrawalRepository.CompleteWithdrawalAsync(dbWithdrawal.Value.Id, token);
 		}
+
+		return Error.Failure("error.withdrawal.not.found", "Выплата не найдена в БД");
 	}
 
 
-	private async Task ProcessPayoutCanceledAsync(Payout payout, CancellationToken token)
+	private async Task<UnitResult<Error>> ProcessPayoutCanceledAsync(Payout payout, CancellationToken token)
 	{
 		_logger.LogInformation($"YooKassa: Выплата отменена - PayoutId: {payout.Id}");
 
 		var dbWithdrawal = await _withdrawalRepository.GetByAggregatorIdAsync(payout.Id, token);
 		if (dbWithdrawal.IsSuccess)
 		{
-			await _withdrawalService.CancelWithdrawalAsync(dbWithdrawal.Value.Id, "Отменена YooKassa");
+			return await _withdrawalService.CancelWithdrawalAsync(dbWithdrawal.Value.Id, "Отменена YooKassa");
 		}
+
+		return Error.Failure("error.withdrawal.not.found", "Выплата не найдена в БД");
 	}
 }

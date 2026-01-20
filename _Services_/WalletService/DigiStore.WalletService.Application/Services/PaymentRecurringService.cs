@@ -171,7 +171,11 @@ public class PaymentRecurringService : IPaymentRecurringService
 			return updateResult2.Error;
 
 		// Завершить платеж сразу для подписок
-		await _paymentService.CompletePaymentAsync(new PaymentSuccessDTO(payment.AggregatorPaymentId.ToString()), token);
+		await _paymentService.CompletePaymentAsync(new PaymentSuccessDTO(
+			payment.AggregatorPaymentId.ToString(),
+			payment.Amount,
+			"RecurringPayment"
+			), token);
 
 		_logger.LogInformation($"YooKassa: Рекуррентный платеж обработан - PaymentId: {payment.Id}");
 
