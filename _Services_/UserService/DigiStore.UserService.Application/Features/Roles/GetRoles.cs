@@ -47,22 +47,12 @@ public sealed class GetRolesHandler : IUserServiceHandler
 
 	public async Task<Result<IReadOnlyList<string>, Error>> Handle(Guid userId, CancellationToken token)
 	{
-		try
-		{
-			var user = await _userRepository.GetByIdAsync(userId, token);
-			if (user == null)
-			{
-				return UserServiceErrors.UserNotFound;
-			}
+		var userResult = await _userRepository.GetByIdAsync(userId, token);
+		if (userResult.IsFailure)
+			return userResult.Error;
 
-			var roles = (await _userManager.GetRolesAsync(user)).ToList();
+		var roles = (await _userManager.GetRolesAsync(userResult.Value)).ToList();
 
-			return roles;
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error getting user roles: {UserId}", userId);
-			return Error.Failure("role.retrieval_error", ex.Message);
-		}
+		return roles;
 	}
 }

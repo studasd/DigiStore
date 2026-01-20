@@ -46,23 +46,18 @@ public sealed class GetUserByEmailHandler : IUserServiceHandler
 
 	public async Task<Result<UserResponse, Error>> Handle(string email, CancellationToken token)
 	{
-		try
-		{
-			var user = await _userRepository.GetByEmailAsync(email, token);
-			if (user == null || user.IsDeleted)
-			{
-				_logger.LogWarning("User not found by email: {Email}", email);
-				return UserServiceErrors.UserNotFound;
-			}
+		var userResult = await _userRepository.GetByEmailAsync(email, token);
+		if (userResult.IsFailure)
+			return userResult.Error;
 
-			var roles = await _userManager.GetRolesAsync(user);
-			
-			return user.ToUserResponse(roles);
-		}
-		catch (Exception ex)
+		if (userResult.Value.IsDeleted)
 		{
-			_logger.LogError(ex, "Error getting user by email: {Email}", email);
-			return Error.Failure("user.retrieval_error", ex.Message);
+			_logger.LogWarning("User deleted by email: {Email}", email);
+			return UserServiceErrors.UserNotFound;
 		}
+
+		var roles = await _userManager.GetRolesAsync(userResult.Value);
+			
+		return userResult.Value.ToUserResponse(roles);
 	}
 }

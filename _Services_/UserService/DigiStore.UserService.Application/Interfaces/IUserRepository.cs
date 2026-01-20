@@ -1,4 +1,6 @@
-﻿using DigiStore.UserService.Domain;
+﻿using CSharpFunctionalExtensions;
+using DigiStore.SharedKernel;
+using DigiStore.UserService.Domain;
 using DigiStore.UserService.Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -12,14 +14,25 @@ namespace DigiStore.UserService.Application.Interfaces;
 /// </summary>
 public interface IUserRepository
 {
-	Task<UserDS?> GetByIdAsync(Guid userId, CancellationToken token);
-	Task<UserDS?> GetByEmailAsync(string email, CancellationToken token);
-	Task<UserDS?> GetByTelegramIdAsync(long telegramId, CancellationToken token);
-	Task<bool> ExistsByEmailAsync(string email, CancellationToken token);
-	Task<bool> ExistsByTelegramIdAsync(long telegramId, CancellationToken token);
-	Task AddAsync(UserDS user, CancellationToken token);
-	Task UpdateAsync(UserDS user, CancellationToken token);
-	Task DeleteAsync(Guid userId, CancellationToken token);
-	Task<IEnumerable<UserDS>> GetAllActiveAsync(CancellationToken token);
-	Task<IEnumerable<UserDS>> GetBySourceAsync(UserSource source, CancellationToken token);
+	Task<Result<UserDS, Error>> GetByIdAsync(Guid userId, CancellationToken token);
+
+	Task<Result<UserDS, Error>> GetByEmailAsync(string email, CancellationToken token);
+
+	Task<Result<UserDS, Error>> GetByTelegramIdAsync(long telegramId, CancellationToken token);
+
+	Task<Result<bool, Error>> ExistsByEmailAsync(string email, CancellationToken token);
+
+	Task<Result<bool, Error>> ExistsByTelegramIdAsync(long telegramId, CancellationToken token);
+
+	Task<UnitResult<Error>> AddAsync(UserDS user, CancellationToken token);
+
+	Task<UnitResult<Error>> UpdateAsync(UserDS user, CancellationToken token);
+
+	Task<UnitResult<Error>> DeleteAsync(Guid userId, CancellationToken token);
+
+	Task<Result<IEnumerable<UserDS>, Error>> GetAllActiveAsync(CancellationToken token);
+
+	Task<Result<IEnumerable<UserDS>, Error>> GetBySourceAsync(UserSource source, CancellationToken token);
+
+	Task<UnitResult<Error>> SaveChangesAsync(CancellationToken token);
 }

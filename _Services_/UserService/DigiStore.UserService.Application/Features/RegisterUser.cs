@@ -65,92 +65,91 @@ public sealed class RegisterUserHandler : IUserServiceHandler
 			return validationResult.ToError();
 		}
 
-		try
+		// Check if email already exists
+		var existsByEmailResult = await _userRepository.ExistsByEmailAsync(request.Email, token);
+		if(existsByEmailResult.IsFailure)
+			return existsByEmailResult.Error;
+
+		if (existsByEmailResult.Value)
 		{
-			// Check if email already exists
-			if (await _userRepository.ExistsByEmailAsync(request.Email, token))
-			{
-				_logger.LogWarning("Attempt to create user with existing email: {Email}", request.Email);
-				return UserServiceErrors.UserAlreadyExists;
-			}
-
-			// Check if Telegram ID already linked
-			if (request.TelegramId.HasValue &&
-				await _userRepository.ExistsByTelegramIdAsync(request.TelegramId.Value, token))
-			{
-				_logger.LogWarning("Attempt to link already linked Telegram ID: {TelegramId}", request.TelegramId);
-				return UserServiceErrors.TelegramIdAlreadyLinked;
-			}
-
-			var userSourceParse = request.Source.ParseEnum<UserSource>();
-
-			if(userSourceParse.IsFailure)
-				return userSourceParse.Error;
-
-
-			// Create user entity
-			var user = new UserDS
-			{
-				Id = Guid.NewGuid(),
-				Email = request.Email,
-				UserName = request.Email,
-				FirstName = request.FirstName ?? string.Empty,
-				LastName = request.LastName ?? string.Empty,
-				TelegramId = request.TelegramId,
-				PhoneNumber = request.PhoneNumber,
-				LangCode = request.LangCode,
-				Source = userSourceParse.Value,
-				IsActive = true,
-				CreatedAt = DateTime.UtcNow,
-				UpdatedAt = DateTime.UtcNow,
-			};
-
-			// Create user with password if provided (Web users)
-			IdentityResult result;
-			if (!string.IsNullOrEmpty(request.Password))
-			{
-				result = await _userManager.CreateAsync(user, request.Password);
-			}
-			else
-			{
-				// For Telegram users without password
-				result = await _userManager.CreateAsync(user);
-			}
-
-			if (!result.Succeeded)
-			{
-				var errors = string.Join("; ", result.Errors.Select(e => e.Description));
-				_logger.LogError("Failed to create user: {Errors}", errors);
-				return Error.Failure("user.creation_failed", errors);
-			}
-
-			// Assign default role
-			await _userManager.AddToRoleAsync(user, "User");
-
-			_logger.LogInformation("User created successfully: {UserId}", user.Id);
-
-			// Cache the new user
-			var response = new UserResponse
-			(
-				user.Id,
-				user.Email,
-				user.FirstName,
-				user.TelegramId,
-				user.PhoneNumber,
-				user.LangCode,
-				true,
-				user.Source.ToString(),
-				new List<string> { "User" },
-				user.CreatedAt,
-				user.UpdatedAt
-			);
-
-			return response;
+			_logger.LogWarning("Attempt to create user with existing email: {Email}", request.Email);
+			return UserServiceErrors.UserAlreadyExists;
 		}
-		catch (Exception ex)
+
+		// Check if Telegram ID already linked
+		var existsByTelegramIdResult = await _userRepository.ExistsByTelegramIdAsync(request.TelegramId.Value, token);
+		if(existsByTelegramIdResult.IsFailure)
+			return existsByTelegramIdResult.Error;
+
+		if (request.TelegramId.HasValue && existsByTelegramIdResult.Value)
 		{
-			_logger.LogError(ex, "Error creating user");
-			return Error.Failure("user.creation_error", ex.Message);
+			_logger.LogWarning("Attempt to link already linked Telegram ID: {TelegramId}", request.TelegramId);
+			return UserServiceErrors.TelegramIdAlreadyLinked;
 		}
+
+		var userSourceParse = request.Source.ParseEnum<UserSource>();
+
+		if(userSourceParse.IsFailure)
+			return userSourceParse.Error;
+
+
+		// Create user entity
+		var user = new UserDS
+		{
+			Id = Guid.NewGuid(),
+			Email = request.Email,
+			UserName = request.Email,
+			FirstName = request.FirstName ?? string.Empty,
+			LastName = request.LastName ?? string.Empty,
+			TelegramId = request.TelegramId,
+			PhoneNumber = request.PhoneNumber,
+			LangCode = request.LangCode,
+			Source = userSourceParse.Value,
+			IsActive = true,
+			CreatedAt = DateTime.UtcNow,
+			UpdatedAt = DateTime.UtcNow,
+		};
+
+		// Create user with password if provided (Web users)
+		IdentityResult result;
+		if (!string.IsNullOrEmpty(request.Password))
+		{
+			result = await _userManager.CreateAsync(user, request.Password);
+		}
+		else
+		{
+			// For Telegram users without password
+			result = await _userManager.CreateAsync(user);
+		}
+
+		if (!result.Succeeded)
+		{
+			var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+			_logger.LogError("Failed to create user: {Errors}", errors);
+			return Error.Failure("user.creation_failed", errors);
+		}
+
+		// Assign default role
+		await _userManager.AddToRoleAsync(user, "User");
+
+		_logger.LogInformation("User created successfully: {UserId}", user.Id);
+
+		// Cache the new user
+		var response = new UserResponse
+		(
+			user.Id,
+			user.Email,
+			user.FirstName,
+			user.TelegramId,
+			user.PhoneNumber,
+			user.LangCode,
+			true,
+			user.Source.ToString(),
+			new List<string> { "User" },
+			user.CreatedAt,
+			user.UpdatedAt
+		);
+
+		return response;
 	}
 }

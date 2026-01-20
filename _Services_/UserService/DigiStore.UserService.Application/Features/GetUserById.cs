@@ -48,25 +48,20 @@ public sealed class GetUserByIdHandler : IUserServiceHandler
 
 	public async Task<Result<UserResponse, Error>> Handle(Guid userId, CancellationToken token)
 	{
-		try
-		{
-			// Get from database
-			var user = await _userRepository.GetByIdAsync(userId, token);
-			if (user == null || user.IsDeleted)
-			{
-				_logger.LogWarning("User not found: {UserId}", userId);
-				return UserServiceErrors.UserNotFound;
-			}
+		// Get from database
+		var userResult = await _userRepository.GetByIdAsync(userId, token);
+		if (userResult.IsFailure)
+			return userResult.Error;
 
-			// Get user roles
-			var roles = await _userManager.GetRolesAsync(user);
-
-			return user.ToUserResponse(roles);
-		}
-		catch (Exception ex)
+		if (userResult.Value.IsDeleted)
 		{
-			_logger.LogError(ex, "Error getting user by ID: {UserId}", userId);
-			return Error.Failure("user.retrieval_error", ex.Message);
+			_logger.LogWarning("User deleted: {UserId}", userId);
+			return UserServiceErrors.UserNotFound;
 		}
+
+		// Get user roles
+		var roles = await _userManager.GetRolesAsync(userResult.Value);
+
+		return userResult.Value.ToUserResponse(roles);
 	}
 }

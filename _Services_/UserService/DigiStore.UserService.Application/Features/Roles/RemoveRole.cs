@@ -47,35 +47,25 @@ public sealed class RemoveRoleHandler : IUserServiceHandler
 
 	public async Task<Result<bool, Error>> Handle(Guid userId, string roleName, CancellationToken token)
 	{
-		try
+		var userResult = await _userRepository.GetByIdAsync(userId, token);
+		if (userResult.IsFailure)
+			return userResult.Error;
+
+		var role = await _roleManager.FindByNameAsync(roleName);
+		if (role == null)
 		{
-			var user = await _userRepository.GetByIdAsync(userId, token);
-			if (user == null)
-			{
-				return UserServiceErrors.UserNotFound;
-			}
-
-			var role = await _roleManager.FindByNameAsync(roleName);
-			if (role == null)
-			{
-				return UserServiceErrors.RoleNotFound;
-			}
-
-			var result = await _userManager.RemoveFromRoleAsync(user, roleName);
-			if (!result.Succeeded)
-			{
-				var errors = string.Join("; ", result.Errors.Select(e => e.Description));
-				return Error.Failure("role.removal_failed", errors);
-			}
-
-			_logger.LogInformation("Role {RoleName} removed from user {UserId}", roleName, userId);
-
-			return true;
+			return UserServiceErrors.RoleNotFound;
 		}
-		catch (Exception ex)
+
+		var result = await _userManager.RemoveFromRoleAsync(userResult.Value, roleName);
+		if (!result.Succeeded)
 		{
-			_logger.LogError(ex, "Error removing role from user: {UserId}, {RoleName}", userId, roleName);
-			return Error.Failure("role.removal_error", ex.Message);
+			var errors = string.Join("; ", result.Errors.Select(e => e.Description));
+			return Error.Failure("role.removal_failed", errors);
 		}
+
+		_logger.LogInformation("Role {RoleName} removed from user {UserId}", roleName, userId);
+
+		return true;
 	}
 }

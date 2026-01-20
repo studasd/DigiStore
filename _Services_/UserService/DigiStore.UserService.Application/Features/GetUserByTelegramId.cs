@@ -46,25 +46,20 @@ public sealed class GetUserByTelegramIdHandler : IUserServiceHandler
 
 	public async Task<Result<UserResponse, Error>> Handle(long telegramId, CancellationToken token)
 	{
-		try
+		var userResult = await _userRepository.GetByTelegramIdAsync(telegramId, token);
+		if (userResult.IsFailure)
+			return userResult.Error;
+
+		if (userResult.Value.IsDeleted)
 		{
-			var user = await _userRepository.GetByTelegramIdAsync(telegramId, token);
-			if (user == null || user.IsDeleted)
-			{
-				_logger.LogWarning("User not found by Telegram ID: {TelegramId}", telegramId);
-				return UserServiceErrors.UserNotFound;
-			}
-
-			_logger.LogInformation("User by Telegram ID: {TelegramId}", telegramId);
-
-			var roles = await _userManager.GetRolesAsync(user);
-
-			return user.ToUserResponse(roles);
+			_logger.LogWarning("User deleted by Telegram ID: {TelegramId}", telegramId);
+			return UserServiceErrors.UserNotFound;
 		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error getting user by Telegram ID: {TelegramId}", telegramId);
-			return Error.Failure("user.retrieval_error", ex.Message);
-		}
+
+		_logger.LogInformation("User by Telegram ID: {TelegramId}", telegramId);
+
+		var roles = await _userManager.GetRolesAsync(userResult.Value);
+
+		return userResult.Value.ToUserResponse(roles);
 	}
 }

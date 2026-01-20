@@ -36,27 +36,20 @@ public sealed class ActivateUserHandler : IUserServiceHandler
 
 	public async Task<Result<bool, Error>> Handle(Guid userId, CancellationToken token)
 	{
-		try
-		{
-			var user = await _userRepository.GetByIdAsync(userId, token);
-			if (user == null)
-			{
-				return UserServiceErrors.UserNotFound;
-			}
+		var userResult = await _userRepository.GetByIdAsync(userId, token);
+		if (userResult.IsFailure)
+			return userResult.Error;
 
-			user.IsActive = true;
-			user.UpdatedAt = DateTime.UtcNow;
+		var user = userResult.Value;
+		user.IsActive = true;
+		user.UpdatedAt = DateTime.UtcNow;
 
-			await _userRepository.UpdateAsync(user, token);
+		var updateResult = await _userRepository.UpdateAsync(user, token);
+		if(updateResult.IsFailure)
+			return updateResult.Error;
 
-			_logger.LogInformation("User activated: {UserId}", userId);
+		_logger.LogInformation("User activated: {UserId}", userId);
 
-			return true;
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error activating user: {UserId}", userId);
-			return Error.Failure("user.activation_error", ex.Message);
-		}
+		return true;
 	}
 }
