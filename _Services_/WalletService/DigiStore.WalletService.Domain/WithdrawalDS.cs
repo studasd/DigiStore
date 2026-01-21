@@ -11,58 +11,58 @@ namespace DigiStore.WalletService.Domain;
 public class WithdrawalDS
 {
 	/// <summary>ID выплаты в системе</summary>
-	public Guid Id { get; set; }
+	public Guid Id { get; init; }
 
 	/// <summary>ID кошелька</summary>
-	public Guid WalletId { get; set; } = Guid.Empty;
+	public Guid WalletId { get; init; } = Guid.Empty;
 
 	/// <summary>ID пользователя</summary>
-	public Guid UserId { get; set; }
+	public Guid UserId { get; init; }
 
-	public PaymentAggregators Aggregator { get; set; }
+	public PaymentAggregators Aggregator { get; init; }
 
 	/// <summary>ID выплаты в агрегаторе  YooKassa,FreeKassa...</summary>
 	public string AggregatorWithdrawalId { get; set; } = string.Empty;
 
 	/// <summary>Запрошенная сумма</summary>
-	public decimal RequestedAmount { get; set; }
+	public decimal RequestedAmount { get; init; }
 
 	/// <summary>Комиссия (5% по умолчанию)</summary>
-	public decimal Commission { get; set; }
+	public decimal Commission { get; init; }
 
 	/// <summary>Сумма после комиссии</summary>
-	public decimal ActualAmount { get; set; }
+	public decimal ActualAmount { get; init; }
 
 	/// <summary>Валюта</summary>
-	public CurrencyCodes Currency { get; set; }
+	public CurrencyCodes Currency { get; init; }
 
 	/// <summary>Статус выплаты</summary>
 	public WithdrawalStatus Status { get; set; } = WithdrawalStatus.Pending;
 
 	/// <summary>Описание</summary>
-	public string Description { get; set; } = "Вывод средств";
+	public string Description { get; init; } = "Вывод средств";
 
 	/// <summary>Маскированный номер карты</summary>
 	public string? CardMask { get; set; }
 
 	/// <summary>Сообщение об ошибке</summary>
-	public string? ErrorMessage { get; set; }
+	public string? ErrorMessage { get; private set; }
 
 	/// <summary>ID транзакции в кошельке</summary>
-	public Guid? TransactionId { get; set; }
+	public Guid? TransactionId { get; init; }
 
 	/// <summary>Дата создания</summary>
-	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+	public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 
 	/// <summary>Дата последнего обновления</summary>
 	public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
 	/// <summary>Дата завершения</summary>
-	public DateTime? CompletedAt { get; set; }
+	public DateTime? CompletedAt { get; private set; }
 
 
 	// Navigation property
-	public WalletDS? Wallet { get; set; }
+	public WalletDS? Wallet { get; init; }
 
 
 	/// <summary>

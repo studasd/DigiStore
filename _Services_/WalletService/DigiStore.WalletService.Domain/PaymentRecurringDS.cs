@@ -12,61 +12,61 @@ namespace DigiStore.WalletService.Domain;
 public class PaymentRecurringDS
 {
 	/// <summary>ID подписки в системе</summary>
-	public Guid Id { get; set; }
+	public Guid Id { get; init; }
 
 	/// <summary>ID кошелька</summary>
-	public Guid WalletId { get; set; }
+	public Guid WalletId { get; init; }
 
 	/// <summary>ID пользователя</summary>
-	public Guid UserId { get; set; }
+	public Guid UserId { get; init; }
 
-	public PaymentAggregators Aggregator { get; set; }
+	public PaymentAggregators Aggregator { get; init; }
 
 	/// <summary>ID рекуррентного платежа в YooKassa</summary>
-	public string AggregatorRecurringId { get; set; } = string.Empty;
+	public string AggregatorRecurringId { get; init; } = string.Empty;
 
 	/// <summary>Сумма платежа</summary>
-	public decimal Amount { get; set; }
+	public decimal Amount { get; init; }
 
 	/// <summary>Валюта</summary>
-	public CurrencyCodes Currency { get; set; }
+	public CurrencyCodes Currency { get; init; }
 
 	/// <summary>Интервал между платежами (в днях)</summary>
-	public int IntervalDays { get; set; }
+	public int IntervalDays { get; init; }
 
 	/// <summary>Статус подписки</summary>
-	public PaymentRecurringStatus Status { get; set; } = PaymentRecurringStatus.Active;
+	public PaymentRecurringStatus Status { get; private set; } = PaymentRecurringStatus.Active;
 
 	/// <summary>Описание подписки</summary>
-	public string Description { get; set; } = string.Empty;
+	public string Description { get; init; } = string.Empty;
 
 	/// <summary>ID платежного средства</summary>
-	public string? PaymentInstrumentId { get; set; }
+	public string? PaymentInstrumentId { get; init; }
 
 	/// <summary>Количество успешных платежей</summary>
-	public int SuccessfulPayments { get; set; }
+	public int SuccessfulPayments { get; private set; }
 
 	/// <summary>Количество неудачных платежей</summary>
-	public int FailedPayments { get; set; }
+	public int FailedPayments { get; private set; }
 
 	/// <summary>Дата следующего платежа</summary>
-	public DateTime NextPaymentDate { get; set; }
+	public DateTime NextPaymentDate { get; private set; }
 
 	/// <summary>Дата последнего платежа</summary>
-	public DateTime? LastPaymentDate { get; set; }
+	public DateTime? LastPaymentDate { get; private set; }
 
 	/// <summary>Дата создания</summary>
-	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+	public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 
 	/// <summary>Дата последнего обновления</summary>
-	public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+	public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
 
 	/// <summary>Дата отмены</summary>
-	public DateTime? CancelledAt { get; set; }
+	public DateTime? CancelledAt { get; private set; }
 
 	// Navigation properties
-	public WalletDS? Wallet { get; set; }
-	public ICollection<PaymentDS> Payments { get; set; } = new List<PaymentDS>();
+	public WalletDS? Wallet { get; init; }
+	public ICollection<PaymentDS> Payments { get; init; } = new List<PaymentDS>();
 
 
 

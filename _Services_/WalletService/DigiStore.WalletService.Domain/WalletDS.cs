@@ -17,12 +17,12 @@ public class WalletDS
     /// <summary>
     /// Wallet ID (usually same as User ID)
     /// </summary>
-    public Guid Id { get; set; }
+    public Guid Id { get; init; }
 
 	/// <summary>
 	/// User ID from UserService
 	/// </summary>
-	public Guid UserId { get; set; }
+	public Guid UserId { get; init; }
 
 	/// <summary>
 	/// Current balance in default currency (e.g., rubles)
@@ -42,17 +42,17 @@ public class WalletDS
 	/// <summary>
 	/// Currency code (RUB, USD, etc.)
 	/// </summary>
-	public CurrencyCodes Currency { get; set; }
+	public CurrencyCodes Currency { get; init; }
 
 	/// <summary>
 	/// Is wallet frozen (cannot withdraw or spend)
 	/// </summary>
-	public bool IsFrozen { get; set; } = false;
+	public bool IsFrozen { get; private set; } = false;
 
 	/// <summary>
 	/// Creation timestamp
 	/// </summary>
-	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+	public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 	/// <summary>
 	/// Last update timestamp
 	/// </summary>
@@ -62,7 +62,7 @@ public class WalletDS
 	/// <summary>
 	/// Navigation to transactions
 	/// </summary>
-	public ICollection<TransactionDS> Transactions { get; set; } = new List<TransactionDS>();
+	public ICollection<TransactionDS> Transactions { get; init; } = new List<TransactionDS>();
 
 
 

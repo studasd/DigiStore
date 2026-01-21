@@ -10,58 +10,58 @@ namespace DigiStore.WalletService.Domain;
 /// </summary>
 public class TransactionDS
 {
-	public Guid Id { get; set; }
-	public Guid WalletId { get; set; }
-	public Guid UserId { get; set; }
+	public Guid Id { get; init; }
+	public Guid WalletId { get; init; }
+	public Guid UserId { get; init; }
 
 	/// <summary>
 	/// Transaction amount
 	/// </summary>
-	public decimal Amount { get; set; }
+	public decimal Amount { get; init; }
 
 	/// <summary>
 	/// Transaction type
 	/// </summary>
-	public TransactionTypes Type { get; set; }
+	public TransactionTypes Type { get; init; }
 
 	/// <summary>
 	/// Status of transaction
 	/// </summary>
-	public TransactionStatuses Status { get; set; } = TransactionStatuses.Completed;
+	public TransactionStatuses Status { get; init; } = TransactionStatuses.Completed;
 
 	/// <summary>
 	/// Description (e.g., "Order #123", "Refund", etc.)
 	/// </summary>
-	public string Description { get; set; } = string.Empty;
+	public string Description { get; init; } = string.Empty;
 
 	/// <summary>
 	/// Reference to external service (OrderId, PaymentId, etc.)
 	/// </summary>
-	public string? ReferenceId { get; set; }
+	public string? ReferenceId { get; init; }
 
 	/// <summary>
 	/// Reference type (Order, Payment, Refund, etc.)
 	/// </summary>
-	public string? ReferenceType { get; set; }
+	public string? ReferenceType { get; init; }
 
 	/// <summary>
 	/// Balance after transaction
 	/// </summary>
-	public decimal BalanceAfter { get; set; }
+	public decimal BalanceAfter { get; init; }
 
 	/// <summary>
 	/// Payment method used
 	/// </summary>
-	public string? PaymentMethod { get; set; }
+	public string? PaymentMethod { get; init; }
 
 	/// <summary>
 	/// Created timestamp
 	/// </summary>
-	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+	public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 
 
 	/// <summary>
 	/// Navigation to wallet
 	/// </summary>
-	public WalletDS? Wallet { get; set; }
+	public WalletDS? Wallet { get; init; }
 }

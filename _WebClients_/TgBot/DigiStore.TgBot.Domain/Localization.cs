@@ -5,7 +5,7 @@ namespace DigiStore.TgBot.Domain;
 
 public class Localization
 {
-    public string Key { get; set; } = string.Empty; // localization key, primary key
+    public string Key { get; init; } = string.Empty; // localization key, primary key
 
     // Language columns
     public string? Ru { get; set; }

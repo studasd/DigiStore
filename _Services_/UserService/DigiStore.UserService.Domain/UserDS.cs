@@ -33,12 +33,12 @@ public class UserDS : IdentityUser<Guid>
 	/// <summary>
 	/// Language preference (en, ru, etc.)
 	/// </summary>
-	public LanguageCodes LangCode { get; init; }
+	public LanguageCodes LangCode { get; set; }
 
 	/// <summary>
 	/// Whether user is active across all platforms
 	/// </summary>
-	public bool IsActive { get; init; } = true;
+	public bool IsActive { get; set; } = true;
 
 	/// <summary>
 	/// User registration source (Telegram, Web, etc.)
@@ -48,7 +48,7 @@ public class UserDS : IdentityUser<Guid>
 	/// <summary>
 	/// Last activity timestamp
 	/// </summary>
-	public DateTime? LastActivityAt { get; init; }
+	public DateTime? LastActivityAt { get; set; }
 
 	/// <summary>
 	/// Creation timestamp (when user first registered)
@@ -58,12 +58,12 @@ public class UserDS : IdentityUser<Guid>
 	/// <summary>
 	/// Update timestamp
 	/// </summary>
-	public DateTime UpdatedAt { get; init; }
+	public DateTime UpdatedAt { get; set; }
 
 	/// <summary>
 	/// Soft delete flag
 	/// </summary>
-	public bool IsDeleted { get; init; } = false;
+	public bool IsDeleted { get; set; } = false;
 
 
 

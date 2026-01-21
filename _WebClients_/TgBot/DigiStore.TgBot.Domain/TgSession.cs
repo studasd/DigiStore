@@ -5,11 +5,11 @@ namespace DigiStore.TgBot.Domain;
 
 public class TgSession
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; init; } = Guid.NewGuid();
 
 	public Guid UserId { get; set; }
 
-	public long TelegramId { get; set; }
+	public long TelegramId { get; init; }
 
     public string CurrentState { get; set; } = string.Empty;
 
@@ -24,7 +24,7 @@ public class TgSession
 
     public DateTime LastActivity { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; init; }
 
 
 

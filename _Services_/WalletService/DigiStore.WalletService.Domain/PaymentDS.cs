@@ -8,15 +8,15 @@ namespace DigiStore.WalletService.Domain;
 public class PaymentDS
 {
 	/// <summary>ID платежа в системе</summary>
-	public Guid Id { get; set; }
+	public Guid Id { get; init; }
 
 	/// <summary>ID пользователя</summary>
-	public Guid UserId { get; set; }
+	public Guid UserId { get; init; }
 
 	/// <summary>ID кошелька</summary>
-	public Guid WalletId { get; set; }
+	public Guid WalletId { get; init; }
 
-	public PaymentAggregators Aggregator { get; set; }
+	public PaymentAggregators Aggregator { get; init; }
 
 	/// <summary>ID платежа у агрегатора YooKassa,FreeKassa... </summary>
 	public string AggregatorPaymentId { get; set; } = string.Empty;
@@ -25,42 +25,42 @@ public class PaymentDS
 	public Guid? RecurringPaymentId { get; set; }
 
 	/// <summary>Сумма платежа</summary>
-	public decimal Amount { get; set; }
+	public decimal Amount { get; init; }
 
 	/// <summary>Валюта</summary>
-	public CurrencyCodes Currency { get; set; }
+	public CurrencyCodes Currency { get; init; }
 
 	/// <summary>Статус платежа</summary>
 	public PaymentStatus Status { get; set; } = PaymentStatus.Pending;
 
 	/// <summary>Описание платежа</summary>
-	public string Description { get; set; } = string.Empty;
+	public string Description { get; init; } = string.Empty;
 
 	/// <summary>URL возврата</summary>
-	public string? ReturnUrl { get; set; }
+	public string? ReturnUrl { get; init; }
 
 	/// <summary>Метод оплаты (card, wallet, etc)</summary>
-	public string? PaymentMethod { get; set; }
+	public string? PaymentMethod { get; private set; }
 
 	/// <summary>Сообщение об ошибке</summary>
-	public string? ErrorMessage { get; set; }
+	public string? ErrorMessage { get; private set; }
 
 	/// <summary>ID транзакции в кошельке</summary>
 	public Guid? TransactionId { get; set; }
 
 	/// <summary>Дата создания</summary>
-	public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+	public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 
 	/// <summary>Дата последнего обновления</summary>
 	public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
 	/// <summary>Дата подтверждения</summary>
-	public DateTime? ConfirmedAt { get; set; }
+	public DateTime? ConfirmedAt { get; private set; }
 
 
 	// Navigation properties
-	public WalletDS? Wallet { get; set; }
-	public PaymentRecurringDS? RecurringPayment { get; set; }
+	public WalletDS? Wallet { get; init; }
+	public PaymentRecurringDS? RecurringPayment { get; init; }
 
 
 
