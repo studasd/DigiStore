@@ -8,20 +8,25 @@ namespace DigiStore.UserService.Domain;
 /// </summary>
 public class RoleDS : IdentityRole<Guid>
 {
+	public const string Admin =		"Admin";
+	public const string Moderator = "Moderator";
+	public const string User =		"User";
+
+
 	/// <summary>
 	/// Role description
 	/// </summary>
-	public string Description { get; set; } = string.Empty;
+	public string Description { get; init; } = string.Empty;
 
 	
 
 	/// <summary>
 	/// Navigation to users
 	/// </summary>
-	public ICollection<IdentityUserRole<Guid>> UserRoles { get; set; } = new List<IdentityUserRole<Guid>>();
+	public ICollection<IdentityUserRole<Guid>> UserRoles { get; init; } = new List<IdentityUserRole<Guid>>();
 
 	/// <summary>
 	/// Navigation to permissions
 	/// </summary>
-	public ICollection<IdentityRoleClaim<Guid>> RoleClaims { get; set; } = new List<IdentityRoleClaim<Guid>>();
+	public ICollection<IdentityRoleClaim<Guid>> RoleClaims { get; init; } = new List<IdentityRoleClaim<Guid>>();
 }

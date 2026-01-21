@@ -28,24 +28,24 @@ public class RoleDSConfiguration : IEntityTypeConfiguration<RoleDS>
 			new RoleDS
 			{
 				Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
-				Name = "Admin",
-				NormalizedName = "ADMIN",
+				Name = RoleDS.Admin,
+				NormalizedName = RoleDS.Admin.ToUpper(),
 				Description = "Administrator role with full access",
 				ConcurrencyStamp = "17191573-3c54-4a6d-bf10-972650799fc3"
 			},
 			new RoleDS
 			{
 				Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
-				Name = "Moderator",
-				NormalizedName = "MODERATOR",
+				Name = RoleDS.Moderator,
+				NormalizedName = RoleDS.Moderator.ToUpper(),
 				Description = "Moderator role with limited access",
 				ConcurrencyStamp = "3bd59661-a6c1-4763-9f93-05174f01de79"
 			},
 			new RoleDS
 			{
 				Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-				Name = "User",
-				NormalizedName = "USER",
+				Name = RoleDS.User,
+				NormalizedName = RoleDS.User.ToUpper(),
 				Description = "Regular user role",
 				ConcurrencyStamp = "df5d6b5b-23a8-4350-8542-f8af50611772"
 			});

@@ -17,60 +17,60 @@ public class UserDS : IdentityUser<Guid>
 	/// <summary>
 	/// Telegram unique user ID (can be null for web users)
 	/// </summary>
-	public long? TelegramId { get; set; }
+	public long? TelegramId { get; init; }
 
 
 	/// <summary>
 	/// User's first name
 	/// </summary>
-	public string FirstName { get; set; } = string.Empty;
+	public string FirstName { get; init; } = string.Empty;
 
 	/// <summary>
 	/// User's last name
 	/// </summary>
-	public string LastName { get; set; } = string.Empty;
+	public string LastName { get; init; } = string.Empty;
 
 	/// <summary>
 	/// Language preference (en, ru, etc.)
 	/// </summary>
-	public LanguageCodes LangCode { get; set; }
+	public LanguageCodes LangCode { get; init; }
 
 	/// <summary>
 	/// Whether user is active across all platforms
 	/// </summary>
-	public bool IsActive { get; set; } = true;
+	public bool IsActive { get; init; } = true;
 
 	/// <summary>
 	/// User registration source (Telegram, Web, etc.)
 	/// </summary>
-	public UserSource Source { get; set; } = UserSource.Telegram;
+	public UserSource Source { get; init; } = UserSource.Telegram;
 
 	/// <summary>
 	/// Last activity timestamp
 	/// </summary>
-	public DateTime? LastActivityAt { get; set; }
+	public DateTime? LastActivityAt { get; init; }
 
 	/// <summary>
 	/// Creation timestamp (when user first registered)
 	/// </summary>
-	public DateTime CreatedAt { get; set; }
+	public DateTime CreatedAt { get; init; }
 
 	/// <summary>
 	/// Update timestamp
 	/// </summary>
-	public DateTime UpdatedAt { get; set; }
+	public DateTime UpdatedAt { get; init; }
 
 	/// <summary>
 	/// Soft delete flag
 	/// </summary>
-	public bool IsDeleted { get; set; } = false;
+	public bool IsDeleted { get; init; } = false;
 
 
 
 	/// <summary>
 	/// Navigation to roles (inherited from IdentityUser through IdentityUserRole)
 	/// </summary>
-	public ICollection<IdentityUserRole<Guid>> UserRoles { get; set; } = new List<IdentityUserRole<Guid>>();
+	public ICollection<IdentityUserRole<Guid>> UserRoles { get; init; } = new List<IdentityUserRole<Guid>>();
 
 	/// <summary>
 	/// Get full name

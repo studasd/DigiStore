@@ -6,9 +6,6 @@ using DigiStore.UserService.Domain.Enums;
 using DigiStore.UserService.Infrastructure.Postgres.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DigiStore.UserService.Infrastructure.Postgres.Repositories;
 
