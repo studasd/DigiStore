@@ -21,11 +21,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\_Shared_\DigiStore.Enums\DigiStore.Enums.csproj" />
+    <ProjectReference Include="..\DigiStore.TgBot.Contracts\DigiStore.TgBot.Contracts.csproj" />
     <ProjectReference Include="..\DigiStore.TgBot.Domain\DigiStore.TgBot.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Features\" />
   </ItemGroup>
 
 </Project>

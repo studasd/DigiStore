@@ -15,7 +15,6 @@ public static class DependencyInjectionApplicationExtensions
 
 		// Регистрируем все эндпоинты из текущей сборки
 		services.AddEndpoints(typeof(DependencyInjectionApplicationExtensions).Assembly);
-
 		// Automatically register all handlers that implement IUserServiceHandler
 		services.AddScopedFromInterface<IUserServiceHandler>(typeof(DependencyInjectionApplicationExtensions).Assembly);
 

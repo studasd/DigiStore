@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using DigiStore.TgBot.Contracts.HttpClients;
 using DigiStore.WalletService.Application.Configurations;
 using DigiStore.WalletService.Application.DTOs;
 using DigiStore.WalletService.Application.Interfaces;
@@ -158,7 +159,7 @@ public class YooKassaWebhookService : IYooKassaWebhookService
 				metaData
 				);
 
-			return await _paymentService.CompletePaymentAsync(dto, token); 
+			return await _paymentService.CompletePaymentAsync(dto, token);
 		}
 
 		return Error.Failure("error.payment.not.succeeded", "Платеж не в статусе 'succeeded'");

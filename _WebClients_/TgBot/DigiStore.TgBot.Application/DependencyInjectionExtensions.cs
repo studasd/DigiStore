@@ -1,4 +1,7 @@
-﻿using DigiStore.TgBot.Application.Handlers.Adstracts;
+﻿using DigiStore.Framework.Endpoints;
+using DigiStore.SharedKernel.Extensions;
+using DigiStore.TgBot.Application.Handlers.Adstracts;
+using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.TgBot.Application.Options;
 using DigiStore.TgBot.Application.Services;
@@ -14,6 +17,11 @@ public static class DependencyInjectionExtensions
 {
 	public static IServiceCollection AddTgBotApplication(this IServiceCollection services, IConfiguration configuration)
 	{
+		// Регистрируем все эндпоинты из текущей сборки
+		services.AddEndpoints(typeof(DependencyInjectionExtensions).Assembly);
+		// Регистрируем хэндлеры
+		services.AddScopedFromInterface<ITgBotHandler>(typeof(DependencyInjectionExtensions).Assembly);
+
 		services.Configure<ServiceOptions>(configuration.GetSection(nameof(ServiceOptions)));
 
 		services.AddSingleton<HandlerCollections>();

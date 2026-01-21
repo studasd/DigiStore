@@ -85,8 +85,8 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 		session.PendingTopUpAggregator = null;
 		var editChatId = session.PendingTopUpChatId ?? callbackQuery.Message.Chat.Id;
 		var editMessageId = session.PendingTopUpMessageId ?? callbackQuery.Message.MessageId;
-		session.PendingTopUpChatId = null;
-		session.PendingTopUpMessageId = null;
+		// PendingTopUpChatId/PendingTopUpMessageId are intentionally preserved.
+		// They are required later to edit the payment message after successful webhook completion.
 		await _sessionService.UpdateSessionAsync(session, token);
 
 

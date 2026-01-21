@@ -17,7 +17,6 @@ public static class DependencyInjectionApplicationExtensions
 	{
 		// Регистрируем все эндпоинты из текущей сборки
 		services.AddEndpoints(typeof(DependencyInjectionApplicationExtensions).Assembly);
-
 		// Регистрируем хэндлеры
 		services.AddScopedFromInterface<IWalletServiceHandler>(typeof(DependencyInjectionApplicationExtensions).Assembly);
 
