@@ -6,6 +6,7 @@ using DigiStore.TgBot.Application.Handlers.Adstracts;
 using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
+using Scriban;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -72,15 +73,27 @@ public class BalanceView : BaseHandler, ICallbackQueryHandler
 		}
 
 		var wallet = walletResult.Value!;
-		var text = $@"
-💰 {_localService.GetMessage(LocalKeys.Balances.Info, langCode)}
 
-{_localService.GetMessage(LocalKeys.Balances.CurrentBalance, langCode)}: <b>{wallet.Balance:F2} {wallet.Currency}</b>
-📊 {_localService.GetMessage(LocalKeys.Balances.TotalDeposited, langCode)}: {wallet.TotalDeposited:F2} {wallet.Currency}
-📤 {_localService.GetMessage(LocalKeys.Balances.TotalWithdrawn, langCode)}: {wallet.TotalWithdrawn:F2} {wallet.Currency}
+///LocalKeys.Templates.BalanceView
+//💰 БАЛАНС КОШЕЛЬКА
 
-{_localService.GetMessage(LocalKeys.Balances.TopUpBalance, langCode)}:
-";
+//Текущий баланс: {{balance}} {{currency}}
+//📊 Всего пополнено: {{total_deposited}} {{currency}}
+//📤 Всего снято: {{total_withdrawn}} {{currency}}
+
+//Пополнить баланс через:
+
+
+		var model = new
+		{
+			balance = (int)wallet.Balance,
+			total_deposited = wallet.TotalDeposited,
+			total_withdrawn = wallet.TotalWithdrawn,
+			currency = wallet.Currency
+		};
+
+		var text = _localService.GetMessage(LocalKeys.Templates.BalanceView, langCode, model);
+
 
 		var keyboard = GetBackToMainMenuKeyboard(langCode);
 

@@ -90,9 +90,13 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 		await _sessionService.UpdateSessionAsync(session, token);
 
 
-		var text =	$"Для пополнения баланса на {amount:F2}р. перейди по ссылке:\n" +
-					$"{result.Value}\n\n" +
-					$"После оплаты баланс профиля пополнится автоматически.";
+		var model = new
+		{
+			amount = amount,
+			url = result.Value,
+		};
+
+		var text = _localService.GetMessage(LocalKeys.Templates.TopUpBalance, langCode, model);
 
 		var keyboard = new InlineKeyboardMarkup(new[]
 		{

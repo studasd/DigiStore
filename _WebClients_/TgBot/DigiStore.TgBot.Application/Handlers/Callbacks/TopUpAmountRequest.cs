@@ -65,7 +65,9 @@ public class TopUpAmountRequest : BaseHandler, ICallbackQueryHandler
 		session.SetState(BotState.TopUpBalanceAmountAwaiting);
 		await _sessionService.UpdateSessionAsync(session, token);
 
-		var text = "¬ведите сумму пополнени€ числом (например 1500).";
+		var text = _localService.GetMessage(LocalKeys.Messages.TopUpAmountRequest, langCode);
+		
+
 		var keyboard = new InlineKeyboardMarkup(new[]
 		{
 			new[]

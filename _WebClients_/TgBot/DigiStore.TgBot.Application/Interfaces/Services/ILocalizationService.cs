@@ -14,7 +14,7 @@ public interface ILocalizationService
 	/// <summary>
 	/// Get localized message
 	/// </summary>
-	string GetMessage(string key, LanguageCodes langCode = LanguageCodes.en);
+	string GetMessage(string key, LanguageCodes langCode = LanguageCodes.en, object model = null);
 
 	/// <summary>
 	/// Get all available languages

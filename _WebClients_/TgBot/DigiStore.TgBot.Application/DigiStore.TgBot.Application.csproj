@@ -13,8 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DigiStore.Framework" Version="0.0.16" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.1" />
+    <PackageReference Include="DigiStore.Framework" Version="0.0.18" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.2" />
+    <PackageReference Include="Scriban" Version="6.5.2" />
     <PackageReference Include="Telegram.Bot" Version="22.7.6" />
   </ItemGroup>
 

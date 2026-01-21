@@ -3,6 +3,7 @@ using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Interfaces.Repositories;
 using DigiStore.TgBot.Application.Interfaces.Services;
+using Scriban;
 
 namespace DigiStore.TgBot.Application.Services;
 
@@ -18,17 +19,17 @@ public class LocalizationService : ILocalizationService
 	}
 
 
-	public string GetMessage(string key, LanguageCodes languageCode = LanguageCodes.en)
+	public string GetMessage(string key, LanguageCodes languageCode = LanguageCodes.en, object model = null)
 	{
 		if (!_localizations.ContainsKey(languageCode))
 			languageCode = LanguageCodes.en;
 
 		if (_localizations[languageCode].TryGetValue(key, out var message))
-			return message;
+			return model == null ? message : Template.Parse(message).Render(model);
 
 		// try fallback to English
 		if (languageCode != LanguageCodes.en && _localizations.TryGetValue(LanguageCodes.en, out var enDict) && enDict.TryGetValue(key, out var fallback))
-			return fallback;
+			return model == null ? fallback : Template.Parse(fallback).Render(model);
 
 		return key;
 	}

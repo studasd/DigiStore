@@ -67,17 +67,16 @@ public abstract class BaseHandler
 		}
 
 		var keyboard = new InlineKeyboardMarkup(buttons);
-		string text;
+		string text = "";
 
 		if (isStartCommand)
 		{
-			text = $"{_localService.GetMessage(LocalKeys.Greetings.Greeting, currentLang)}\n\n" +
-				   $"{_localService.GetMessage(LocalKeys.Navigations.SelectLanguage, currentLang)}";
+			//👋 Добро пожаловать в PetFamily магазин!
+			text = $"{_localService.GetMessage(LocalKeys.Messages.Welcome, currentLang)}\n\n";
 		}
-		else
-		{
-			text = _localService.GetMessage(LocalKeys.Navigations.SelectLanguage, currentLang);
-		}
+
+		//📍 Выберите язык:
+		text = text + _localService.GetMessage(LocalKeys.Messages.SelectLanguage, currentLang);
 
 
 		var sendResult = await _botClient.SendMessageAsync(chatId, text, replyMarkup: keyboard, cancellationToken: token);
@@ -122,19 +121,19 @@ public abstract class BaseHandler
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localService.GetMessage(LocalKeys.Commands.Profile, langCode),
+					_localService.GetMessage(LocalKeys.Buttons.Profile, langCode),
 					CallbackData.ProfileView)
 			},
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localService.GetMessage(LocalKeys.Commands.Balance, langCode),
+					_localService.GetMessage(LocalKeys.Buttons.Balance, langCode),
 					CallbackData.BalanceView)
 			},
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localService.GetMessage(LocalKeys.Commands.Catalog, langCode),
+					_localService.GetMessage(LocalKeys.Buttons.Catalog, langCode),
 					CallbackData.CatalogView)
 			},
 		});
@@ -150,13 +149,13 @@ public abstract class BaseHandler
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localService.GetMessage(LocalKeys.Commands.ChangeLanguage, langCode),
+					_localService.GetMessage(LocalKeys.Buttons.ChangeLanguage, langCode),
 					CallbackData.LanguageChangePrefix + "select")
 			},
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localService.GetMessage(LocalKeys.Navigations.MainMenu, langCode),
+					_localService.GetMessage(LocalKeys.Buttons.MainMenu, langCode),
 					CallbackData.MenuMain)
 			},
 		});

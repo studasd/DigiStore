@@ -74,33 +74,58 @@ public class ProfileService : IProfileService
 		var loc = _localizationService;
 		var lang = langCode;
 
-		var text = $@"
-════════════════════════════════════
- <b> {loc.GetMessage(LocalKeys.Profiles.Info, lang)} </b>
-════════════════════════════════════
-👤 {loc.GetMessage(LocalKeys.Profiles.FullName, lang)}: {profile.FullName}
-🆔 Telegram ID: {profile.TelegramId}
-📧 {loc.GetMessage(LocalKeys.Profiles.Email, lang)}: {profile.Email}
-";
-		if (!string.IsNullOrEmpty(profile.Username))
-		{
-			text += $"📱 {loc.GetMessage(LocalKeys.Profiles.Username, lang)}: @{profile.Username}\n";
-		}
 
-		text += $@"
-💰 {loc.GetMessage(LocalKeys.Commands.Balance, lang)}: {profile.Balance:F2} {profile.Currency}
-🌐 {loc.GetMessage(LocalKeys.Profiles.Language, lang)}: {GetLanguageName(profile.LangCode)}
-✅ {loc.GetMessage(LocalKeys.Profiles.Status, lang)}: {(profile.IsActive ? "Active" : "Inactive")}
-";
-		if (profile.Roles.Count > 0)
-		{
-			text += $"🎖️ {loc.GetMessage(LocalKeys.Profiles.Roles, lang)}: {string.Join(", ", profile.Roles)}\n";
-		}
+		//════════════════════════════════════
+		//  ВАШ ПРОФИЛЬ 
+		//════════════════════════════════════
+		//👤 Имя: Stavs
+		//🆔 Telegram ID: 307723779
+		//📧 Email: telegram_307723779 @digistore.local
 
-		text += $@"
-📅 {loc.GetMessage(LocalKeys.Profiles.CreatedAt, lang)}: {profile.CreatedAt:dd.MM.yyyy HH:mm}
-🔄 {loc.GetMessage(LocalKeys.Profiles.UpdatedAt, lang)}: {profile.UpdatedAt:dd.MM.yyyy HH:mm}
-";
+		//💰 Баланс: 1980.00 RUB
+		//🌐 Язык: 🇷🇺 Русский
+		//✅ Статус: Active
+		//🎖️ Роли: User
+
+		//📅 Дата регистрации: 21.01.2026 12:28
+		//🔄 Последнее обновление: 21.01.2026 12:28
+
+
+		//════════════════════════════════════
+		//  ВАШ ПРОФИЛЬ 
+		//════════════════════════════════════
+		//👤 Имя: {{fullname}}
+		//🆔 Telegram ID: {{telegramid}}
+		//📧 Email: {{email}}
+		//📱  Username: {{username}}
+
+		//💰 Баланс: {{balance}} {{currency}}
+		//🌐 Язык: {{language}}
+		//✅ Статус: {{status}}
+		//🎖️ Роли: {{roles}}
+
+		//📅 Дата регистрации: {{datecreated}}
+		//🔄 Последнее обновление: {{dateupdated}}
+
+
+		var model = new
+		{
+			fullname = profile.FullName,
+			telegramid = profile.TelegramId,
+			email = profile.Email,
+			username = profile.Username,
+			balance = profile.Balance,
+			currency = profile.Currency,
+			language = GetLanguageName(profile.LangCode),
+			status = profile.IsActive ? "Active" : "Inactive",
+			roles = profile.Roles.Count > 0 ? string.Join(", ", profile.Roles) : "None",
+			datecreated = profile.CreatedAt.ToString("dd.MM.yyyy HH:mm"),
+			dateupdated = profile.UpdatedAt.ToString("dd.MM.yyyy HH:mm")
+		};
+
+		var text = loc.GetMessage(LocalKeys.Templates.Profile, lang, model);
+
+
 		return text;
 	}
 
@@ -131,13 +156,13 @@ public class ProfileService : IProfileService
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage(LocalKeys.Commands.ChangeLanguage, langCode),
+					_localizationService.GetMessage(LocalKeys.Buttons.ChangeLanguage, langCode),
 					CallbackData.MenuBack)
 			},
 			new[]
 			{
 				InlineKeyboardButton.WithCallbackData(
-					_localizationService.GetMessage(LocalKeys.Navigations.MainMenu, langCode),
+					_localizationService.GetMessage(LocalKeys.Buttons.MainMenu, langCode),
 					CallbackData.MenuMain)
 			},
 		});

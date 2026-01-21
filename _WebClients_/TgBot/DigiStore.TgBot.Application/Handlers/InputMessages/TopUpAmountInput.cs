@@ -69,13 +69,13 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 			{
 				await _botClient.DeleteMessageAsync(message.Chat.Id, userMessageIdToDelete.Value, cancellationToken: token);
 			}
-
+			
 			if (editMessageId.HasValue)
 			{
 				var editResult = await _botClient.EditMessageTextAsync(
 					editChatId,
 					editMessageId.Value,
-					"Введите корректную сумму числом (больше 0).",
+					_localService.GetMessage(LocalKeys.Messages.TopUpAmountInputErrorAmount, langCode),
 					replyMarkup: keyboard,
 					cancellationToken: token);
 
@@ -100,7 +100,7 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 				var editResult = await _botClient.EditMessageTextAsync(
 					editChatId,
 					editMessageId.Value,
-					"Не удалось определить способ оплаты. Откройте баланс и выберите агрегатор заново.",
+					_localService.GetMessage(LocalKeys.Messages.TopUpAmountInputErrorAggregator, langCode),
 					replyMarkup: keyboard,
 					cancellationToken: token);
 

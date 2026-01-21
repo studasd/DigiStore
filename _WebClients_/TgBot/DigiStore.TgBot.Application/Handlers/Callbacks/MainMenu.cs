@@ -49,8 +49,9 @@ public class MainMenu : BaseHandler, ICallbackQueryHandler
 		if(sessionResult.IsSuccess)
 			languageCode = sessionResult.Value.LangCode;
 
-		var text =	$"{_localService.GetMessage(LocalKeys.Navigations.MainMenu, languageCode)}\n\n" +
-					$"{_localService.GetMessage(LocalKeys.Navigations.ChooseOption, languageCode)}";
+
+		var text = _localService.GetMessage(LocalKeys.Messages.MainMenu, languageCode);
+
 
 		var keyboard = GetMainMenuKeyboard(languageCode);
 

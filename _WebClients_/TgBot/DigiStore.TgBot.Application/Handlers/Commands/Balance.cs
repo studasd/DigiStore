@@ -62,12 +62,24 @@ public class Balance : BaseHandler, ICommandHandler
 
 		var profile = profileResult.Value!;
 
-		var text = $@"
-💰 {_localService.GetMessage(LocalKeys.Balances.Info, langCode)}
-{_localService.GetMessage(LocalKeys.Balances.CurrentBalance, langCode)}: <b>{profile.Balance:F2} {profile.Currency}</b>
-🔗 {_localService.GetMessage(LocalKeys.Balances.LinkedAccounts, langCode)}:
-👤 Telegram: @{profile.Username ?? ""}
-";
+
+///LocalKeys.Templates.BalanceView
+//💰 БАЛАНС КОШЕЛЬКА
+
+//Текущий баланс: <b>{{balance}} {{currency}}</b>
+//🔗 Привязанные аккаунты
+//👤 Telegram: {{username}}
+
+
+		var model = new
+		{
+			balance = profile.Balance,
+			currency = profile.Currency,
+			username = profile.Username
+		};
+
+		var text = _localService.GetMessage(LocalKeys.Templates.Balance, langCode, model);
+
 
 		var keyboard = GetBackToMainMenuKeyboard(langCode);
 
