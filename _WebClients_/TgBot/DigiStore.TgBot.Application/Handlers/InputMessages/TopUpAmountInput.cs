@@ -48,8 +48,16 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 
 		var session = sessionResult.Value;
 		int? userMessageIdToDelete = message.MessageId;
-		var editChatId = session.PendingTopUpChatId ?? message.Chat.Id;
-		var editMessageId = session.PendingTopUpMessageId;
+
+		// Find active message-context for amount input (latest updated context in awaiting state)
+		var ctxEntry = session.MessageContexts
+			.Where(x => x.Value.State == BotState.TopUpBalanceAmountAwaiting)
+			.OrderByDescending(x => x.Value.UpdatedAtUtc)
+			.FirstOrDefault();
+
+		var pending = ctxEntry.Value?.PendingTopUp;
+		var editChatId = pending?.ChatId ?? message.Chat.Id;
+		var editMessageId = pending?.MessageId;
 
 		var raw = (message.Text ?? string.Empty).Trim().Replace(',', '.');
 
@@ -88,7 +96,7 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 			return Result.Success<Error>();
 		}
 
-		if (string.IsNullOrWhiteSpace(session.PendingTopUpAggregator) || !Enum.TryParse<DigiStore.Enums.PaymentAggregators>(session.PendingTopUpAggregator, out var aggregator))
+		if (string.IsNullOrWhiteSpace(pending?.Aggregator) || !Enum.TryParse<DigiStore.Enums.PaymentAggregators>(pending?.Aggregator, out var aggregator))
 		{
 			if (userMessageIdToDelete.HasValue)
 			{
@@ -111,10 +119,10 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 			}
 
 			session.SetState(BotState.BalanceViewing);
-			session.PendingTopUpAmount = null;
-			session.PendingTopUpAggregator = null;
-			session.PendingTopUpChatId = null;
-			session.PendingTopUpMessageId = null;
+			if (!string.IsNullOrWhiteSpace(ctxEntry.Key) && pending?.ChatId is not null && pending?.MessageId is not null)
+			{
+				session.RemoveMessageContext(pending.ChatId.Value, pending.MessageId.Value);
+			}
 
 			var updateResult = await _sessionService.UpdateSessionAsync(session, token);
 			if (updateResult.IsFailure)
@@ -123,7 +131,19 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 			return Result.Success<Error>();
 		}
 
-		session.PendingTopUpAmount = amount;
+		if (pending?.ChatId is null || pending?.MessageId is null)
+		{
+			return Result.Success<Error>();
+		}
+
+		session.UpsertMessageContext(
+			pending.ChatId.Value,
+			pending.MessageId.Value,
+			new DigiStore.TgBot.Domain.ValueObjects.MessageContextVO(
+				BotState.TopUpBalance,
+				pending with { Amount = amount },
+				DateTime.UtcNow));
+
 		session.SetState(BotState.TopUpBalance);
 		await _sessionService.UpdateSessionAsync(session, token);
 
@@ -137,7 +157,7 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 			Id = Guid.NewGuid().ToString("N"),
 			From = message.From,
 			Message = message,
-			Data = TopUpBalance.CallbackData + aggregator
+			Data = TopUpBalance.CallbackData + aggregator + $":{pending.ChatId.Value}:{pending.MessageId.Value}"
 		};
 
 		var nextResult = await _topUpBalance.HandleAsync(cb, token);

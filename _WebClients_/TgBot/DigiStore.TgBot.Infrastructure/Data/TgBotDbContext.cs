@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using DigiStore.TgBot.Domain;
+using System.Text.Json;
 
 namespace DigiStore.TgBot.Infrastructure.Data;
 
@@ -57,9 +58,30 @@ public class TgBotDbContext : DbContext
 				builder.Property(x => x.LangCode).HasConversion<string>().HasMaxLength(10);
 			});
 			eb.Property(e => e.LangCode).HasConversion<string>().HasMaxLength(10);
+
+			// Store pending payments map as JSON (jsonb)
+			eb.Property(e => e.PendingPayments)
+				.HasColumnType("jsonb")
+				.HasConversion(
+					v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+					v => string.IsNullOrWhiteSpace(v)
+						? new Dictionary<Guid, Domain.ValueObjects.PendingPaymentMessageVO>()
+						: (JsonSerializer.Deserialize<Dictionary<Guid, Domain.ValueObjects.PendingPaymentMessageVO>>(v, (JsonSerializerOptions?)null)
+							?? new Dictionary<Guid, Domain.ValueObjects.PendingPaymentMessageVO>()));
 			eb.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
 			eb.Property(e => e.LastActivity).HasDefaultValueSql("now()");
-        });
+
+            // Store per-message contexts as JSON (jsonb)
+            eb.Property(e => e.MessageContexts)
+                .HasColumnType("jsonb")
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                    v => string.IsNullOrWhiteSpace(v)
+                        ? new Dictionary<string, Domain.ValueObjects.MessageContextVO>()
+                        : (JsonSerializer.Deserialize<Dictionary<string, Domain.ValueObjects.MessageContextVO>>(v, (JsonSerializerOptions?)null)
+                            ?? new Dictionary<string, Domain.ValueObjects.MessageContextVO>()));
+
+		});
 
         modelBuilder.Entity<CommandHistory>(eb =>
         {

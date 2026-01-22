@@ -2,7 +2,6 @@
 using DigiStore.SharedKernel;
 using DigiStore.SharedKernel.HttpServices;
 using DigiStore.TgBot.Contracts.Requests;
-using DigiStore.TgBot.Contracts.Responses;
 using Microsoft.Extensions.Logging;
 
 namespace DigiStore.TgBot.Contracts.HttpClients;
@@ -19,8 +18,8 @@ internal sealed class TgBotHttpClient : ITgBotHttpClient
     }
 
 
-	public async Task<Result<UpdatePaymentResponse, Error>> UpdatePaymentAsync(Guid userId, UpdatePaymentRequest request, CancellationToken token)
+	public async Task<UnitResult<Error>> UpdatePaymentAsync(Guid userId, UpdatePaymentRequest request, CancellationToken token)
 	{
-		return await _httpService.PostAsync<UpdatePaymentResponse>($"updatePayment/{userId}", request, token);
+		return await _httpService.PostAsync($"updatePayment/{userId}", request, token);
 	}
 }

@@ -100,10 +100,8 @@ public class SessionService : ISessionService
             CreatedAt = d.CreatedAt,
             LastActivity = d.LastActivity,
 			CachedProfile = d.CachedProfile,
-			PendingTopUpAggregator = d.PendingTopUpAggregator,
-			PendingTopUpAmount = d.PendingTopUpAmount,
-			PendingTopUpChatId = d.PendingTopUpChatId,
-			PendingTopUpMessageId = d.PendingTopUpMessageId
+			PendingPayments = d.PendingPayments,
+			MessageContexts = d.MessageContexts
 		};
 
         return session;
@@ -119,10 +117,8 @@ public class SessionService : ISessionService
             CurrentState = s.CurrentState,
             LangCode = s.LangCode,
             CachedProfile = s.CachedProfile,
-			PendingTopUpAggregator = s.PendingTopUpAggregator,
-			PendingTopUpAmount = s.PendingTopUpAmount,
-			PendingTopUpChatId = s.PendingTopUpChatId,
-			PendingTopUpMessageId = s.PendingTopUpMessageId,
+			PendingPayments = s.PendingPayments,
+			MessageContexts = s.MessageContexts,
             LastActivity = s.LastActivity,
             CreatedAt = s.CreatedAt
         };

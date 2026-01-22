@@ -31,7 +31,7 @@ public class WalletService : IWalletService
 	}
 
 
-	public async Task<Result<string, Error>> CreatePaymentAsync(Guid userId, PaymentAggregators paymentAggregator, decimal amount, CancellationToken token)
+	public async Task<Result<(Guid paymentId, string redirectUrl), Error>> CreatePaymentAsync(Guid userId, PaymentAggregators paymentAggregator, decimal amount, CancellationToken token)
 	{
 		var userTgResult = await _tgUserRepository.GetByUserIdAsync(userId, token);
 		if (userTgResult.IsFailure)
@@ -46,7 +46,7 @@ public class WalletService : IWalletService
 		if (result.IsFailure)
 			return result.Error;
 
-		return result.Value.RredirectUrl;
+		return (result.Value.PaymentId, result.Value.RredirectUrl);
 	}
 
 

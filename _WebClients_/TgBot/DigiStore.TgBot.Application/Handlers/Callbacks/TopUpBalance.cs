@@ -60,7 +60,11 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 		if (sessionResult.IsSuccess)
 			langCode = sessionResult.Value.LangCode;
 
-		var payAggregatResult = callbackQuery.Data.Replace(CallbackData, "").ParseEnum<PaymentAggregators>();
+		// Data can be either: "topup_do_{Aggregator}" or "topup_do_{Aggregator}:{chatId}:{messageId}"
+		var raw = callbackQuery.Data.Replace(CallbackData, "");
+		var parts = raw.Split(':', StringSplitOptions.RemoveEmptyEntries);
+		var aggPart = parts.Length > 0 ? parts[0] : raw;
+		var payAggregatResult = aggPart.ParseEnum<PaymentAggregators>();
 		if (payAggregatResult.IsFailure)
 		{
 			await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
@@ -71,7 +75,16 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 		_logger.LogInformation("Top up balance from agregattor: {Aggregate}, UserId: {UserId}", payAggregate, session.UserId);
 
 
-		var amount = session.PendingTopUpAmount ?? 15;
+		var targetChatId = callbackQuery.Message.Chat.Id;
+		var targetMessageId = callbackQuery.Message.MessageId;
+		if (parts.Length == 3 && long.TryParse(parts[1], out var parsedChatId) && int.TryParse(parts[2], out var parsedMessageId))
+		{
+			targetChatId = parsedChatId;
+			targetMessageId = parsedMessageId;
+		}
+
+		var ctx = session.GetMessageContext(targetChatId, targetMessageId);
+		var amount = ctx?.PendingTopUp?.Amount ?? 100;
 		var result = await _walletService.CreatePaymentAsync(session.UserId, payAggregate, amount, token);
 		if(result.IsFailure)
 		{
@@ -79,21 +92,27 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 			return result.Error;
 		}
 
+		var paymentId = result.Value.paymentId;
+
 		// Update session
 		session.SetState(BotState.TopUpBalance);
-		session.PendingTopUpAmount = null;
-		session.PendingTopUpAggregator = null;
-		var editChatId = session.PendingTopUpChatId ?? callbackQuery.Message.Chat.Id;
-		var editMessageId = session.PendingTopUpMessageId ?? callbackQuery.Message.MessageId;
+		var editChatId = targetChatId;
+		var editMessageId = targetMessageId;
 		// PendingTopUpChatId/PendingTopUpMessageId are intentionally preserved.
 		// They are required later to edit the payment message after successful webhook completion.
+		session.RemoveMessageContext(editChatId, editMessageId);
+		session.PendingPayments[paymentId] = new Domain.ValueObjects.PendingPaymentMessageVO(
+			editChatId,
+			editMessageId,
+			amount,
+			payAggregate.ToString());
 		await _sessionService.UpdateSessionAsync(session, token);
 
 
 		var model = new
 		{
 			amount = amount,
-			url = result.Value,
+			url = result.Value.redirectUrl,
 		};
 
 		var text = _localService.GetMessage(LocalKeys.Templates.TopUpBalance, langCode, model);
@@ -102,7 +121,7 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 		{
 			new[]
 			{
-				InlineKeyboardButton.WithUrl("Оплатить", result.Value)
+				InlineKeyboardButton.WithUrl("Оплатить", result.Value.redirectUrl)
 			},
 
 			new[]

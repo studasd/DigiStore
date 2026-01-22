@@ -76,8 +76,18 @@ public sealed class UpdatePaymentHandler : ITgBotHandler
 		}
 
 		var session = sessionResult.Value;
-		var chatId = session.PendingTopUpChatId;
-		var messageId = session.PendingTopUpMessageId;
+
+		long? chatId = null;
+		int? messageId = null;
+		decimal? amount = null;
+
+		if (request.PaymentId != Guid.Empty && session.PendingPayments.TryGetValue(request.PaymentId, out var pending))
+		{
+			chatId = pending.ChatId;
+			messageId = pending.MessageId;
+			amount = pending.Amount;
+		}
+		// No legacy fallback: payment completion must be correlated by PaymentId.
 
 		// If message identifiers are missing - idempotent success (nothing to update)
 		if (!chatId.HasValue || !messageId.HasValue)
@@ -87,7 +97,9 @@ public sealed class UpdatePaymentHandler : ITgBotHandler
 		}
 
 		// 3) Update the original message containing payment URL
-		var successText = "✅ Платёж успешно зачислен. Баланс обновлён.";
+		var successText = amount.HasValue
+			? $"✅ Платёж на <b>{amount.Value}</b> успешно зачислен. Баланс обновлён."
+			: "✅ Платёж успешно зачислен. Баланс обновлён.";
 		var editResult = await _botClient.EditMessageTextAsync(
 			new ChatId(chatId.Value),
 			messageId.Value,
@@ -125,10 +137,12 @@ public sealed class UpdatePaymentHandler : ITgBotHandler
 		}
 
 		// 5) Clear pending fields to prevent re-editing
-		session.PendingTopUpChatId = null;
-		session.PendingTopUpMessageId = null;
-		session.PendingTopUpAmount = null;
-		session.PendingTopUpAggregator = null;
+		if (request.PaymentId != Guid.Empty)
+		{
+			session.PendingPayments.Remove(request.PaymentId);
+		}
+
+		// Payment completion is keyed by PaymentId; per-message contexts are not required here.
 		await _sessionService.UpdateSessionAsync(session, token);
 
 		_logger.LogInformation("UpdatePayment: handled successfully for UserId={UserId} TelegramId={TelegramId}", userId, telegramId);

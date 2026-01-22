@@ -56,10 +56,8 @@ namespace DigiStore.TgBot.Infrastructure.Migrations
                     TelegramId = table.Column<long>(type: "bigint", nullable: false),
                     CurrentState = table.Column<string>(type: "text", nullable: false),
                     LangCode = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
-                    PendingTopUpAggregator = table.Column<string>(type: "text", nullable: true),
-                    PendingTopUpAmount = table.Column<decimal>(type: "numeric", nullable: true),
-                    PendingTopUpChatId = table.Column<long>(type: "bigint", nullable: true),
-                    PendingTopUpMessageId = table.Column<int>(type: "integer", nullable: true),
+                    MessageContexts = table.Column<string>(type: "jsonb", nullable: false),
+                    PendingPayments = table.Column<string>(type: "jsonb", nullable: false),
                     LastActivity = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
                     CachedProfile = table.Column<string>(type: "jsonb", nullable: true)

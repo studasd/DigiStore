@@ -1,3 +1,3 @@
 ﻿namespace DigiStore.TgBot.Contracts.Requests;
 
-public record UpdatePaymentRequest();
+public record UpdatePaymentRequest(Guid PaymentId);

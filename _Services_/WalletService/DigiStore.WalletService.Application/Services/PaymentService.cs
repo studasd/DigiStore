@@ -231,7 +231,13 @@ public class PaymentService : IPaymentService
 
 
 			// Отправляем webhook TG боту для изменения сообщения
-			return await _tgBotHttpClient.UpdatePaymentAsync(payment.UserId, new UpdatePaymentRequest(), token);
+			var ioohi = await _tgBotHttpClient.UpdatePaymentAsync(payment.UserId, new UpdatePaymentRequest(payment.Id), CancellationToken.None);
+			if (ioohi.IsFailure)
+			{
+
+			}
+
+			return ioohi;
 		}
 		catch (Exception ex)
 		{

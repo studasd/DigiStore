@@ -26,5 +26,5 @@ public interface IWalletService
 	/// </summary>
 	Task<Result<bool, Error>> InitiateWithdrawalAsync(Guid userId, decimal amount, CancellationToken token);
 
-	Task<Result<string, Error>> CreatePaymentAsync(Guid userId, PaymentAggregators paymentAggregator, decimal amount, CancellationToken token);
+	Task<Result<(Guid paymentId, string redirectUrl), Error>> CreatePaymentAsync(Guid userId, PaymentAggregators paymentAggregator, decimal amount, CancellationToken token);
 }

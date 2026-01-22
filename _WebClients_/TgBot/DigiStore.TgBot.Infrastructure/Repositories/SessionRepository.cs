@@ -41,11 +41,14 @@ public class SessionRepository : ISessionRepository
             existing.CurrentState = session.CurrentState;
             existing.LangCode = session.LangCode;
             existing.CachedProfile = session.CachedProfile;
-			existing.PendingTopUpAggregator = session.PendingTopUpAggregator;
-			existing.PendingTopUpAmount = session.PendingTopUpAmount;
-			existing.PendingTopUpChatId = session.PendingTopUpChatId;
-			existing.PendingTopUpMessageId = session.PendingTopUpMessageId;
-            existing.LastActivity = DateTime.UtcNow;
+			// Assign new dictionary instances to avoid reference-equality issues in EF change tracking
+			existing.PendingPayments = session.PendingPayments is null
+				? new Dictionary<Guid, Domain.ValueObjects.PendingPaymentMessageVO>()
+				: new Dictionary<Guid, Domain.ValueObjects.PendingPaymentMessageVO>(session.PendingPayments);
+			existing.MessageContexts = session.MessageContexts is null
+				? new Dictionary<string, Domain.ValueObjects.MessageContextVO>()
+				: new Dictionary<string, Domain.ValueObjects.MessageContextVO>(session.MessageContexts);
+			existing.LastActivity = DateTime.UtcNow;
         }
 
 		return await SaveChangesAsync(token);

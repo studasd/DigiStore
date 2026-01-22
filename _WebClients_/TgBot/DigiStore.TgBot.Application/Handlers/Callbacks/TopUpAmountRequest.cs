@@ -58,10 +58,17 @@ public class TopUpAmountRequest : BaseHandler, ICallbackQueryHandler
 			return payAggregatResult.Error;
 		}
 
-		session.PendingTopUpAggregator = payAggregatResult.Value.ToString();
-		session.PendingTopUpAmount = null;
-		session.PendingTopUpChatId = callbackQuery.Message.Chat.Id;
-		session.PendingTopUpMessageId = callbackQuery.Message.MessageId;
+		session.UpsertMessageContext(
+			callbackQuery.Message.Chat.Id,
+			callbackQuery.Message.MessageId,
+			new Domain.ValueObjects.MessageContextVO(
+				BotState.TopUpBalanceAmountAwaiting,
+				new Domain.ValueObjects.PendingTopUpVO(
+					payAggregatResult.Value.ToString(),
+					null,
+					callbackQuery.Message.Chat.Id,
+					callbackQuery.Message.MessageId),
+				DateTime.UtcNow));
 		session.SetState(BotState.TopUpBalanceAmountAwaiting);
 		await _sessionService.UpdateSessionAsync(session, token);
 
