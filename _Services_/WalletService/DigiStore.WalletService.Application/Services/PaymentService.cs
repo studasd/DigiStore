@@ -20,7 +20,6 @@ public class PaymentService : IPaymentService
 	private readonly IWalletRepository _walletRepository;
 	private readonly IWalletUnitOfWork _unitOfWork;
     private readonly IYookassaProvider _yookassaProvider;
-    private readonly ITgBotHttpClient _tgBotHttpClient;
     private readonly ILogger<PaymentService> _logger;
 
 	public PaymentService(
@@ -28,14 +27,12 @@ public class PaymentService : IPaymentService
 		IWalletRepository walletRepository,
 		IWalletUnitOfWork unitOfWork,
 		IYookassaProvider yookassaProvider,
-		ITgBotHttpClient tgBotHttpClient,
 		ILogger<PaymentService> logger)
 	{
 		_paymentRepository = paymentRepository;
 		_walletRepository = walletRepository;
 		_unitOfWork = unitOfWork;
         _yookassaProvider = yookassaProvider;
-        _tgBotHttpClient = tgBotHttpClient;
         _logger = logger;
 	}
 
@@ -229,15 +226,7 @@ public class PaymentService : IPaymentService
 
 			_logger.LogInformation("YooKassa: Платеж завершен - PaymentId: {PaymentId}, Amount: {Amount}, TransactionId: {TransactionId}", payment.Id, payment.Amount, walletTransaction.Id);
 
-
-			// Отправляем webhook TG боту для изменения сообщения
-			var ioohi = await _tgBotHttpClient.UpdatePaymentAsync(payment.UserId, new UpdatePaymentRequest(payment.Id), CancellationToken.None);
-			if (ioohi.IsFailure)
-			{
-
-			}
-
-			return ioohi;
+			return Result.Success<Error>();
 		}
 		catch (Exception ex)
 		{

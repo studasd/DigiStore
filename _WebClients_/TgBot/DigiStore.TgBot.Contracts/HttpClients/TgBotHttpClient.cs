@@ -22,4 +22,9 @@ internal sealed class TgBotHttpClient : ITgBotHttpClient
 	{
 		return await _httpService.PostAsync($"updatePayment/{userId}", request, token);
 	}
+
+	public async Task<UnitResult<Error>> CancelPaymentAsync(Guid userId, CancelPaymentRequest request, CancellationToken token)
+	{
+		return await _httpService.PostAsync($"cancelPayment/{userId}", request, token);
+	}
 }

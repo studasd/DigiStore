@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.TgBot.Contracts.HttpClients;
+using DigiStore.TgBot.Contracts.Requests;
 using DigiStore.WalletService.Application.Configurations;
 using DigiStore.WalletService.Application.DTOs;
 using DigiStore.WalletService.Application.Interfaces;
@@ -23,6 +24,7 @@ public class YooKassaWebhookService : IYooKassaWebhookService
     private readonly IWithdrawalRepository _withdrawalRepository;
     private readonly IPaymentService _paymentService;
     private readonly IPaymentRepository _paymentRepository;
+	private readonly ITgBotHttpClient _tgBotHttpClient;
     private readonly ILogger<YooKassaWebhookService> _logger;
 
 	public YooKassaWebhookService(
@@ -32,6 +34,7 @@ public class YooKassaWebhookService : IYooKassaWebhookService
 		IWithdrawalRepository withdrawalRepository,
 		IPaymentService paymentService,
 		IPaymentRepository paymentRepository,
+		ITgBotHttpClient tgBotHttpClient,
 		ILogger<YooKassaWebhookService> logger)
 	{
 		_settings = settings.Value;
@@ -40,6 +43,7 @@ public class YooKassaWebhookService : IYooKassaWebhookService
         _withdrawalRepository = withdrawalRepository;
         _paymentService = paymentService;
         _paymentRepository = paymentRepository;
+		_tgBotHttpClient = tgBotHttpClient;
         _logger = logger;
 	}
 
@@ -159,7 +163,12 @@ public class YooKassaWebhookService : IYooKassaWebhookService
 				metaData
 				);
 
-			return await _paymentService.CompletePaymentAsync(dto, token);
+			var completeResult = await _paymentService.CompletePaymentAsync(dto, token);
+			if(completeResult.IsFailure)
+				return completeResult.Error;
+
+			// Отправляем webhook TG боту для изменения сообщения
+			return await _tgBotHttpClient.UpdatePaymentAsync(userId, new UpdatePaymentRequest(paymentId), CancellationToken.None);
 		}
 
 		return Error.Failure("error.payment.not.succeeded", "Платеж не в статусе 'succeeded'");
@@ -182,7 +191,13 @@ public class YooKassaWebhookService : IYooKassaWebhookService
 		var dbPayment = await _paymentRepository.GetByAggregatorIdAsync(payment.Id, token);
 		if (dbPayment.IsSuccess)
 		{
-			return await _paymentRepository.CancelPaymentAsync(dbPayment.Value.Id, $"Отменен YooKassa [{payment.CancellationDetails.Party} : {payment.CancellationDetails.Reason}]", payment.PaymentMethod?.Type);
+			var cancelReason = $"YooKassa [{payment.CancellationDetails.Party} : {payment.CancellationDetails.Reason}]";
+			var cancelResult = await _paymentRepository.CancelPaymentAsync(dbPayment.Value.Id, $"Отменен {cancelReason}", payment.PaymentMethod?.Type, token);
+			if (cancelResult.IsFailure)
+				return cancelResult;
+
+			// Notify TgBot to update the original payment message
+			return await _tgBotHttpClient.CancelPaymentAsync(dbPayment.Value.UserId, new CancelPaymentRequest(dbPayment.Value.Id, cancelReason), token);
 		}
 
 		return Error.Failure("error.payment.not.found", "Платеж не найден в БД");
