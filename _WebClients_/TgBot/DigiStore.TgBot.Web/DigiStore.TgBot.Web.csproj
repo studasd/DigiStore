@@ -11,6 +11,8 @@
     <JsonSerializerIsReflectionEnabledByDefault Condition="'$(Configuration)' == 'Debug'">true</JsonSerializerIsReflectionEnabledByDefault>
     <!-- Для Release используем source generators -->
     <PublishTrimmed Condition="'$(Configuration)' == 'Release'">true</PublishTrimmed>
+
+    <InvariantGlobalization>false</InvariantGlobalization>
     
   </PropertyGroup>
 

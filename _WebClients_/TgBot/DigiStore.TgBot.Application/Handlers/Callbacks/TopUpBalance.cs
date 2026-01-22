@@ -121,7 +121,7 @@ public class TopUpBalance : BaseHandler, ICallbackQueryHandler
 		{
 			new[]
 			{
-				InlineKeyboardButton.WithUrl("Оплатить", result.Value.redirectUrl)
+				InlineKeyboardButton.WithUrl(_localService.GetMessage(LocalKeys.Buttons.Pay, langCode), result.Value.redirectUrl)
 			},
 
 			new[]

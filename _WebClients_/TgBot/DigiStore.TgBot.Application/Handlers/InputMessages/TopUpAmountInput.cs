@@ -66,7 +66,7 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 		{
 			new[]
 			{
-				InlineKeyboardButton.WithCallbackData(_localService.GetMessage(LocalKeys.Buttons.Back, langCode), Constants.CallbackData.BalanceView)
+				InlineKeyboardButton.WithCallbackData(_localService.GetMessage(LocalKeys.Buttons.Back, langCode), CallbackData.BalanceView)
 			},
 		});
 
@@ -96,7 +96,7 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 			return Result.Success<Error>();
 		}
 
-		if (string.IsNullOrWhiteSpace(pending?.Aggregator) || !Enum.TryParse<DigiStore.Enums.PaymentAggregators>(pending?.Aggregator, out var aggregator))
+		if (string.IsNullOrWhiteSpace(pending?.Aggregator) || !Enum.TryParse<Enums.PaymentAggregators>(pending?.Aggregator, out var aggregator))
 		{
 			if (userMessageIdToDelete.HasValue)
 			{
@@ -139,7 +139,7 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 		session.UpsertMessageContext(
 			pending.ChatId.Value,
 			pending.MessageId.Value,
-			new DigiStore.TgBot.Domain.ValueObjects.MessageContextVO(
+			new Domain.ValueObjects.MessageContextVO(
 				BotState.TopUpBalance,
 				pending with { Amount = amount },
 				DateTime.UtcNow));

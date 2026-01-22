@@ -40,6 +40,7 @@ public static class LocalKeys
 		public const string Orders =	"button_orders";
 		public const string Settings =	"button_settings";
 		public const string Help =		"button_help";
+		public const string Pay =		"button_pay";
 		public const string ChangeLanguage =		"button_change_language";
 	}
 
