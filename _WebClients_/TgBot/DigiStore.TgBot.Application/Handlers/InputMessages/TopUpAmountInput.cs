@@ -1,4 +1,4 @@
-using CSharpFunctionalExtensions;
+п»їusing CSharpFunctionalExtensions;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
@@ -12,7 +12,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 namespace DigiStore.TgBot.Application.Handlers.InputMessages;
 
 /// <summary>
-/// Обработка ввода суммы пополнения после выбора агрегатора.
+/// РћР±СЂР°Р±РѕС‚РєР° РІРІРѕРґР° СЃСѓРјРјС‹ РїРѕРїРѕР»РЅРµРЅРёСЏ РїРѕСЃР»Рµ РІС‹Р±РѕСЂР° Р°РіСЂРµРіР°С‚РѕСЂР°.
 /// </summary>
 public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 {

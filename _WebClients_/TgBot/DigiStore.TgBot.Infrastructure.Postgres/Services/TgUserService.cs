@@ -9,7 +9,7 @@ using DigiStore.UserService.Contracts.Requests;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace DigiStore.TgBot.Infrastructure.Services;
+namespace DigiStore.TgBot.Infrastructure.Postgres.Services;
 
 
 public class TgUserService : ITgUserService

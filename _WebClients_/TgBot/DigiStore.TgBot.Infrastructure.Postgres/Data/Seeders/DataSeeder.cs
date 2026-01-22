@@ -1,13 +1,14 @@
 ﻿using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Interfaces.Repositories;
 using DigiStore.TgBot.Domain;
+using DigiStore.TgBot.Infrastructure.Postgres.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DigiStore.TgBot.Infrastructure.Data.Seeders;
+namespace DigiStore.TgBot.Infrastructure.Postgres.Data.Seeders;
 
 public interface IDataSeeder
 {

@@ -1,8 +1,9 @@
 ﻿using DigiStore.TgBot.Application.Interfaces.Repositories;
 using DigiStore.TgBot.Application.Interfaces.Services;
-using DigiStore.TgBot.Application.Services;
-using DigiStore.TgBot.Infrastructure.Data;
-using DigiStore.TgBot.Infrastructure.Data.Seeders;
+using DigiStore.TgBot.Infrastructure.Postgres.Data;
+using DigiStore.TgBot.Infrastructure.Postgres.Data.Seeders;
+using DigiStore.TgBot.Infrastructure.Postgres.Repositories;
+using DigiStore.TgBot.Infrastructure.Postgres.Services;
 using DigiStore.UserService.Contracts.HttpClients;
 using DigiStore.WalletService.Contracts.HttpClients;
 using Microsoft.EntityFrameworkCore;
@@ -11,14 +12,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace DigiStore.TgBot.Infrastructure;
+namespace DigiStore.TgBot.Infrastructure.Postgres;
 
 public static class DependencyInjectionExtensions
 {
-	public static IServiceCollection AddTgBotInfrastructure(this IServiceCollection services, IConfiguration configuration)
+	public static IServiceCollection AddTgBotInfrastructurePostgres(this IServiceCollection services, IConfiguration configuration)
 	{
 		// Repositories
-		services.AddScoped<ITgUserRepository, Repositories.TgUserRepository>();
+		services.AddScoped<ITgUserRepository, TgUserRepository>();
 		services.AddScoped<ISessionRepository, Repositories.SessionRepository>();
 		services.AddScoped<ICommandHistoryRepository, Repositories.CommandHistoryRepository>();
 		services.AddScoped<ILocalizationRepository, Repositories.LocalizationRepository>();
@@ -26,7 +27,7 @@ public static class DependencyInjectionExtensions
 		services.AddScoped<IDataSeeder, DataSeeder>();
 
 		services.AddScoped<IWalletService, Services.WalletService>();
-		services.AddScoped<ITgUserService, Services.TgUserService>();
+		services.AddScoped<ITgUserService, TgUserService>();
 
 		services.AddWalletServiceHttp(configuration);
 		services.AddUserServiceHttp(configuration);

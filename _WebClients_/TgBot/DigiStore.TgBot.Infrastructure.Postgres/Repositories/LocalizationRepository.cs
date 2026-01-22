@@ -2,11 +2,11 @@ using CSharpFunctionalExtensions;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Interfaces.Repositories;
 using DigiStore.TgBot.Domain;
-using DigiStore.TgBot.Infrastructure.Data;
+using DigiStore.TgBot.Infrastructure.Postgres.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace DigiStore.TgBot.Infrastructure.Repositories;
+namespace DigiStore.TgBot.Infrastructure.Postgres.Repositories;
 
 public class LocalizationRepository : ILocalizationRepository
 {

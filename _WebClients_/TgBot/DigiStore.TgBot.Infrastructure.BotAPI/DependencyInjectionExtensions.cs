@@ -12,7 +12,7 @@ namespace DigiStore.TgBot.Infrastructure.BotAPI;
 
 public static class DependencyInjectionExtensions
 {
-	public static IServiceCollection AddTgBotAPIInfrastructure(this IServiceCollection services, IConfiguration configuration)
+	public static IServiceCollection AddTgInfrastructureBotAPI(this IServiceCollection services, IConfiguration configuration)
 	{
 		services.Configure<TelegramOptions>(configuration.GetSection(nameof(TelegramOptions)));
 

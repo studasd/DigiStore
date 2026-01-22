@@ -2,7 +2,7 @@
 using DigiStore.TgBot.Domain;
 using System.Text.Json;
 
-namespace DigiStore.TgBot.Infrastructure.Data;
+namespace DigiStore.TgBot.Infrastructure.Postgres.Data;
 
 // add-migration Init -c TgBotDbContext -s DigiStore.TgBot.Web
 // update-database -Context TgBotDbContext -s DigiStore.TgBot.Web

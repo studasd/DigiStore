@@ -1,4 +1,4 @@
-using CSharpFunctionalExtensions;
+п»їusing CSharpFunctionalExtensions;
 using DigiStore.Enums;
 using DigiStore.SharedKernel;
 using DigiStore.SharedKernel.Extensions;
@@ -14,7 +14,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 namespace DigiStore.TgBot.Application.Handlers.Callbacks;
 
 /// <summary>
-/// Промежуточный обработчик: после выбора агрегатора запрашивает сумму пополнения.
+/// РџСЂРѕРјРµР¶СѓС‚РѕС‡РЅС‹Р№ РѕР±СЂР°Р±РѕС‚С‡РёРє: РїРѕСЃР»Рµ РІС‹Р±РѕСЂР° Р°РіСЂРµРіР°С‚РѕСЂР° Р·Р°РїСЂР°С€РёРІР°РµС‚ СЃСѓРјРјСѓ РїРѕРїРѕР»РЅРµРЅРёСЏ.
 /// </summary>
 public class TopUpAmountRequest : BaseHandler, ICallbackQueryHandler
 {

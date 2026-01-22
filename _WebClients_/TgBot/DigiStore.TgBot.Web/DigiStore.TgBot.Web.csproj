@@ -29,7 +29,7 @@
   <ItemGroup>
     <ProjectReference Include="..\DigiStore.TgBot.Application\DigiStore.TgBot.Application.csproj" />
     <ProjectReference Include="..\DigiStore.TgBot.Infrastructure.BotAPI\DigiStore.TgBot.Infrastructure.BotAPI.csproj" />
-    <ProjectReference Include="..\DigiStore.TgBot.Infrastructure\DigiStore.TgBot.Infrastructure.csproj" />
+    <ProjectReference Include="..\DigiStore.TgBot.Infrastructure.Postgres\DigiStore.TgBot.Infrastructure.Postgres.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,4 @@
-using CSharpFunctionalExtensions;
+п»їusing CSharpFunctionalExtensions;
 using DigiStore.Framework.Endpoints;
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Interfaces;
@@ -15,7 +15,7 @@ using Telegram.Bot.Types.Enums;
 namespace DigiStore.TgBot.Application.Features;
 
 /// <summary>
-/// Уведомление TgBot об отмене платежа (платежный агрегатор)
+/// РЈРІРµРґРѕРјР»РµРЅРёРµ TgBot РѕР± РѕС‚РјРµРЅРµ РїР»Р°С‚РµР¶Р° (РїР»Р°С‚РµР¶РЅС‹Р№ Р°РіСЂРµРіР°С‚РѕСЂ)
 /// </summary>
 public sealed class CancelPayment : IEndpoint
 {
@@ -78,12 +78,12 @@ public sealed class CancelPaymentHandler : ITgBotHandler
 		}
 
 		var cancelText = string.IsNullOrWhiteSpace(request.Reason)
-			? "? Платёж отменён. Списание не выполнено."
-			: $"? Платёж отменён. Причина: <b>{request.Reason}</b>";
+			? "вќЊ РџР»Р°С‚С‘Р¶ РѕС‚РјРµРЅС‘РЅ. РЎРїРёСЃР°РЅРёРµ РЅРµ РІС‹РїРѕР»РЅРµРЅРѕ."
+			: $"вќЊ РџР»Р°С‚С‘Р¶ РѕС‚РјРµРЅС‘РЅ. РџСЂРёС‡РёРЅР°: \n<b>{request.Reason}</b>";
 
 		var editResult = await _botClient.EditMessageTextAsync(
-			new ChatId(pending.ChatId),
-			pending.MessageId,
+			new ChatId(307723779),
+			1082,
 			cancelText,
 			parseMode: ParseMode.Html,
 			replyMarkup: null,

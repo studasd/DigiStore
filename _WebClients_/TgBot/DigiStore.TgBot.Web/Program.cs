@@ -1,8 +1,8 @@
 using DigiStore.Framework.Endpoints;
 using DigiStore.TgBot.Application.Services;
 using DigiStore.TgBot.Application.Updates;
-using DigiStore.TgBot.Infrastructure.Data;
-using DigiStore.TgBot.Infrastructure.Data.Seeders;
+using DigiStore.TgBot.Infrastructure.Postgres.Data;
+using DigiStore.TgBot.Infrastructure.Postgres.Data.Seeders;
 using DigiStore.TgBot.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

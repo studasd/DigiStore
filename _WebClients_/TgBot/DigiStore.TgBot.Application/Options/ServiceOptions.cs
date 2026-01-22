@@ -6,4 +6,6 @@ public class ServiceOptions
 	public string CatalogServiceUrl { get; set; }
 	public string OrderServiceUrl { get; set; }
 	public string SeqUrl { get; set; }
+
+	public bool RuntimeLocalizationEnabled { get; set; } = true;
 }
