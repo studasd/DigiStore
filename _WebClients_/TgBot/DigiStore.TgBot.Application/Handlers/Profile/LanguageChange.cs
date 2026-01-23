@@ -9,7 +9,7 @@ using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 
-namespace DigiStore.TgBot.Application.Handlers.Callbacks;
+namespace DigiStore.TgBot.Application.Handlers.Profile;
 
 /// <summary>
 /// Обработчик колбэка смены языка из команды /language

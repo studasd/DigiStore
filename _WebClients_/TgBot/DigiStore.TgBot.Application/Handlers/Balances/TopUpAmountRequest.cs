@@ -11,7 +11,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace DigiStore.TgBot.Application.Handlers.Callbacks;
+namespace DigiStore.TgBot.Application.Handlers.Balances;
 
 /// <summary>
 /// Промежуточный обработчик: после выбора агрегатора запрашивает сумму пополнения.

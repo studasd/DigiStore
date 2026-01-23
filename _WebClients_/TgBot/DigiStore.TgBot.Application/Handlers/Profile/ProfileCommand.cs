@@ -10,26 +10,26 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace DigiStore.TgBot.Application.Handlers.Commands;
+namespace DigiStore.TgBot.Application.Handlers.Profile;
 
 /// <summary>
 /// Обработчик команды /profile
 /// </summary>
-public class Profile : BaseHandler, ICommandHandler
+public class ProfileCommand : BaseHandler, ICommandHandler
 {
 	public const string Command = BotCommands.Profile;
 
 	private readonly IProfileService _profileService;
 	private readonly ISessionService _sessionService;
-	private readonly ILogger<Profile> _logger;
+	private readonly ILogger<ProfileCommand> _logger;
 
 
-	public Profile(
+	public ProfileCommand(
 		IBotAPIClient botClient,
 		IProfileService profileService,
 		ISessionService sessionService,
 		ILocalizationService localizationService,
-		ILogger<Profile> logger)
+		ILogger<ProfileCommand> logger)
 		: base(botClient, localizationService)
 	{
 		_profileService = profileService;

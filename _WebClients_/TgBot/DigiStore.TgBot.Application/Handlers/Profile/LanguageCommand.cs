@@ -8,24 +8,24 @@ using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 
-namespace DigiStore.TgBot.Application.Handlers.Commands;
+namespace DigiStore.TgBot.Application.Handlers.Profile;
 
 /// <summary>
 /// Обработчик команды /language
 /// </summary>
-public class Language : BaseHandler, ICommandHandler
+public class LanguageCommand : BaseHandler, ICommandHandler
 {
 	public const string Command = BotCommands.Language;
 
 	private readonly ISessionService _sessionService;
-	private readonly ILogger<Language> _logger;
+	private readonly ILogger<LanguageCommand> _logger;
 
 
-	public Language(
+	public LanguageCommand(
 		IBotAPIClient botClient,
 		ISessionService sessionService,
 		ILocalizationService localizationService,
-		ILogger<Language> logger)
+		ILogger<LanguageCommand> logger)
 		: base(botClient, localizationService)
 	{
 		_sessionService = sessionService;

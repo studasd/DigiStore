@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace DigiStore.TgBot.Application.Handlers.Callbacks;
+namespace DigiStore.TgBot.Application.Handlers.Profile;
 
 /// <summary>
 /// Обработчик колбэка выбора языка из команды /start

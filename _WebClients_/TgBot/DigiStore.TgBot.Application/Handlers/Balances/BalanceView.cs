@@ -10,7 +10,7 @@ using Scriban;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace DigiStore.TgBot.Application.Handlers.Callbacks;
+namespace DigiStore.TgBot.Application.Handlers.Balances;
 
 /// <summary>
 /// Обработчик колбэка просмотра баланса

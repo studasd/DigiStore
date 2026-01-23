@@ -2,14 +2,13 @@
 using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
-using DigiStore.TgBot.Application.Handlers.Callbacks;
 using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace DigiStore.TgBot.Application.Handlers.InputMessages;
+namespace DigiStore.TgBot.Application.Handlers.Balances;
 
 /// <summary>
 /// Обработка ввода суммы пополнения после выбора агрегатора.
@@ -29,7 +28,7 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 		IBotAPIClient botClient,
 		ISessionService sessionService,
 		ILocalizationService localizationService,
-		DigiStore.TgBot.Application.Handlers.Callbacks.TopUpBalance topUpBalance,
+		TopUpBalance topUpBalance,
 		ILogger<TopUpAmountInput> logger) : base(botClient, localizationService)
 	{
 		_sessionService = sessionService;

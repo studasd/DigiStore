@@ -10,28 +10,28 @@ using DigiStore.TgBot.Domain.ValueObjects;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 
-namespace DigiStore.TgBot.Application.Handlers.Commands;
+namespace DigiStore.TgBot.Application.Handlers.Menu;
 
 /// <summary>
 /// Обработчик команды /start
 /// </summary>
-public class Start : BaseHandler, ICommandHandler
+public class StartCommand : BaseHandler, ICommandHandler
 {
 	public const string Command = BotCommands.Start;
 
 	private readonly ITgUserService _userService;
 	private readonly ISessionService _sessionService;
 	private readonly IProfileService _profileService;
-	private readonly ILogger<Start> _logger;
+	private readonly ILogger<StartCommand> _logger;
 
 
-	public Start(
+	public StartCommand(
 		IBotAPIClient botClient,
 		ITgUserService userService,
 		ISessionService sessionService,
 		IProfileService profileService,
 		ILocalizationService localizationService,
-		ILogger<Start> logger)
+		ILogger<StartCommand> logger)
 		: base(botClient, localizationService)
 	{
 		_userService = userService;

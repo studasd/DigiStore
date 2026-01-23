@@ -8,26 +8,26 @@ using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace DigiStore.TgBot.Application.Handlers.Commands;
+namespace DigiStore.TgBot.Application.Handlers.Balances;
 
 /// <summary>
 /// Обработчик команды /balance
 /// </summary>
-public class Balance : BaseHandler, ICommandHandler
+public class BalanceCommand : BaseHandler, ICommandHandler
 {
 	public const string Command = BotCommands.Balance;
 
 	private readonly IProfileService _profileService;
 	private readonly ISessionService _sessionService;
-	private readonly ILogger<Balance> _logger;
+	private readonly ILogger<BalanceCommand> _logger;
 
 
-	public Balance(
+	public BalanceCommand(
 		IBotAPIClient botClient,
 		IProfileService profileService,
 		ISessionService sessionService,
 		ILocalizationService localizationService,
-		ILogger<Balance> logger)
+		ILogger<BalanceCommand> logger)
 		: base(botClient, localizationService)
 	{
 		_profileService = profileService;

@@ -1,71 +1,85 @@
 using CSharpFunctionalExtensions;
 using DigiStore.Enums;
 using DigiStore.SharedKernel;
-using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
 using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
-namespace DigiStore.TgBot.Application.Handlers.Callbacks;
+namespace DigiStore.TgBot.Application.Handlers.Profile;
 
 /// <summary>
-/// Обработчик колбэка главного меню
+/// Обработчик колбэка просмотра профиля
 /// </summary>
-public class MainMenu : BaseHandler, ICallbackQueryHandler
+public class ProfileView : BaseHandler, ICallbackQueryHandler
 {
-	public const string CallbackData = Constants.CallbackData.MenuMain;
+	public const string CallbackData = Constants.CallbackData.ProfileView;
 	public const bool IsPrefix = false;
 	
+	private readonly IProfileService _profileService;
 	private readonly ISessionService _sessionService;
-	private readonly ILogger<MainMenu> _logger;
+	private readonly ILogger<ProfileView> _logger;
 
 
-	public MainMenu(
+	public ProfileView(
 		IBotAPIClient botClient,
+		IProfileService profileService,
 		ISessionService sessionService,
 		ILocalizationService localizationService,
-		ILogger<MainMenu> logger)
+		ILogger<ProfileView> logger)
 		: base(botClient, localizationService)
 	{
+		_profileService = profileService;
 		_sessionService = sessionService;
 		_logger = logger;
 	}
 
 	public async Task<UnitResult<Error>> HandleAsync(CallbackQuery callbackQuery, CancellationToken token = default)
 	{
-		// Handle main menu
+		// Handle profile view callback
 
 		if (callbackQuery.Message == null)
-			return Error.Failure("callback.mainmenu.nomessage", "No message in MainMenuCallbackHandler");
-
+			return Error.Failure("callback.profile.nomessage", "No message in ProfileViewCallbackHandler");
+		
 
 		var telegramId = callbackQuery.From.Id;
 		var sessionResult = await _sessionService.GetSessionAsync(telegramId, token);
 
-		var languageCode = LanguageCodes.en;
+		if (sessionResult.IsFailure)
+			return sessionResult.Error;
 
-		if(sessionResult.IsSuccess)
-			languageCode = sessionResult.Value.LangCode;
+		var session = sessionResult.Value;
+		var languageCode = session.LangCode;
 
+		var profileResult = await _profileService.GetFullProfileAsync(
+			session.UserId,
+			session.TelegramId,
+			token);
 
-		var text = _localService.GetMessage(LocalKeys.Messages.MainMenu, languageCode);
+		if (profileResult.IsFailure)
+		{
+			await AnswerCallbackQueryWithError(callbackQuery.Id, languageCode, token);
+			return profileResult.Error;
+		}
 
-
-		var keyboard = GetMainMenuKeyboard(languageCode);
+		var profile = profileResult.Value!;
+		var profileText = _profileService.FormatProfileText(profile, languageCode);
+		var keyboard = GetProfileKeyboard(languageCode);
 
 
 		var editResult = await _botClient.EditMessageTextAsync(
 			callbackQuery.Message.Chat.Id,
 			callbackQuery.Message.MessageId,
-			text,
+			profileText,
+			parseMode: ParseMode.Html,
 			replyMarkup: keyboard,
 			cancellationToken: token);
 
 		if (editResult.IsFailure)
 		{
-			_logger.LogError("Error in MainMenuCallbackHandler");
+			_logger.LogError("Error in ProfileViewCallbackHandler");
 			return await AnswerCallbackQueryWithError(callbackQuery.Id, LanguageCodes.en, token);
 		}
 
