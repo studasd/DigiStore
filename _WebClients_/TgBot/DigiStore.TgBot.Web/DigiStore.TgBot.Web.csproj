@@ -13,6 +13,8 @@
     <PublishTrimmed Condition="'$(Configuration)' == 'Release'">true</PublishTrimmed>
 
     <InvariantGlobalization>false</InvariantGlobalization>
+
+    <UserSecretsId>b53fa689-939d-4086-9758-23456164c944</UserSecretsId>
     
   </PropertyGroup>
 
