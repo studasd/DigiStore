@@ -1,6 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.Enums;
-using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.DTOs;
 using DigiStore.TgBot.Application.Interfaces.Services;
@@ -8,6 +7,7 @@ using DigiStore.UserService.Contracts.HttpClients;
 using DigiStore.UserService.Contracts.Requests;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using StudCoreKit.SharedKernel;
 
 namespace DigiStore.TgBot.Infrastructure.Postgres.Services;
 

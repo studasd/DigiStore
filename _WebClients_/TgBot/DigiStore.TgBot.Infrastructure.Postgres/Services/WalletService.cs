@@ -1,14 +1,13 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.Enums;
-using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.DTOs;
 using DigiStore.TgBot.Application.Interfaces.Repositories;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using DigiStore.WalletService.Contracts.HttpClients;
 using DigiStore.WalletService.Contracts.Requests.Payments;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using StudCoreKit.SharedKernel;
 
 namespace DigiStore.TgBot.Infrastructure.Postgres.Services;
 

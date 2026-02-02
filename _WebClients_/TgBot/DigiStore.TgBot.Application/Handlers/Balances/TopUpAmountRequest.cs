@@ -1,12 +1,12 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.Enums;
-using DigiStore.SharedKernel;
-using DigiStore.SharedKernel.Extensions;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
-using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
+using StudCoreKit.SharedKernel;
+using StudCoreKit.SharedKernel.Extensions;
+using StudTgBotApi.Contracts.Interfaces;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -16,7 +16,7 @@ namespace DigiStore.TgBot.Application.Handlers.Balances;
 /// <summary>
 /// Промежуточный обработчик: после выбора агрегатора запрашивает сумму пополнения.
 /// </summary>
-public class TopUpAmountRequest : BaseHandler, ICallbackQueryHandler
+public class TopUpAmountRequest : BaseHandler, ICallbackHandler
 {
 	public const string CallbackData = Constants.CallbackData.BalanceTopPrefix;
 	public const bool IsPrefix = true;

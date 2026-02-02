@@ -1,12 +1,11 @@
 using CSharpFunctionalExtensions;
 using DigiStore.Enums;
-using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
-using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
-using Scriban;
+using StudCoreKit.SharedKernel;
+using StudTgBotApi.Contracts.Interfaces;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -15,7 +14,7 @@ namespace DigiStore.TgBot.Application.Handlers.Balances;
 /// <summary>
 /// Обработчик колбэка просмотра баланса
 /// </summary>
-public class BalanceView : BaseHandler, ICallbackQueryHandler
+public class BalanceView : BaseHandler, ICallbackHandler
 {
 	public const string CallbackData = Constants.CallbackData.BalanceView;
 	public const bool IsPrefix = false;

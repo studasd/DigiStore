@@ -1,10 +1,10 @@
 ﻿using CSharpFunctionalExtensions;
-using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
-using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
+using StudCoreKit.SharedKernel;
+using StudTgBotApi.Contracts.Interfaces;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -15,7 +15,7 @@ namespace DigiStore.TgBot.Application.Handlers.Balances;
 /// </summary>
 public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 {
-	public const string StateKey = BotState.TopUpBalanceAmountAwaiting;
+	public string StateKey => BotState.TopUpBalanceAmountAwaiting;
 	//public string State => StateKey;
 	//public const string Command = BotCommands.Balance;
 

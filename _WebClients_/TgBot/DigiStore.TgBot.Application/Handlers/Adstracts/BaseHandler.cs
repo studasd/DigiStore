@@ -1,9 +1,9 @@
 using CSharpFunctionalExtensions;
 using DigiStore.Enums;
-using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
-using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
+using StudCoreKit.SharedKernel;
+using StudTgBotApi.Contracts.Interfaces;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace DigiStore.TgBot.Application.Handlers.Adstracts;

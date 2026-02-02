@@ -5,7 +5,7 @@ using DigiStore.WalletService.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Yandex.Checkout.V3;
-using Error = DigiStore.SharedKernel.Error;
+using Error = StudCoreKit.SharedKernel.Error;
 
 namespace DigiStore.WalletService.Infrastructure.Yookassa.Services;
 

@@ -1,5 +1,5 @@
 using CSharpFunctionalExtensions;
-using DigiStore.SharedKernel;
+using StudCoreKit.SharedKernel;
 using DigiStore.WalletService.Application.Interfaces;
 using DigiStore.WalletService.Infrastructure.Postgres.Data;
 using Microsoft.EntityFrameworkCore.Storage;

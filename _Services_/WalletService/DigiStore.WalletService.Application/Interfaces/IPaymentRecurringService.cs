@@ -1,9 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
-using DigiStore.SharedKernel;
 using DigiStore.WalletService.Domain;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using StudCoreKit.SharedKernel;
 
 namespace DigiStore.WalletService.Application.Interfaces;
 

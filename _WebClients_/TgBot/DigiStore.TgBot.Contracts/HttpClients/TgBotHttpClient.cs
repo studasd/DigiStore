@@ -1,8 +1,8 @@
 ﻿using CSharpFunctionalExtensions;
-using DigiStore.SharedKernel;
-using DigiStore.SharedKernel.HttpServices;
 using DigiStore.TgBot.Contracts.Requests;
 using Microsoft.Extensions.Logging;
+using StudCoreKit.SharedKernel;
+using StudCoreKit.SharedKernel.HttpServices;
 
 namespace DigiStore.TgBot.Contracts.HttpClients;
 

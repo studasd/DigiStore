@@ -1,13 +1,12 @@
-﻿using DigiStore.Framework.Endpoints;
-using DigiStore.SharedKernel.Extensions;
-using DigiStore.WalletService.Application.Configurations;
-using DigiStore.WalletService.Application.Features.Payments;
+﻿using DigiStore.WalletService.Application.Configurations;
 using DigiStore.WalletService.Application.Interfaces;
 using DigiStore.WalletService.Application.Services;
 using DigiStore.WalletService.Application.Validators;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StudCoreKit.Framework.Endpoints;
+using StudCoreKit.SharedKernel.Extensions;
 
 namespace DigiStore.WalletService.Application;
 

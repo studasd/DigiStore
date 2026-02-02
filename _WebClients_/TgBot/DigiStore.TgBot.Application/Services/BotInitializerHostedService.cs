@@ -1,8 +1,8 @@
 using DigiStore.TgBot.Application.Interfaces;
-using DigiStore.TgBot.Application.Updates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using StudTgBotApi.Contracts.Interfaces;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -50,7 +50,7 @@ public class BotInitializerHostedService : BackgroundService
 
 
         // Set Webhook
-        if (!string.IsNullOrEmpty(botClient.WebhookUrl) && botClient.IsWebhook)
+        if (!string.IsNullOrEmpty(botClient.WebhookUrl) /*&& botClient.IsWebhook*/)
         {
             var setWebhookResult = await botClient.SetWebhookAsync(
                 $"{botClient.WebhookUrl}",
@@ -83,7 +83,7 @@ public class BotInitializerHostedService : BackgroundService
                 _logger.LogWarning("Failed to delete webhook: {Error}", deleteResult.Error);
 			}
 
-            var updateHandlerServ = sp.GetRequiredService<UpdateHandler>();
+            var updateHandlerServ = sp.GetRequiredService<IUpdateHandler>();
             var logger = sp.GetRequiredService<ILogger<BotInitializerHostedService>>();
 
             var receiverOptions = new ReceiverOptions
@@ -97,7 +97,7 @@ public class BotInitializerHostedService : BackgroundService
                 {
                     try
                     {
-                        await updateHandlerServ.HandleUpdateAsync(update, token);
+                        await updateHandlerServ.HandleUpdateAsync(client, update, token);
                     }
                     catch (Exception ex)
                     {

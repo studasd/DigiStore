@@ -1,7 +1,7 @@
-﻿using DigiStore.SharedKernel.Extensions;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using StudCoreKit.SharedKernel.Extensions;
 
 namespace DigiStore.TgBot.Contracts.HttpClients;
 

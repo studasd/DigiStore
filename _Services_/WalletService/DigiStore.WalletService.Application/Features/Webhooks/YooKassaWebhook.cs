@@ -1,6 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
-using DigiStore.Framework.Endpoints;
-using DigiStore.SharedKernel;
+using StudCoreKit.Framework.Endpoints;
+using StudCoreKit.SharedKernel;
 using DigiStore.WalletService.Application.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;

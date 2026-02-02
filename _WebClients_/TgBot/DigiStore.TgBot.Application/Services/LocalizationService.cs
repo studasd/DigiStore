@@ -1,6 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.Enums;
-using DigiStore.SharedKernel;
+using StudCoreKit.SharedKernel;
 using DigiStore.TgBot.Application.Interfaces.Repositories;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Scriban;

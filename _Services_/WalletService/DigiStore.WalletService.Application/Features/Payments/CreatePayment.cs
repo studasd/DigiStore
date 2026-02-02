@@ -1,8 +1,8 @@
 ﻿using CSharpFunctionalExtensions;
-using DigiStore.Core.Validation;
+using StudCoreKit.Core.Validation;
 using DigiStore.Enums;
-using DigiStore.Framework.Endpoints;
-using DigiStore.SharedKernel;
+using StudCoreKit.Framework.Endpoints;
+using StudCoreKit.SharedKernel;
 using DigiStore.WalletService.Application.Interfaces;
 using DigiStore.WalletService.Application.Validators;
 using DigiStore.WalletService.Contracts.Requests.Payments;

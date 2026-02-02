@@ -1,4 +1,4 @@
-﻿using DigiStore.SharedKernel;
+﻿using StudCoreKit.SharedKernel;
 
 namespace DigiStore.TgBot.Application.Constants;
 

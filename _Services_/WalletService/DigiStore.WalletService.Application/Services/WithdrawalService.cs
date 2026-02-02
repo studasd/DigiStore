@@ -1,13 +1,10 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.Enums;
-using DigiStore.SharedKernel;
 using DigiStore.WalletService.Application.Interfaces;
 using DigiStore.WalletService.Application.Validators;
 using DigiStore.WalletService.Domain;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using StudCoreKit.SharedKernel;
 
 namespace DigiStore.WalletService.Application.Services;
 

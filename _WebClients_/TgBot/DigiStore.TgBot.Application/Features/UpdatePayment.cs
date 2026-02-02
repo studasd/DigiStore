@@ -1,6 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
-using DigiStore.Framework.Endpoints;
-using DigiStore.SharedKernel;
+using StudCoreKit.Framework.Endpoints;
+using StudCoreKit.SharedKernel;
 using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Repositories;
 using DigiStore.TgBot.Application.Interfaces.Services;
@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using StudTgBotApi.Contracts.Interfaces;
 
 namespace DigiStore.TgBot.Application.Features;
 

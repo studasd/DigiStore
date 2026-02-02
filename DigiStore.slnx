@@ -37,6 +37,8 @@
     <Project Path="_Services_/WalletService/DigiStore.WalletService.Web/DigiStore.WalletService.Web.csproj" Id="059e1c7a-cc45-4eb3-9c6c-22a3852d360f" />
   </Folder>
   <Folder Name="/Shared/">
+    <Project Path="../../TgBotProjects/StudTgBotApi/StudTgBotApi.Contracts/StudTgBotApi.Contracts.csproj" />
+    <Project Path="../../TgBotProjects/StudTgBotApi/StudTgBotApi.Framework/StudTgBotApi.Framework.csproj" />
     <Project Path="_Shared_/DigiStore.Enums/DigiStore.Enums.csproj" Id="bd9c37d9-f078-4f02-a2b1-c6ff22b6215b" />
   </Folder>
   <Folder Name="/Solution Items/">
@@ -47,7 +49,6 @@
     <Project Path="_WebClients_/TgBot/DigiStore.TgBot.Application/DigiStore.TgBot.Application.csproj" Id="38bb407e-5795-46af-bb1a-2abb70169983" />
     <Project Path="_WebClients_/TgBot/DigiStore.TgBot.Contracts/DigiStore.TgBot.Contracts.csproj" Id="976e0afa-b3cf-41b4-83e9-e32378edbef2" />
     <Project Path="_WebClients_/TgBot/DigiStore.TgBot.Domain/DigiStore.TgBot.Domain.csproj" Id="fddf286a-63f7-4136-ba10-00897649e218" />
-    <Project Path="_WebClients_/TgBot/DigiStore.TgBot.Infrastructure.BotAPI/DigiStore.TgBot.Infrastructure.BotAPI.csproj" Id="0b7e6153-c2e9-4128-b227-99850c32dca4" />
     <Project Path="_WebClients_/TgBot/DigiStore.TgBot.Infrastructure.Postgres/DigiStore.TgBot.Infrastructure.Postgres.csproj" Id="6370bfba-7e9a-4e08-b50a-5962f489e730" />
     <Project Path="_WebClients_/TgBot/DigiStore.TgBot.Web/DigiStore.TgBot.Web.csproj" Id="e63927d7-be99-4d00-a8e4-af12dc7e322a" />
   </Folder>

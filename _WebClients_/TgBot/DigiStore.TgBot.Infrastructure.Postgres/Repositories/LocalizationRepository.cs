@@ -1,5 +1,5 @@
 using CSharpFunctionalExtensions;
-using DigiStore.SharedKernel;
+using StudCoreKit.SharedKernel;
 using DigiStore.TgBot.Application.Interfaces.Repositories;
 using DigiStore.TgBot.Domain;
 using DigiStore.TgBot.Infrastructure.Postgres.Data;

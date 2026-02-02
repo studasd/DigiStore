@@ -1,11 +1,10 @@
-using DigiStore.Framework.Endpoints;
 using DigiStore.TgBot.Application.Services;
-using DigiStore.TgBot.Application.Updates;
 using DigiStore.TgBot.Infrastructure.Postgres.Data;
 using DigiStore.TgBot.Infrastructure.Postgres.Data.Seeders;
 using DigiStore.TgBot.Web;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using StudCoreKit.Framework.Endpoints;
+using StudTgBotApi.Interfaces;
 using System.Text.Json.Serialization.Metadata;
 using Telegram.Bot.Types;
 
@@ -48,7 +47,7 @@ app.MapEndpoints();
 
 app.MapPost("/telegram/webhook", async Task (
 	[FromBody] Update update,
-	[FromServices] UpdateHandler updateHandler,
+	[FromServices] IUpdateHandler updateHandler,
 	CancellationToken token) =>
 		await updateHandler.HandleUpdateAsync(update, token));
 

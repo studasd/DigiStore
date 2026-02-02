@@ -1,10 +1,10 @@
 using CSharpFunctionalExtensions;
-using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Interfaces.Repositories;
 using DigiStore.TgBot.Domain;
 using DigiStore.TgBot.Infrastructure.Postgres.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using StudCoreKit.SharedKernel;
 
 namespace DigiStore.TgBot.Infrastructure.Postgres.Repositories;
 

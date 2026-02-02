@@ -1,10 +1,10 @@
 using CSharpFunctionalExtensions;
 using DigiStore.Enums;
-using DigiStore.SharedKernel;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
-using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
+using StudCoreKit.SharedKernel;
+using StudTgBotApi.Contracts.Interfaces;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -13,7 +13,7 @@ namespace DigiStore.TgBot.Application.Handlers.Profile;
 /// <summary>
 /// Обработчик колбэка просмотра профиля
 /// </summary>
-public class ProfileView : BaseHandler, ICallbackQueryHandler
+public class ProfileView : BaseHandler, ICallbackHandler
 {
 	public const string CallbackData = Constants.CallbackData.ProfileView;
 	public const bool IsPrefix = false;

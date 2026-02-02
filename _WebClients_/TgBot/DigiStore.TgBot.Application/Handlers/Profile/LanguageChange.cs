@@ -1,12 +1,12 @@
 using CSharpFunctionalExtensions;
 using DigiStore.Enums;
-using DigiStore.SharedKernel;
-using DigiStore.SharedKernel.Extensions;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
-using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
+using StudCoreKit.SharedKernel;
+using StudCoreKit.SharedKernel.Extensions;
+using StudTgBotApi.Contracts.Interfaces;
 using Telegram.Bot.Types;
 
 namespace DigiStore.TgBot.Application.Handlers.Profile;
@@ -14,7 +14,7 @@ namespace DigiStore.TgBot.Application.Handlers.Profile;
 /// <summary>
 /// Обработчик колбэка смены языка из команды /language
 /// </summary>
-public class LanguageChange : BaseHandler, ICallbackQueryHandler
+public class LanguageChange : BaseHandler, ICallbackHandler
 {
 	public const string CallbackData = Constants.CallbackData.LanguageChangePrefix;
 	public const bool IsPrefix = true;

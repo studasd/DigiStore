@@ -1,6 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.Enums;
-using DigiStore.SharedKernel;
+using StudCoreKit.SharedKernel;
 using DigiStore.WalletService.Application.DTOs;
 using DigiStore.WalletService.Domain;
 

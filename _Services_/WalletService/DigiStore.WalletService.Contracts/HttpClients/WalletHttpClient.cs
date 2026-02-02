@@ -1,6 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
-using DigiStore.SharedKernel;
-using DigiStore.SharedKernel.HttpServices;
+using StudCoreKit.SharedKernel;
+using StudCoreKit.SharedKernel.HttpServices;
 using DigiStore.WalletService.Contracts.Requests;
 using DigiStore.WalletService.Contracts.Requests.Payments;
 using DigiStore.WalletService.Contracts.Responses;

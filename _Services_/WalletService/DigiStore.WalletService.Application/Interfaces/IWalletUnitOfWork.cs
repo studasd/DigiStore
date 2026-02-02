@@ -1,5 +1,5 @@
 using CSharpFunctionalExtensions;
-using DigiStore.SharedKernel;
+using StudCoreKit.SharedKernel;
 
 namespace DigiStore.WalletService.Application.Interfaces;
 

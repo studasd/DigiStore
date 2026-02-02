@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 using System.Text;
 using Yandex.Checkout.V3;
-using Error = DigiStore.SharedKernel.Error;
+using Error = StudCoreKit.SharedKernel.Error;
 
 namespace DigiStore.WalletService.Infrastructure.Yookassa.Services;
 

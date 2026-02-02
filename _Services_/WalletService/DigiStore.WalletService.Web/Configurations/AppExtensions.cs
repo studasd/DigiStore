@@ -1,5 +1,5 @@
-﻿using DigiStore.Framework.Endpoints;
-using DigiStore.Framework.Middlewares;
+﻿using StudCoreKit.Framework.Endpoints;
+using StudCoreKit.Framework.Middlewares;
 using Serilog;
 
 namespace DigiStore.WalletService.Web.Configurations;

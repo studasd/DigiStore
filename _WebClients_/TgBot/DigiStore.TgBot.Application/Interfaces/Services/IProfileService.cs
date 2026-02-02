@@ -1,6 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.Enums;
-using DigiStore.SharedKernel;
+using StudCoreKit.SharedKernel;
 using DigiStore.TgBot.Application.DTOs;
 using Telegram.Bot.Types.ReplyMarkups;
 

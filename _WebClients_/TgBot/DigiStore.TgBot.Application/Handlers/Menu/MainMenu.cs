@@ -1,19 +1,20 @@
 using CSharpFunctionalExtensions;
 using DigiStore.Enums;
-using DigiStore.SharedKernel;
+using StudCoreKit.SharedKernel;
 using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
 using DigiStore.TgBot.Application.Interfaces;
 using DigiStore.TgBot.Application.Interfaces.Services;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot.Types;
+using StudTgBotApi.Contracts.Interfaces;
 
 namespace DigiStore.TgBot.Application.Handlers.Menu;
 
 /// <summary>
 /// Обработчик колбэка главного меню
 /// </summary>
-public class MainMenu : BaseHandler, ICallbackQueryHandler
+public class MainMenu : BaseHandler, ICallbackHandler
 {
 	public const string CallbackData = Constants.CallbackData.MenuMain;
 	public const bool IsPrefix = false;

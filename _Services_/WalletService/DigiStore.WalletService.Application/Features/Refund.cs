@@ -1,7 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
 using DigiStore.Enums;
-using DigiStore.Framework.Endpoints;
-using DigiStore.SharedKernel;
 using DigiStore.WalletService.Application.Extensions;
 using DigiStore.WalletService.Application.Interfaces;
 using DigiStore.WalletService.Contracts.Responses;
@@ -10,9 +8,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using StudCoreKit.Framework.Endpoints;
+using StudCoreKit.SharedKernel;
 
 namespace DigiStore.WalletService.Application.Features;
 

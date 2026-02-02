@@ -1,6 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
-using DigiStore.SharedKernel;
 using DigiStore.TgBot.Contracts.Requests;
+using StudCoreKit.SharedKernel;
 
 namespace DigiStore.TgBot.Contracts.HttpClients;
 

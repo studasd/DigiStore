@@ -1,7 +1,4 @@
-﻿using DigiStore.SharedKernel;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using StudCoreKit.SharedKernel;
 
 namespace DigiStore.WalletService.Application;
 

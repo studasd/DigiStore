@@ -1,11 +1,10 @@
-﻿using DigiStore.Framework.Endpoints;
-using DigiStore.Framework.Logging;
-using DigiStore.Framework.Swagger;
+﻿using DigiStore.TgBot.Contracts.HttpClients;
 using DigiStore.WalletService.Application;
 using DigiStore.WalletService.Infrastructure.Postgres;
 using DigiStore.WalletService.Infrastructure.Yookassa;
+using StudCoreKit.Framework.Logging;
+using StudCoreKit.Framework.Swagger;
 using System.Reflection;
-using DigiStore.TgBot.Contracts.HttpClients;
 
 namespace DigiStore.WalletService.Web.Configurations;
 

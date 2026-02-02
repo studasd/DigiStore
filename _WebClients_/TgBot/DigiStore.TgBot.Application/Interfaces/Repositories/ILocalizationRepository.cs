@@ -1,5 +1,5 @@
 using CSharpFunctionalExtensions;
-using DigiStore.SharedKernel;
+using StudCoreKit.SharedKernel;
 using DigiStore.TgBot.Domain;
 
 namespace DigiStore.TgBot.Application.Interfaces.Repositories;
