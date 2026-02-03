@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StudCoreKit.Framework.Endpoints;
 using StudCoreKit.SharedKernel.Extensions;
+using StudTgBotApi.Contracts.Interfaces;
 
 
 namespace DigiStore.TgBot.Application;
@@ -27,6 +28,7 @@ public static class DependencyInjectionExtensions
 		services.AddScoped<ILocalizationService, LocalizationService>();
 		services.AddScoped<IProfileService, ProfileService>();
 
+		//services.AddScoped<ICallbackDataParser, CallbackDataParser>();
 
 		//// Redis
 		//var redisConnection = configuration.GetConnectionString("Redis")

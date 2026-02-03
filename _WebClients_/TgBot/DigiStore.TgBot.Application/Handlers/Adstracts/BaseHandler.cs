@@ -122,7 +122,7 @@ public abstract class BaseHandler
 			{
 				InlineKeyboardButton.WithCallbackData(
 					_localService.GetMessage(LocalKeys.Buttons.Profile, langCode),
-					CallbackData.ProfileView)
+					CallbackData.ProfileCallback)
 			},
 			new[]
 			{
@@ -134,7 +134,7 @@ public abstract class BaseHandler
 			{
 				InlineKeyboardButton.WithCallbackData(
 					_localService.GetMessage(LocalKeys.Buttons.Catalog, langCode),
-					CallbackData.CatalogView)
+					CallbackData.CatalogCallback)
 			},
 		});
 	}

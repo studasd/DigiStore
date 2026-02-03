@@ -22,14 +22,12 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(opts =>
 
 // Добавляем сервисы Telegram бота
 builder.Services.AddControllers();
+
 builder.Services.AddTgBotServices(builder.Configuration);
-// Register hosted service for bot initialization and polling
-builder.Services.AddHostedService<BotInitializerHostedService>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.Configure<TelegramOptions>(builder.Configuration.GetSection("TelegramOptions"));
 
 var app = builder.Build();
 

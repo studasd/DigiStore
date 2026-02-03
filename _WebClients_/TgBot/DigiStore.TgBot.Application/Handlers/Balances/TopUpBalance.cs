@@ -20,7 +20,7 @@ namespace DigiStore.TgBot.Application.Handlers.Balances;
 public class TopUpBalance : BaseHandler, ICallbackHandler
 {
 	//public const string CallbackData = Constants.CallbackData.BalanceTopPrefix;
-	public const string CallbackData = "topup_do_";
+	public const string CallbackData = Constants.CallbackData.BalanceUpPrefix;
 	public const bool IsPrefix = true;
 	
 	private readonly ISessionService _sessionService;
@@ -127,7 +127,7 @@ public class TopUpBalance : BaseHandler, ICallbackHandler
 
 			new[]
 			{
-				InlineKeyboardButton.WithCallbackData(_localService.GetMessage(LocalKeys.Buttons.Back, langCode), Constants.CallbackData.BalanceView)
+				InlineKeyboardButton.WithCallbackData(_localService.GetMessage(LocalKeys.Buttons.Back, langCode), Constants.CallbackData.BalanceCallback)
 			},
 		});
 

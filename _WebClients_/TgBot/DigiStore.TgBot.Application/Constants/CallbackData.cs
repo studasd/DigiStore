@@ -5,14 +5,15 @@
 /// </summary>
 public static class CallbackData
 {
-	public const string LanguagePrefix =		"lang_";
-	public const string LanguageChangePrefix =	"lang_change_";
-	public const string ProfileView =			"profile_view";
-	public const string BalanceView =			"balance_view";
-	public const string BalanceTopPrefix =		"balance_top_";
+	public const string LanguagePrefix =		"lang:";
+	public const string LanguageChangePrefix =	"lang_change:";
+	public const string ProfileCallback =		"profile_cb";
+	public const string BalanceCallback =		"balance_cb";
+	public const string BalanceTopPrefix =		"balance_top:";
+	public const string BalanceUpPrefix =		"balance_up_do:";
 	public const string MenuMain =				"menu_main";
 	public const string MenuBack =				"menu_back";
-	public const string CatalogView =			"catalog_view";
-	public const string ProductView =			"product_";
+	public const string CatalogCallback =		"catalog_cb";
+	public const string ProductCallback =		"product:";
 	public const string OrderHistory =			"orders_history";
 }

@@ -14,23 +14,23 @@ namespace DigiStore.TgBot.Application.Handlers.Balances;
 /// <summary>
 /// Обработчик колбэка просмотра баланса
 /// </summary>
-public class BalanceView : BaseHandler, ICallbackHandler
+public class BalanceCallback : BaseHandler, ICallbackHandler
 {
-	public const string CallbackData = Constants.CallbackData.BalanceView;
+	public const string CallbackData = Constants.CallbackData.BalanceCallback;
 	public const bool IsPrefix = false;
 
 	private readonly IWalletService _walletService;
 	private readonly ISessionService _sessionService;
-	private readonly ILogger<BalanceView> _logger;
+	private readonly ILogger<BalanceCallback> _logger;
 
 	
 
-	public BalanceView(
+	public BalanceCallback(
 		IBotAPIClient botClient,
 		IWalletService walletService,
 		ISessionService sessionService,
 		ILocalizationService localizationService,
-		ILogger<BalanceView> logger)
+		ILogger<BalanceCallback> logger)
 		: base(botClient, localizationService)
 	{
 		_walletService = walletService;
@@ -91,7 +91,7 @@ public class BalanceView : BaseHandler, ICallbackHandler
 			currency = wallet.Currency
 		};
 
-		var text = _localService.GetMessage(LocalKeys.Templates.BalanceView, langCode, model);
+		var text = _localService.GetMessage(LocalKeys.Templates.BalanceCallback, langCode, model);
 
 
 		var keyboard = GetBackToMainMenuKeyboard(langCode);

@@ -65,7 +65,7 @@ public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 		{
 			new[]
 			{
-				InlineKeyboardButton.WithCallbackData(_localService.GetMessage(LocalKeys.Buttons.Back, langCode), CallbackData.BalanceView)
+				InlineKeyboardButton.WithCallbackData(_localService.GetMessage(LocalKeys.Buttons.Back, langCode), CallbackData.BalanceCallback)
 			},
 		});
 

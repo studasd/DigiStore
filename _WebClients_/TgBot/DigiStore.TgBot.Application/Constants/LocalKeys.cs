@@ -16,10 +16,10 @@ public static class LocalKeys
 
 	public static class Templates
 	{
-		public const string BalanceView =		"tmpl_balance_view";
-		public const string Balance =			"tmpl_balance";
-        public const string Profile =			"tmpl_profile";
-		public const string TopUpBalance =		"tmpl_topup_balance";
+		public const string BalanceCallback =		"tmpl_balance_view";
+		public const string Balance =				"tmpl_balance";
+        public const string Profile =				"tmpl_profile";
+		public const string TopUpBalance =			"tmpl_topup_balance";
 	}
 
 

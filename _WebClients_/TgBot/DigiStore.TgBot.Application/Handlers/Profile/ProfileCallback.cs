@@ -13,22 +13,22 @@ namespace DigiStore.TgBot.Application.Handlers.Profile;
 /// <summary>
 /// Обработчик колбэка просмотра профиля
 /// </summary>
-public class ProfileView : BaseHandler, ICallbackHandler
+public class ProfileCallback : BaseHandler, ICallbackHandler
 {
-	public const string CallbackData = Constants.CallbackData.ProfileView;
+	public const string CallbackData = Constants.CallbackData.ProfileCallback;
 	public const bool IsPrefix = false;
 	
 	private readonly IProfileService _profileService;
 	private readonly ISessionService _sessionService;
-	private readonly ILogger<ProfileView> _logger;
+	private readonly ILogger<ProfileCallback> _logger;
 
 
-	public ProfileView(
+	public ProfileCallback(
 		IBotAPIClient botClient,
 		IProfileService profileService,
 		ISessionService sessionService,
 		ILocalizationService localizationService,
-		ILogger<ProfileView> logger)
+		ILogger<ProfileCallback> logger)
 		: base(botClient, localizationService)
 	{
 		_profileService = profileService;

@@ -79,7 +79,7 @@ public class TopUpAmountRequest : BaseHandler, ICallbackHandler
 		{
 			new[]
 			{
-				InlineKeyboardButton.WithCallbackData(_localService.GetMessage(LocalKeys.Buttons.Back, langCode), Constants.CallbackData.BalanceView)
+				InlineKeyboardButton.WithCallbackData(_localService.GetMessage(LocalKeys.Buttons.Back, langCode), Constants.CallbackData.BalanceCallback)
 			},
 		});
 
