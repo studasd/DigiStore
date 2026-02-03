@@ -27,6 +27,9 @@ public static class DependencyInjectionExtensions
 		services.AddScoped<ISessionService, SessionService>();
 		services.AddScoped<ILocalizationService, LocalizationService>();
 		services.AddScoped<IProfileService, ProfileService>();
+		
+		// User State Provider для интеграции с StudTgBotApi
+		services.AddScoped<IUserStateProvider, UserStateProvider>();
 
 		//services.AddScoped<ICallbackDataParser, CallbackDataParser>();
 

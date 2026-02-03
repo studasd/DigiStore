@@ -69,7 +69,9 @@ public class TopUpAmountRequest : BaseHandler, ICallbackHandler
 					callbackQuery.Message.Chat.Id,
 					callbackQuery.Message.MessageId),
 				DateTime.UtcNow));
+
 		session.SetState(BotState.TopUpBalanceAmountAwaiting);
+
 		await _sessionService.UpdateSessionAsync(session, token);
 
 		var text = _localService.GetMessage(LocalKeys.Messages.TopUpAmountRequest, langCode);

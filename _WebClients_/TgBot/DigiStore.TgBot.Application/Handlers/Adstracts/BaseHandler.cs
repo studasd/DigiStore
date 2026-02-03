@@ -128,7 +128,7 @@ public abstract class BaseHandler
 			{
 				InlineKeyboardButton.WithCallbackData(
 					_localService.GetMessage(LocalKeys.Buttons.Balance, langCode),
-					CallbackData.BalanceView)
+					CallbackData.BalanceCallback)
 			},
 			new[]
 			{

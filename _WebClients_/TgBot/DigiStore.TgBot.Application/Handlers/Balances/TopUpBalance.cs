@@ -4,6 +4,7 @@ using DigiStore.TgBot.Application.Constants;
 using DigiStore.TgBot.Application.Handlers.Adstracts;
 using DigiStore.TgBot.Application.Handlers.Menu;
 using DigiStore.TgBot.Application.Interfaces.Services;
+using DigiStore.TgBot.Domain.ValueObjects;
 using Microsoft.Extensions.Logging;
 using StudCoreKit.SharedKernel;
 using StudCoreKit.SharedKernel.Extensions;
@@ -97,16 +98,18 @@ public class TopUpBalance : BaseHandler, ICallbackHandler
 
 		// Update session
 		session.SetState(BotState.TopUpBalance);
+
 		var editChatId = targetChatId;
 		var editMessageId = targetMessageId;
 		// PendingTopUpChatId/PendingTopUpMessageId are intentionally preserved.
 		// They are required later to edit the payment message after successful webhook completion.
 		session.RemoveMessageContext(editChatId, editMessageId);
-		session.PendingPayments[paymentId] = new Domain.ValueObjects.PendingPaymentMessageVO(
+		session.PendingPayments[paymentId] = new PendingPaymentMessageVO(
 			editChatId,
 			editMessageId,
 			amount,
-			payAggregate.ToString());
+			payAggregate.ToString(),
+			_botClient.BotTokenId);
 		await _sessionService.UpdateSessionAsync(session, token);
 
 

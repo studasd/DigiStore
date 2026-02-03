@@ -5,6 +5,7 @@ using DigiStore.TgBot.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using StudCoreKit.Framework.Endpoints;
+using StudTgBotApi.Contracts.Interfaces;
 using StudTgBotApi.Contracts.Options;
 using StudTgBotApi.Interfaces;
 using System.Text.Json.Serialization.Metadata;
@@ -53,8 +54,6 @@ app.MapPost("/telegram/webhook/{botId}", async Task<IResult>(
 	[FromServices] IUpdateHandler updateHandler,
     [FromServices] ILogger<Program>	logger,
     [FromServices] IOptions<TelegramMultiOptions> opts,
-    [FromServices] IBotClientFactory botClientFactory,
-    [FromServices] IBotContext botContext,
 	[FromHeader(Name = "X-Telegram-Bot-Api-Secret-Token")] string? secretToken = null,
 	CancellationToken token = default) =>
     {
@@ -79,14 +78,11 @@ app.MapPost("/telegram/webhook/{botId}", async Task<IResult>(
 				return Results.Unauthorized();
 			}
 
-			// ⭐ Получаем клиента и устанавливаем контекст
-			var botClient = botClientFactory.GetBotClient(botId);
-			botContext.SetContext(botId, botClient, botConfig, multiOptions.IsDebugShortResponse);
 
 			logger.LogInformation("Bot context set for '{BotKey}'", botConfig.Username);
 
 			// Передать update в общий сервис
-			await updateHandler.HandleUpdateAsync(update);
+			await updateHandler.HandleUpdateAsync(update, botId);
 
 			return Results.Ok();
 		}

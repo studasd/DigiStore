@@ -15,7 +15,7 @@ namespace DigiStore.TgBot.Application.Handlers.Balances;
 /// </summary>
 public class TopUpAmountInput : BaseHandler, IInputMessageHandler
 {
-	public string StateKey => BotState.TopUpBalanceAmountAwaiting;
+	public const string StateKey = BotState.TopUpBalanceAmountAwaiting;
 	//public string State => StateKey;
 	//public const string Command = BotCommands.Balance;
 

@@ -87,6 +87,10 @@ public sealed class UpdatePaymentHandler : ITgBotHandler
 			chatId = pending.ChatId;
 			messageId = pending.MessageId;
 			amount = pending.Amount;
+
+			// Устанавливаем контекст бота на основании сохраненного BotId
+			var botId = pending.BotId;
+			_botClient.SetContext(botId);
 		}
 		// No legacy fallback: payment completion must be correlated by PaymentId.
 
@@ -101,6 +105,9 @@ public sealed class UpdatePaymentHandler : ITgBotHandler
 		var successText = amount.HasValue
 			? $"✅ Платёж на <b>{amount.Value}</b> успешно зачислен. Баланс обновлён."
 			: "✅ Платёж успешно зачислен. Баланс обновлён.";
+
+		
+
 		var editResult = await _botClient.EditMessageTextAsync(
 			new ChatId(chatId.Value),
 			messageId.Value,
